@@ -1108,17 +1108,84 @@ export function cleanClinicalTextLine(rawLine: string): string {
     .replace(/:\s*:\s*/g, ': ')
     .replace(/,\s*,+/g, ',')
     .replace(/\.\s*\.(?!\.)/g, '.')
-    .replace(/^(\s*(?:\d+\.|[-*])\s*)[:\-–]\s+/, '$1')
+    .replace(/^(\s*(?:\d+\.|[-*])\s*)[:\-–]\s*/, '$1')
     .replace(/^[:\-–]\s+/, '')
     .replace(/\s{2,}(?!--)/g, ' ')
     .trimEnd();
 
-  // Linha composta apenas de pontuação órfã (ex: "." ou ":" ou ";" ou ",")
-  if (/^[.,;:–\-]+$/.test(content.trim())) {
+  // Linha composta apenas de pontuação órfã ou numeração sem conteúdo (ex: "." ou ":" ou "2." ou "2.:")
+  if (/^[.,;:–\-]+$/.test(content.trim()) || /^\d+[.)]\s*[:\-–.]*$/.test(content.trim())) {
     return '';
   }
 
   return content ? indent + content : '';
+}
+
+export interface AstDisplayLayout {
+  excludedBlocks: Set<number>;
+  hiddenWrapperBlocks: Set<number>;
+  promotedNumberedBlocks: Set<number>;
+  promotedContinuationBlocks: Set<number>;
+  renumberedByBlockIndex: Map<number, number>;
+}
+
+/**
+ * Formata o texto interno de um bracket condicional/opcional para exibição curta em interruptor editorial.
+ */
+export function formatConditionalToggleLabel(rawLabel: string): string {
+  let clean = String(rawLabel || '')
+    .trim()
+    .replace(/^se\s+/i, '')
+    .replace(/\s+/g, ' ');
+
+  if (!clean) return 'Opcional';
+
+  // Normaliza tudo-maiúsculas em formato legível mantendo siglas clínicas comuns
+  const letters = clean.replace(/[^A-Za-zÀ-ÿ]/g, '');
+  const upperLetters = letters.replace(/[^A-ZÀ-Ý]/g, '');
+  if (letters.length >= 6 && upperLetters.length / letters.length > 0.78) {
+    clean = clean.toLowerCase().replace(/(^|[\s(/—–-])([a-zà-ÿ])/g, (_m, sep, ch) => `${sep}${ch.toUpperCase()}`);
+    clean = clean.replace(
+      /\b(Aas|Uti|Upa|Iot|Tev|Iam|Avc|Pcr|Rn|Rh|Ig|Ev|Im|Vo|Sc|Sf|Dmg|Hag|Itu|Drc|Has|Dm2|Hiv|Vdrl|Tsh|Dpa|Egb|St)\b/g,
+      (m) => m.toUpperCase()
+    );
+  } else {
+    clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  // Remove instruções muito longas após travessão longo se já houver rótulo claro antes
+  const dashIdx = clean.indexOf(' — ');
+  if (dashIdx >= 14 && clean.length > 46) {
+    clean = clean.slice(0, dashIdx).trim();
+  }
+
+  if (clean.length > 48) {
+    clean = `${clean.slice(0, 45).trimEnd()}…`;
+  }
+  return clean;
+}
+
+/**
+ * Verifica se um bloco de parágrafo é apenas um cabeçalho/invólucro condicional (ex: "2. [Se risco...]:" ou "[OPÇÃO A]:")
+ * sem conteúdo clínico próprio na mesma linha.
+ */
+function isPureConditionalWrapperBlock(block: ParagraphNode): boolean {
+  const hasConditionalTrava = block.children.some(
+    (c) => c.kind === 'trava-alert' && !c.isSafetyWarning
+  );
+  if (!hasConditionalTrava) return false;
+
+  for (const child of block.children) {
+    if (child.kind === 'trava-alert' && !child.isSafetyWarning) continue;
+    if (child.kind !== 'text') return false;
+    const stripped = child.value
+      .replace(/^\s*(?:\d+[.)]|[-*])\s*/, '')
+      .replace(/[:\-–.\s]+/g, '')
+      .trim();
+    if (stripped.length > 0) return false;
+  }
+
+  return true;
 }
 
 /**
@@ -1126,7 +1193,8 @@ export function cleanClinicalTextLine(rawLine: string): string {
  */
 export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelectionState): Set<number> {
   const excluded = new Set<number>();
-  let skipMode: 'none' | 'item' | 'block' = 'none';
+  let skipMode: 'none' | 'item' | 'bullet-item' | 'block' = 'none';
+  let skipBaseIndent = 0;
 
   for (let i = 0; i < ast.blocks.length; i++) {
     const block = ast.blocks[i];
@@ -1136,7 +1204,17 @@ export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelec
         block.kind === 'paragraph' &&
         !block.isEmptyLine &&
         /^\s+/.test(block.rawLine) &&
-        !/^\s*(?:\d+\.|[-*]|#+|>>)\s+/.test(block.rawLine)
+        !/^\s*(?:\d+\.|#+|>>)\s+/.test(block.rawLine)
+      ) {
+        excluded.add(i);
+        continue;
+      }
+      skipMode = 'none';
+    } else if (skipMode === 'bullet-item') {
+      if (
+        block.kind === 'paragraph' &&
+        !block.isEmptyLine &&
+        block.indent.length > skipBaseIndent
       ) {
         excluded.add(i);
         continue;
@@ -1165,8 +1243,12 @@ export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelec
       const firstTrava = block.children.find((c): c is TravaAlertNode => c.kind === 'trava-alert');
       if (firstTrava && state.travaExcluded[firstTrava.id]) {
         excluded.add(i);
-        if (/^\d+[.)]\s+/.test(block.rawLine.trim())) {
+        const trimmed = block.rawLine.trim();
+        if (/^\d+[.)]\s+/.test(trimmed)) {
           skipMode = 'item';
+        } else if (/^[-*]\s+\[/.test(trimmed)) {
+          skipMode = 'bullet-item';
+          skipBaseIndent = block.indent.length;
         } else if (block.isConditionalBlockHeader || block.isSecondaryBlockStart) {
           skipMode = 'block';
         }
@@ -1175,6 +1257,125 @@ export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelec
   }
 
   return excluded;
+}
+
+const SECTION_RESET_LINE_REGEX =
+  /^(?:USO\s+[A-ZÀ-Ý\s/]+|CONDUTA(?:\s+HOSPITALAR[^:]*)?|RECEITA(?:\s+DE\s+ALTA|\s+MÉDICA)?|PRESCRIÇÃO(?:\s+DOMICILIAR|\s+DE\s+ALTA|\s+MÉDICA[^:]*)?|ORIENTAÇÕES[^:]*|SINAIS DE ALARME[^:]*|IDENTIFICAÇÃO|QP|HMA|EXAME FÍSICO|AVALIAÇÃO|PLANO)\s*:?\s*$/i;
+
+/**
+ * Calcula layout determinístico compartilhado entre o renderizador React e o serializador de texto:
+ * - Omite blocos condicionais desligados
+ * - Remove linhas-invólucro vazias (evitando "2.:" órfão) promovendo seus subitens a itens numerados
+ * - Renumera sequencialmente (1, 2, 3, 4...) todos os itens numerados visíveis
+ */
+export function computeAstDisplayLayout(
+  ast: PepDocumentAst,
+  state: AstSelectionState,
+  blockSubsetIndices?: Set<number>
+): AstDisplayLayout {
+  const excludedBlocks = computeExcludedBlockIndices(ast, state);
+  const hiddenWrapperBlocks = new Set<number>();
+  const promotedNumberedBlocks = new Set<number>();
+  const promotedContinuationBlocks = new Set<number>();
+  const renumberedByBlockIndex = new Map<number, number>();
+
+  // 1) Identificar cabeçalhos-invólucro condicionais ativos e promover seus subitens
+  for (let i = 0; i < ast.blocks.length; i++) {
+    if (blockSubsetIndices && !blockSubsetIndices.has(i)) continue;
+    if (excludedBlocks.has(i)) continue;
+
+    const block = ast.blocks[i];
+    if (block.kind !== 'paragraph' || block.isEmptyLine) continue;
+    if (!isPureConditionalWrapperBlock(block)) continue;
+
+    const trimmed = block.rawLine.trim();
+    const isTopNumberedWrapper = block.indent === '' && /^\d+[.)]\s+/.test(trimmed);
+
+    // Verifica se há linhas filhas indentadas logo abaixo
+    const childIndices: number[] = [];
+    for (let j = i + 1; j < ast.blocks.length; j++) {
+      if (blockSubsetIndices && !blockSubsetIndices.has(j)) break;
+      const next = ast.blocks[j];
+      if (next.kind !== 'paragraph' || next.isEmptyLine) break;
+      if (next.indent.length <= block.indent.length) break;
+      if (!excludedBlocks.has(j)) {
+        childIndices.push(j);
+      }
+    }
+
+    if (isTopNumberedWrapper) {
+      hiddenWrapperBlocks.add(i);
+      if (childIndices.length > 0) {
+        const firstChild = ast.blocks[childIndices[0]] as ParagraphNode;
+        const firstChildIndent = firstChild.indent.length;
+        const usesBullets = /^[-*]\s+/.test(firstChild.rawLine.trim());
+
+        if (usesBullets) {
+          for (const ci of childIndices) {
+            const cb = ast.blocks[ci] as ParagraphNode;
+            if (cb.indent.length === firstChildIndent && /^[-*]\s+/.test(cb.rawLine.trim())) {
+              promotedNumberedBlocks.add(ci);
+            } else {
+              promotedContinuationBlocks.add(ci);
+            }
+          }
+        } else {
+          promotedNumberedBlocks.add(childIndices[0]);
+          for (let k = 1; k < childIndices.length; k++) {
+            promotedContinuationBlocks.add(childIndices[k]);
+          }
+        }
+      }
+    } else if (childIndices.length > 0 || trimmed.startsWith('[')) {
+      // Wrapper não numerado (ex.: "[OPÇÃO A — CANDIDÍASE]:" ou "   - [OPÇÃO 1 — ...]:")
+      hiddenWrapperBlocks.add(i);
+    }
+  }
+
+  // 2) Renumeração sequencial limpa (1, 2, 3, 4...) nos itens visíveis de cada lista numerada
+  let seq = 0;
+  for (let i = 0; i < ast.blocks.length; i++) {
+    if (blockSubsetIndices && !blockSubsetIndices.has(i)) continue;
+    if (excludedBlocks.has(i) || hiddenWrapperBlocks.has(i)) continue;
+
+    const block = ast.blocks[i];
+    if (block.kind === 'heading') {
+      seq = 0;
+      continue;
+    }
+
+    if (block.isEmptyLine) {
+      continue;
+    }
+
+    const trimmed = block.rawLine.trim();
+    if (SECTION_RESET_LINE_REGEX.test(trimmed)) {
+      seq = 0;
+      continue;
+    }
+
+    const isPromoted = promotedNumberedBlocks.has(i);
+    const isTopLevelNumbered = block.indent === '' && /^\d+[.)]\s+/.test(trimmed);
+
+    if (isPromoted || isTopLevelNumbered) {
+      seq += 1;
+      renumberedByBlockIndex.set(i, seq);
+      continue;
+    }
+
+    // Linhas indentadas (posologia, sub-bullets) preservam a sequência; texto de nível raiz quebra a lista
+    if (block.indent === '' && !promotedContinuationBlocks.has(i)) {
+      seq = 0;
+    }
+  }
+
+  return {
+    excludedBlocks,
+    hiddenWrapperBlocks,
+    promotedNumberedBlocks,
+    promotedContinuationBlocks,
+    renumberedByBlockIndex,
+  };
 }
 
 /**
@@ -1190,7 +1391,7 @@ export function serializeAstToClinicalText(
   const keepEmpty = options?.keepEmptyBrackets !== undefined ? options.keepEmptyBrackets : true;
   const includeDoseCalc = options?.includeDoseFormulaCalc !== undefined ? options.includeDoseFormulaCalc : true;
   const subset = options?.blockSubsetIndices;
-  const excludedBlocks = computeExcludedBlockIndices(ast, state);
+  const layout = computeAstDisplayLayout(ast, state, subset);
 
   const serializeInput = (node: InlineInputNode): string => {
     const val = (state.inputValues[node.id] || '').trim();
@@ -1219,7 +1420,7 @@ export function serializeAstToClinicalText(
       if (node.kind === 'text') {
         let txt = node.value;
         if (justOmittedTrava) {
-          txt = txt.replace(/^[:\-–]?\s+/, '');
+          txt = txt.replace(/^[:\-–]\s*/, '');
           justOmittedTrava = false;
         }
         out += txt;
@@ -1284,7 +1485,7 @@ export function serializeAstToClinicalText(
 
   for (let i = 0; i < ast.blocks.length; i++) {
     if (subset && !subset.has(i)) continue;
-    if (excludedBlocks.has(i)) continue;
+    if (layout.excludedBlocks.has(i) || layout.hiddenWrapperBlocks.has(i)) continue;
 
     const block = ast.blocks[i];
     if (block.kind === 'paragraph' && block.isEmptyLine) {
@@ -1305,11 +1506,23 @@ export function serializeAstToClinicalText(
     }
     lineText += serializeInlineList(block.children);
 
-    const cleaned = cleanClinicalTextLine(lineText);
+    let cleaned = cleanClinicalTextLine(lineText);
     if (!cleaned && block.rawLine.trim().length > 0) {
       // Linha que só continha trava/opcional desligado — omitir para não criar lacuna fantasma
       continue;
     }
+
+    const assignedNum = layout.renumberedByBlockIndex.get(i);
+    if (assignedNum !== undefined) {
+      if (layout.promotedNumberedBlocks.has(i)) {
+        cleaned = `${assignedNum}. ${cleaned.replace(/^\s*(?:[-*]\s+)?/, '')}`;
+      } else {
+        cleaned = cleaned.replace(/^\d+[.)]\s+/, `${assignedNum}. `);
+      }
+    } else if (layout.promotedContinuationBlocks.has(i)) {
+      cleaned = `   ${cleaned.trimStart()}`;
+    }
+
     outLines.push(cleaned);
   }
 

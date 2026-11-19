@@ -717,7 +717,7 @@ export function resolvePediatricDoseFieldValue(ctx: PediatricDoseFieldContext): 
 
   if (
     !ctx.isWeightSourceInput &&
-    (afterTxt.includes('kg') || ph.includes('kg')) &&
+    (/^\s*kg\b/i.test(afterTxt) || /^kg$/i.test(ph)) &&
     (lineCtx.includes('peso') || beforeTxt.includes('peso'))
   ) {
     return String(weightKg).replace('.', ',');

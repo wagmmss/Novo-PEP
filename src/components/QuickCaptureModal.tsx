@@ -87,7 +87,7 @@ export function QuickCaptureModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[1px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[1px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="quick-capture-title"
@@ -97,17 +97,17 @@ export function QuickCaptureModal({
     >
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-[#111827]"
+        className="w-full max-w-md rounded-xl border border-zinc-200/80 bg-white shadow-xl dark:border-white/[0.08] dark:bg-[#15181F]"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5 dark:border-slate-800">
-          <h2 id="quick-capture-title" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <div className="flex items-center justify-between border-b border-zinc-200/80 px-5 py-3.5 dark:border-white/[0.07]">
+          <h2 id="quick-capture-title" className="text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
             {isLogbook ? 'Registrar no Logbook' : 'Salvar Ponto Cego'}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -115,7 +115,7 @@ export function QuickCaptureModal({
 
         <div className="space-y-4 p-5">
           <div>
-            <label htmlFor="qc-title" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label htmlFor="qc-title" className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
               {isLogbook ? 'Procedimento ou caso' : 'Tema / dúvida clínica'}
             </label>
             <input
@@ -125,20 +125,20 @@ export function QuickCaptureModal({
               autoFocus
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
             />
           </div>
 
           <div className="space-y-3">
             <div>
-              <label htmlFor="qc-rodizio" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+              <label htmlFor="qc-rodizio" className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
                 Rodízio
               </label>
               <select
                 id="qc-rodizio"
                 value={rodizio}
                 onChange={(e) => setRodizio(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
               >
                 {RODIZIOS_6ANO.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -150,10 +150,10 @@ export function QuickCaptureModal({
 
             {isLogbook && (
               <div>
-                <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                <span className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
                   Papel / Autonomia
                 </span>
-                <div className="grid grid-cols-4 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-800 dark:bg-[#0b1117]">
+                <div className="grid grid-cols-4 gap-1 rounded-lg border border-zinc-200/80 bg-[#FAFAFA] p-0.5 dark:border-white/[0.08] dark:bg-[#0F1115]">
                   {AUTONOMY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -161,8 +161,8 @@ export function QuickCaptureModal({
                       onClick={() => setAutonomy(opt.value)}
                       className={`whitespace-nowrap rounded-md px-1.5 py-1.5 text-[11px] font-medium transition-colors ${
                         autonomy === opt.value
-                          ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+                          ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                          : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
                       }`}
                     >
                       {opt.label}
@@ -174,7 +174,7 @@ export function QuickCaptureModal({
           </div>
 
           <div>
-            <label htmlFor="qc-note" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label htmlFor="qc-note" className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
               {isLogbook ? 'Aprendizado ou detalhe rápido (opcional)' : 'O que travou ou precisa revisar?'}
             </label>
             <textarea
@@ -187,12 +187,12 @@ export function QuickCaptureModal({
                   ? 'Ex.: punção em 1ª tentativa, ajuste de dose confirmado.'
                   : 'Ex.: critério de internação ou dose de ataque na gestante (sem nome ou CPF).'
               }
-              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+              className="w-full resize-none rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
             />
           </div>
 
           {piiIssues.length > 0 && (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/40 dark:text-amber-200">
+            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/12 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>
                 Possível dado identificável detectado ({Array.from(new Set(piiIssues.map((i) => i.label))).join(', ')}).
@@ -202,17 +202,17 @@ export function QuickCaptureModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-3 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 border-t border-zinc-200/80 px-5 py-3 dark:border-white/[0.07]">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-teal-300"
           >
             <Check className="h-3.5 w-3.5" />
             Salvar

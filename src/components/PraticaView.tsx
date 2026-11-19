@@ -106,9 +106,9 @@ export function PraticaView({ central6Ano, onNotify }: PraticaViewProps) {
   );
 
   return (
-    <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-white dark:bg-[#0b1117]">
+    <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Barra de sub-abas limpa — 1 ferramenta focada por vez */}
-      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-sm dark:border-slate-800 dark:bg-[#0b1117]/95">
+      <div className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#FAFAFA]/95 backdrop-blur-sm dark:border-white/[0.07] dark:bg-[#0F1115]/95">
         <div className="mx-auto flex max-w-4xl items-center gap-1 overflow-x-auto px-4 sm:px-8">
           {SUB_TABS.map((tab) => {
             const active = subTab === tab.id;
@@ -119,18 +119,18 @@ export function PraticaView({ central6Ano, onNotify }: PraticaViewProps) {
                 onClick={() => setSubTab(tab.id)}
                 className={`relative shrink-0 whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${
                   active
-                    ? 'text-teal-700 dark:text-teal-400'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+                    ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                    : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
                 }`}
               >
                 <span>{tab.label}</span>
                 {tab.id === 'pontos-cegos' && pendingBlindCount > 0 && (
-                  <span className="ml-1.5 font-mono text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                  <span className="ml-1.5 font-mono text-xs tabular-nums text-zinc-400 dark:text-[#6B7280]">
                     {pendingBlindCount}
                   </span>
                 )}
                 {active && (
-                  <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-teal-700 dark:bg-teal-400" />
+                  <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]" />
                 )}
               </button>
             );
@@ -246,14 +246,14 @@ function LogbookTool({
       {/* Cabeçalho editorial */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
             Logbook de Procedimentos — Regra 3x
           </h1>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
             Auxiliou, Supervisionado e Autônomo avançam a Regra 3x; Observou registra no histórico.
           </p>
         </div>
-        <div className="font-mono text-xs tabular-nums text-slate-500 dark:text-slate-400">
+        <div className="font-mono text-xs tabular-nums text-zinc-500 dark:text-[#9CA3AF]">
           {summary.completed3x}/{summary.totalProcedures} em 3x · {summary.totalExecutions} execuções
         </div>
       </div>
@@ -261,14 +261,14 @@ function LogbookTool({
       {/* Busca e filtros por rodízio */}
       <div className="space-y-2.5">
         <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-[#6B7280]" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filtrar procedimento ou área..."
             aria-label="Filtrar procedimento"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pr-3 pl-9 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-800 dark:bg-[#111827] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+            className="w-full rounded-lg border border-zinc-200/80 bg-white py-2 pr-3 pl-9 text-sm text-zinc-900 shadow-[0_1px_2px_rgba(0,0,0,0.03)] outline-none placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
           />
         </div>
 
@@ -278,8 +278,8 @@ function LogbookTool({
             onClick={() => setRodizioFilter('todos')}
             className={`shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               rodizioFilter === 'todos'
-                ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                : 'text-zinc-600 hover:bg-zinc-200/60 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]'
             }`}
           >
             Todas as áreas ({LOGBOOK_PROCEDIMENTOS_MATRIX.length})
@@ -291,8 +291,8 @@ function LogbookTool({
               onClick={() => setRodizioFilter(r.id)}
               className={`shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 rodizioFilter === r.id
-                  ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                  ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                  : 'text-zinc-600 hover:bg-zinc-200/60 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]'
               }`}
             >
               {r.nome}
@@ -302,9 +302,9 @@ function LogbookTool({
       </div>
 
       {/* Lista de procedimentos */}
-      <div className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+      <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
         {filteredProcedures.length === 0 ? (
-          <div className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
             Nenhum procedimento encontrado para este filtro.
           </div>
         ) : (
@@ -326,14 +326,14 @@ function LogbookTool({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">
-                      <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                      <span className="truncate text-sm font-medium text-zinc-900 dark:text-[#F3F4F6]">
                         {proc.nome}
                       </span>
                       <span
                         className={`shrink-0 font-mono text-xs font-semibold tabular-nums ${
                           rule3xDone
-                            ? 'text-teal-700 dark:text-teal-400'
-                            : 'text-slate-500 dark:text-slate-400'
+                            ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                            : 'text-zinc-500 dark:text-[#9CA3AF]'
                         }`}
                       >
                         {Math.min(count, 3)}/3{rule3xDone ? ' ✓' : ''}
@@ -341,7 +341,7 @@ function LogbookTool({
                       </span>
                     </div>
 
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                       <span>{proc.rodizioNome}</span>
                       <span aria-hidden="true">·</span>
                       <span className="font-mono tabular-nums">Meta ano: {proc.metaAlvo}</span>
@@ -369,8 +369,8 @@ function LogbookTool({
                           key={step}
                           className={`h-1 flex-1 rounded-full transition-colors ${
                             filledSegments >= step
-                              ? 'bg-teal-600 dark:bg-teal-400'
-                              : 'bg-slate-200 dark:bg-slate-800'
+                              ? 'bg-[#0F766E] dark:bg-[#2DD4BF]'
+                              : 'bg-zinc-200 dark:bg-white/[0.08]'
                           }`}
                         />
                       ))}
@@ -385,7 +385,7 @@ function LogbookTool({
                         type="button"
                         title={btn.title}
                         onClick={() => handleRecord(proc.id, proc.nome, btn.role)}
-                        className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-teal-600/50 hover:bg-teal-50/50 hover:text-teal-800 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:border-teal-400/50 dark:hover:bg-teal-950/30 dark:hover:text-teal-300"
+                        className="whitespace-nowrap rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/40 hover:bg-[#0F766E]/[0.06] hover:text-[#0F766E] dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40 dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"
                       >
                         <span className="hidden sm:inline">{btn.label}</span>
                         <span className="sm:hidden">{btn.shortLabel}</span>
@@ -405,7 +405,7 @@ function LogbookTool({
                           [proc.id]: !prev[proc.id],
                         }))
                       }
-                      className="inline-flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      className="inline-flex items-center gap-1 text-xs text-zinc-500 transition-colors hover:text-zinc-800 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]"
                     >
                       {isExpanded ? (
                         <ChevronDown className="h-3.5 w-3.5" />
@@ -418,18 +418,18 @@ function LogbookTool({
                     </button>
 
                     {isExpanded && (
-                      <ul className="mt-2 space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800/80">
+                      <ul className="mt-2 space-y-1.5 border-t border-zinc-100 pt-2 dark:border-white/[0.06]">
                         {history.map((item) => (
                           <li
                             key={item.id}
-                            className="flex items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400"
+                            className="flex items-center justify-between gap-3 text-xs text-zinc-600 dark:text-[#9CA3AF]"
                           >
                             <div className="min-w-0 truncate">
-                              <span className="font-mono tabular-nums text-slate-400 dark:text-slate-500">
+                              <span className="font-mono tabular-nums text-zinc-400 dark:text-[#6B7280]">
                                 {formatIsoShort(item.dateIso)}
                               </span>
                               <span className="mx-1.5" aria-hidden="true">·</span>
-                              <span className="font-medium text-slate-800 dark:text-slate-200">
+                              <span className="font-medium text-zinc-800 dark:text-[#F3F4F6]">
                                 {item.papel}
                               </span>
                               {item.aprendizado && (
@@ -446,7 +446,7 @@ function LogbookTool({
                                 onNotify('Registro removido do Logbook.');
                               }}
                               aria-label={`Remover registro de ${proc.nome}`}
-                              className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800 dark:hover:text-red-400"
+                              className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-red-600 dark:text-[#6B7280] dark:hover:bg-[#1C2029] dark:hover:text-red-400"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -464,34 +464,34 @@ function LogbookTool({
 
       {/* Registros rápidos capturados em Protocolos / Pré-Porta */}
       {unlinkedEntries.length > 0 && (
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800">
+        <div className="rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
           <button
             type="button"
             onClick={() => setShowGeneralHistory((prev) => !prev)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50"
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
           >
             <span>
               Registros avulsos e capturas à Beira-Leito ({unlinkedEntries.length})
             </span>
             {showGeneralHistory ? (
-              <ChevronDown className="h-4 w-4 text-slate-400" />
+              <ChevronDown className="h-4 w-4 text-zinc-400 dark:text-[#6B7280]" />
             ) : (
-              <ChevronRight className="h-4 w-4 text-slate-400" />
+              <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-[#6B7280]" />
             )}
           </button>
 
           {showGeneralHistory && (
-            <ul className="divide-y divide-slate-200 border-t border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+            <ul className="divide-y divide-zinc-200/70 border-t border-zinc-200/80 dark:divide-white/[0.06] dark:border-white/[0.07]">
               {unlinkedEntries.map((item) => (
                 <li
                   key={item.id}
                   className="flex items-start justify-between gap-3 px-4 py-2.5 text-xs"
                 >
                   <div className="min-w-0">
-                    <div className="font-medium text-slate-900 dark:text-slate-100">
+                    <div className="font-medium text-zinc-900 dark:text-[#F3F4F6]">
                       {item.titulo}
                     </div>
-                    <div className="mt-0.5 text-slate-500 dark:text-slate-400">
+                    <div className="mt-0.5 text-zinc-500 dark:text-[#9CA3AF]">
                       <span className="font-mono tabular-nums">{formatIsoShort(item.dateIso)}</span>
                       <span className="mx-1.5" aria-hidden="true">·</span>
                       <span>{RODIZIO_NAME_MAP.get(item.rodizio) || item.rodizio}</span>
@@ -507,7 +507,7 @@ function LogbookTool({
                       onNotify('Registro removido.');
                     }}
                     aria-label={`Remover ${item.titulo}`}
-                    className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800 dark:hover:text-red-400"
+                    className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-red-600 dark:text-[#6B7280] dark:hover:bg-[#1C2029] dark:hover:text-red-400"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -612,10 +612,10 @@ function PontosCegosTool({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
           Pontos Cegos (60s)
         </h1>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
           Capture lacunas clínicas reais sem salvar nome, CPF ou prontuário do paciente.
         </p>
       </div>
@@ -623,13 +623,13 @@ function PontosCegosTool({
       {/* Formulário rápido */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-3.5 rounded-lg border border-slate-200 bg-slate-50/40 p-4 dark:border-slate-800 dark:bg-[#111827]/60"
+        className="space-y-3.5 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="sm:col-span-2">
             <label
               htmlFor="pc-tema"
-              className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+              className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
             >
               Tema / contexto clínico
             </label>
@@ -640,14 +640,14 @@ function PontosCegosTool({
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Ex.: Dose de ataque de sulfato de magnésio na pré-eclâmpsia grave"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
             />
           </div>
 
           <div>
             <label
               htmlFor="pc-rodizio"
-              className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+              className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
             >
               Rodízio
             </label>
@@ -655,7 +655,7 @@ function PontosCegosTool({
               id="pc-rodizio"
               value={rodizio}
               onChange={(e) => setRodizio(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
             >
               {RODIZIOS_6ANO.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -670,7 +670,7 @@ function PontosCegosTool({
           <div>
             <label
               htmlFor="pc-duvida"
-              className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+              className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
             >
               O que travou / dúvida específica
             </label>
@@ -680,14 +680,14 @@ function PontosCegosTool({
               value={duvida}
               onChange={(e) => setDuvida(e.target.value)}
               placeholder="Ex.: Esquema Pritchard vs Zuspan e monitoramento de reflexo patelar"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
             />
           </div>
 
           <div>
             <label
               htmlFor="pc-acao"
-              className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+              className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
             >
               Ação de revisão (opcional)
             </label>
@@ -697,7 +697,7 @@ function PontosCegosTool({
               value={acaoRevisao}
               onChange={(e) => setAcaoRevisao(e.target.value)}
               placeholder="Ex.: Revisar protocolo + criar 2 cards no Anki"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
             />
           </div>
         </div>
@@ -728,7 +728,7 @@ function PontosCegosTool({
         <div className="flex items-center justify-end">
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0D655E] dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-[#5EEAD4]"
           >
             <Check className="h-3.5 w-3.5" />
             Registrar ponto cego
@@ -752,8 +752,8 @@ function PontosCegosTool({
               onClick={() => setFilter(opt.id)}
               className={`whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 filter === opt.id
-                  ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                  ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                  : 'text-zinc-600 hover:bg-zinc-200/60 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]'
               }`}
             >
               {opt.label}
@@ -765,17 +765,17 @@ function PontosCegosTool({
           type="button"
           onClick={handleCopyMarkdown}
           disabled={filteredSpots.length === 0}
-          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-zinc-200/80 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:bg-zinc-50 disabled:opacity-40 dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
         >
-          {copiedMd ? <Check className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" /> : <Copy className="h-3.5 w-3.5" />}
+          {copiedMd ? <Check className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" /> : <Copy className="h-3.5 w-3.5" />}
           {copiedMd ? 'Copiado' : 'Copiar resumo (.md)'}
         </button>
       </div>
 
       {/* Lista de pontos cegos */}
-      <div className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+      <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
         {filteredSpots.length === 0 ? (
-          <div className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
             {filter === 'pendentes'
               ? 'Nenhum ponto cego pendente no momento.'
               : 'Nenhum registro nesta visualização.'}
@@ -794,8 +794,8 @@ function PontosCegosTool({
                   aria-label={isResolved ? `Reabrir ${item.titulo}` : `Marcar ${item.titulo} como resolvido`}
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
                     isResolved
-                      ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-slate-950'
-                      : 'border-slate-300 bg-white hover:border-teal-600 dark:border-slate-600 dark:bg-[#0b1117] dark:hover:border-teal-400'
+                      ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                      : 'border-zinc-300 bg-white hover:border-[#0F766E] dark:border-white/[0.18] dark:bg-[#0F1115] dark:hover:border-[#2DD4BF]'
                   }`}
                 >
                   {isResolved && <Check className="h-3.5 w-3.5" />}
@@ -805,24 +805,24 @@ function PontosCegosTool({
                   <div
                     className={`text-sm font-medium ${
                       isResolved
-                        ? 'text-slate-400 line-through dark:text-slate-500'
-                        : 'text-slate-900 dark:text-slate-100'
+                        ? 'text-zinc-400 line-through dark:text-[#6B7280]'
+                        : 'text-zinc-900 dark:text-[#F3F4F6]'
                     }`}
                   >
                     {item.titulo}
                   </div>
-                  <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                     <span className="font-mono tabular-nums">{formatIsoShort(item.dateIso)}</span>
                     <span className="mx-1.5" aria-hidden="true">·</span>
                     <span>{RODIZIO_NAME_MAP.get(item.rodizio) || item.rodizio}</span>
                   </div>
                   {item.aprendizado && (
-                    <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
+                    <p className="mt-1.5 text-sm text-zinc-600 dark:text-[#D1D5DB]">
                       {item.aprendizado}
                     </p>
                   )}
                   {item.gatilhoCorrecao && (
-                    <p className="mt-1 text-xs text-teal-800 dark:text-teal-300">
+                    <p className="mt-1 text-xs text-[#0F766E] dark:text-[#2DD4BF]">
                       Revisão: {item.gatilhoCorrecao}
                     </p>
                   )}
@@ -835,7 +835,7 @@ function PontosCegosTool({
                     onNotify('Ponto cego removido.');
                   }}
                   aria-label={`Remover ponto cego ${item.titulo}`}
-                  className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800 dark:hover:text-red-400"
+                  className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-red-600 dark:text-[#6B7280] dark:hover:bg-[#1C2029] dark:hover:text-red-400"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -892,10 +892,10 @@ function PromptsIaTool({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
           Prompts IA Contextuais
         </h1>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
           Escolha o treino, ajuste o contexto mínimo e copie o prompt calibrado para o seu rodízio.
         </p>
       </div>
@@ -909,14 +909,14 @@ function PromptsIaTool({
               key={pt.id}
               type="button"
               onClick={() => setKind(pt.id)}
-              className={`rounded-lg border px-3 py-2.5 text-left transition-colors ${
+              className={`rounded-xl border px-3 py-2.5 text-left transition-colors ${
                 active
-                  ? 'border-teal-700 bg-teal-50/70 text-teal-900 dark:border-teal-400 dark:bg-teal-950/40 dark:text-teal-200'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-[#111827] dark:text-slate-300 dark:hover:bg-slate-800/60'
+                  ? 'border-[#0F766E] bg-[#0F766E]/[0.08] text-[#0F766E] dark:border-[#2DD4BF] dark:bg-[#2DD4BF]/[0.10] dark:text-[#2DD4BF]'
+                  : 'border-zinc-200/80 bg-white text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:bg-zinc-50 dark:border-white/[0.07] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]'
               }`}
             >
               <div className="text-xs font-semibold">{pt.label}</div>
-              <div className="mt-0.5 line-clamp-2 text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="mt-0.5 line-clamp-2 text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                 {pt.subtitle}
               </div>
             </button>
@@ -925,11 +925,11 @@ function PromptsIaTool({
       </div>
 
       {/* Contexto mínimo */}
-      <div className="grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-slate-50/40 p-4 sm:grid-cols-3 dark:border-slate-800 dark:bg-[#111827]/60">
+      <div className="grid grid-cols-1 gap-3 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:grid-cols-3 dark:border-white/[0.07] dark:bg-[#15181F]">
         <div>
           <label
             htmlFor="prompt-rodizio"
-            className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+            className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
           >
             Rodízio ativo
           </label>
@@ -944,7 +944,7 @@ function PromptsIaTool({
                 microHabitoSemanal: nextRod?.microHabitoSugerido || '',
               });
             }}
-            className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+            className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
           >
             {RODIZIOS_6ANO.map((r) => (
               <option key={r.id} value={r.id}>
@@ -957,7 +957,7 @@ function PromptsIaTool({
         <div>
           <label
             htmlFor="prompt-foco"
-            className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+            className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
           >
             Foco / tema clínico
           </label>
@@ -969,14 +969,14 @@ function PromptsIaTool({
               cockpitStore.updateCentralContext({ focoSemanalAncora70: e.target.value })
             }
             placeholder={activeRodizio?.ancora70}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+            className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
           />
         </div>
 
         <div>
           <label
             htmlFor="prompt-micro"
-            className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+            className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
           >
             Micro-hábito em treino
           </label>
@@ -988,16 +988,16 @@ function PromptsIaTool({
               cockpitStore.updateCentralContext({ microHabitoSemanal: e.target.value })
             }
             placeholder={activeRodizio?.microHabitoSugerido}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+            className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
           />
         </div>
       </div>
 
       {/* Prompt gerado */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <Sparkles className="h-3.5 w-3.5 text-teal-700 dark:text-teal-400" />
+      <div className="rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/80 px-4 py-2.5 dark:border-white/[0.07]">
+          <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
+            <Sparkles className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
             <span>
               {pendingSpotsCount > 0
                 ? `Pronto para colar · inclui até 3 pontos cegos pendentes (${pendingSpotsCount} ativos)`
@@ -1008,14 +1008,14 @@ function PromptsIaTool({
           <button
             type="button"
             onClick={handleCopyPrompt}
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-[#0F766E] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#0D655E] dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-[#5EEAD4]"
           >
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'Copiado' : 'Copiar prompt'}
           </button>
         </div>
 
-        <pre className="whitespace-pre-wrap px-4 py-4 font-sans text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+        <pre className="whitespace-pre-wrap px-4 py-4 font-sans text-sm leading-relaxed text-zinc-800 dark:text-[#D1D5DB]">
           {generatedPrompt}
         </pre>
       </div>
@@ -1072,20 +1072,20 @@ function EnsaioMentalTool() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
           Ensaio Mental Pré-Procedimento (3 min)
         </h1>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
           Visualize cada etapa crítica em silêncio antes de calçar a luva estéril.
         </p>
       </div>
 
       {/* Seletor + Cronômetro de 3 min */}
-      <div className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-slate-50/40 p-4 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800 dark:bg-[#111827]/60">
+      <div className="flex flex-col gap-4 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:flex-row sm:items-end sm:justify-between dark:border-white/[0.07] dark:bg-[#15181F]">
         <div className="min-w-0 flex-1">
           <label
             htmlFor="ensaio-proc-select"
-            className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+            className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
           >
             Procedimento
           </label>
@@ -1096,7 +1096,7 @@ function EnsaioMentalTool() {
               setSelectedId(e.target.value);
               handleReset();
             }}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+            className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm font-medium text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
           >
             {ENSAIO_MENTAL_PROCS_DATA.map((p) => (
               <option key={p.id} value={p.id}>
@@ -1111,14 +1111,14 @@ function EnsaioMentalTool() {
             <div
               className={`font-mono text-2xl font-semibold tracking-tight tabular-nums ${
                 secondsLeft === 0
-                  ? 'text-teal-700 dark:text-teal-400'
-                  : 'text-slate-900 dark:text-slate-100'
+                  ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                  : 'text-zinc-900 dark:text-[#F3F4F6]'
               }`}
               aria-live="off"
             >
               {formatMmSs(secondsLeft)}
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
               {secondsLeft === 0 ? 'Ensaio concluído' : running ? 'Em andamento' : 'Cronômetro 3 min'}
             </div>
           </div>
@@ -1130,7 +1130,7 @@ function EnsaioMentalTool() {
                 if (secondsLeft === 0) setSecondsLeft(ENSAIO_DURATION_SEC);
                 setRunning((prev) => !prev);
               }}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-teal-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#0F766E] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0D655E] dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-[#5EEAD4]"
             >
               {running ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               {running ? 'Pausar' : 'Iniciar'}
@@ -1139,7 +1139,7 @@ function EnsaioMentalTool() {
               type="button"
               onClick={handleReset}
               aria-label="Resetar cronômetro"
-              className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-300 dark:hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-lg border border-zinc-200/90 bg-white p-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </button>
@@ -1148,15 +1148,15 @@ function EnsaioMentalTool() {
       </div>
 
       {/* Barra sutil de progresso do timer */}
-      <div className="h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/[0.08]">
         <div
-          className="h-full bg-teal-600 transition-all duration-500 dark:bg-teal-400"
+          className="h-full bg-[#0F766E] transition-all duration-500 dark:bg-[#2DD4BF]"
           style={{ width: `${elapsedPct}%` }}
         />
       </div>
 
       {/* 4 passos estruturados */}
-      <ol className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+      <ol className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
         {ENSAIO_MENTAL_3MIN_PASSOS.map((passo, index) => {
           const isArmadilha = index === 3;
           return (
@@ -1164,8 +1164,8 @@ function EnsaioMentalTool() {
               key={passo.step}
               className={`px-5 py-4 ${
                 isArmadilha
-                  ? 'bg-amber-50/40 dark:bg-amber-950/15'
-                  : 'bg-white dark:bg-[#0b1117]'
+                  ? 'bg-amber-50/45 dark:bg-amber-950/20'
+                  : 'bg-white dark:bg-[#15181F]'
               }`}
             >
               <div className="flex items-start gap-3.5">
@@ -1173,7 +1173,7 @@ function EnsaioMentalTool() {
                   className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-xs font-semibold tabular-nums ${
                     isArmadilha
                       ? 'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/50 dark:text-amber-200'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                      : 'border-zinc-200/90 bg-[#FAFAFA] text-zinc-700 dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB]'
                   }`}
                 >
                   {passo.step}
@@ -1184,15 +1184,15 @@ function EnsaioMentalTool() {
                     className={`text-sm font-semibold ${
                       isArmadilha
                         ? 'text-amber-950 dark:text-amber-200'
-                        : 'text-slate-900 dark:text-slate-100'
+                        : 'text-zinc-900 dark:text-[#F3F4F6]'
                     }`}
                   >
                     {passo.title}
                   </h2>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                     {passo.prompt}
                   </p>
-                  <p className="mt-2.5 text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                  <p className="mt-2.5 text-sm leading-relaxed text-zinc-800 dark:text-[#D1D5DB]">
                     {stepValues[index]}
                   </p>
                 </div>

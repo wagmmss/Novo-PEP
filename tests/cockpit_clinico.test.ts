@@ -25,6 +25,7 @@ import {
   parsePepToAst,
   clearPepAstCache,
   createAstSelectionState,
+  computeAstDisplayLayout,
   evaluateDoseFormula,
   serializeAstToClinicalText,
   type DoseFormulaNode,
@@ -68,6 +69,10 @@ import {
   EMPTY_PATIENT_CONTEXT,
   protocolRequiresWeightCalculation,
   splitGuiaIntoSections,
+  partitionAstIntoSections,
+  applyPatientContextToAstState,
+  serializeProtocolSection,
+  walkInlineNodes,
 } from '../src/data/protocolsRepo.ts';
 import { cockpitStore } from '../src/state/store.ts';
 import { detectPiiIssues, sanitizePiiText } from '../src/utils/piiGuard.ts';
@@ -154,6 +159,45 @@ test('Motor Personalizar: sanitização clínica, cálculo ponderal com tetos ad
     doses: child,
   });
   assert.equal(amoxiField, '5,0');
+
+  // Regressão clínica: Ibuprofeno gotas (100 mg/mL) deve respeitar teto adulto de 40 gotas em 70 kg
+  // mesmo quando o texto adjacente contém "(1 gota por kg de peso; máx 40 gotas)"
+  const ibu15 = resolvePediatricDoseFieldValue({
+    isWeightSourceInput: false,
+    lineContext: 'Dar [ ] gotas (1 gota por kg de peso; máx 40 gotas) por via oral de 8 em 8 horas.',
+    prevLineContext: '2. Ibuprofeno Solução Oral Gotas (100 mg/mL) --- 1 frasco',
+    beforeText: 'Dar ',
+    afterText: ' gotas (1 gota por kg de peso; máx 40 gotas) por via oral de 8 em 8 horas.',
+    placeholder: '...',
+    weightKg: 15,
+    doses: child,
+  });
+  assert.equal(ibu15, '15');
+
+  const ibu70 = resolvePediatricDoseFieldValue({
+    isWeightSourceInput: false,
+    lineContext: 'Dar [ ] gotas (1 gota por kg de peso; máx 40 gotas) por via oral de 8 em 8 horas.',
+    prevLineContext: '2. Ibuprofeno Solução Oral Gotas (100 mg/mL) --- 1 frasco',
+    beforeText: 'Dar ',
+    afterText: ' gotas (1 gota por kg de peso; máx 40 gotas) por via oral de 8 em 8 horas.',
+    placeholder: '...',
+    weightKg: 70,
+    doses: teen,
+  });
+  assert.equal(ibu70, '40');
+
+  // Campo de peso conferido ("pelo peso de [ ] kg") continua espelhando o peso real (70)
+  const weightNote70 = resolvePediatricDoseFieldValue({
+    isWeightSourceInput: false,
+    lineContext: '*(Cálculo conferido pelo peso de [ ] kg na dose de 50 mg/kg/dia).*',
+    prevLineContext: 'Dar [ ] mL',
+    beforeText: '*(Cálculo conferido pelo peso de ',
+    afterText: ' kg na dose de 50 mg/kg/dia).*',
+    placeholder: '...',
+    weightKg: 70,
+    doses: teen,
+  });
+  assert.equal(weightNote70, '70');
 
   // Edição livre com Undo
   const fe0 = createFreeEditState('Texto inicial');
@@ -482,3 +526,99 @@ test('Mundo 2 Store: Logbook 3x (4 papéis + undo), Pontos Cegos anti-PII, Teori
   cockpitStore.deleteR1Milestone(addedMs.id);
   assert.ok(!(cockpitStore.getSnapshot().central6Ano.r1Milestones || []).some((m) => m.id === addedMs.id));
 });
+
+test('AST Editorial & Condicionais: zero órfãos "2.:" nos 88 PEPs, renumeração sequencial ao alternar switches e espelhamento respeitando userEditedNodes', () => {
+  clearPepAstCache();
+
+  // 1) Nenhum dos 88 PEPs pode gerar linha órfã tipo "2.:" ou "3. :"
+  for (const proto of PEP_PROTOCOLS) {
+    const compiled = compileProtocolForDisplay(proto, EMPTY_PATIENT_CONTEXT);
+    for (const blk of compiled.blocks) {
+      assert.ok(
+        !/^\d+\.\s*:?\s*$/m.test(blk.text),
+        `Protocolo ${proto.id} (${blk.id}) gerou item numerado órfão:\n${blk.text}`
+      );
+    }
+  }
+
+  // 2) Protocolo go-4: alternar condicional de profilaxia de Pré-Eclâmpsia renumera itens sem órfãos
+  const go4 = PEP_PROTOCOLS.find((p) => p.id === 'go-4');
+  assert.ok(go4, 'Protocolo go-4 deve existir');
+  const compiledGo4 = compileProtocolForDisplay(go4, EMPTY_PATIENT_CONTEXT);
+  const receitaSec = compiledGo4.sections.find((s) => s.id === 'receita');
+  assert.ok(receitaSec, 'go-4 deve conter seção de receita');
+
+  const peToggle = receitaSec.toggles.find(
+    (t) => t.kind === 'trava' && /pr[ée]-ecl[âa]mpsia/i.test(t.fullLabel)
+  );
+  assert.ok(peToggle, 'Seção receita do go-4 deve expor interruptor condicional de Pré-Eclâmpsia');
+
+  // Switch LIGADO (travaExcluded = false): AAS e Carbonato promovidos a 2. e 3., demais seguem 4., 5.
+  const stateOn = {
+    ...compiledGo4.initialAstState,
+    travaExcluded: { ...compiledGo4.initialAstState.travaExcluded, [peToggle.id]: false },
+  };
+  const textOn = serializeProtocolSection(compiledGo4.ast, stateOn, compiledGo4.clinicalContext, receitaSec);
+  assert.ok(!/^\d+\.\s*:?\s*$/m.test(textOn), 'Não pode haver "2.:" com switch ligado');
+  assert.ok(textOn.includes('2. Ácido Acetilsalicílico'), `AAS deve ser promovido ao item 2:\n${textOn}`);
+  assert.ok(textOn.includes('3. Carbonato de Cálcio'), `Cálcio deve ser promovido ao item 3:\n${textOn}`);
+
+  // Switch DESLIGADO (travaExcluded = true): AAS e Cálcio omitidos e lista renumerada 1, 2, 3...
+  const stateOff = {
+    ...compiledGo4.initialAstState,
+    travaExcluded: { ...compiledGo4.initialAstState.travaExcluded, [peToggle.id]: true },
+  };
+  const textOff = serializeProtocolSection(compiledGo4.ast, stateOff, compiledGo4.clinicalContext, receitaSec);
+  assert.ok(!textOff.includes('Ácido Acetilsalicílico'), 'AAS deve ser omitido com switch desligado');
+  assert.ok(!textOff.includes('Carbonato de Cálcio'), 'Cálcio deve ser omitido com switch desligado');
+
+  const layoutOff = computeAstDisplayLayout(compiledGo4.ast, stateOff, receitaSec.blockIndexSet);
+  const numbersOff = Array.from(layoutOff.renumberedByBlockIndex.values());
+  assert.ok(numbersOff.length >= 2);
+  numbersOff.forEach((n, idx) => {
+    assert.equal(n, idx + 1, 'Itens visíveis devem manter numeração sequencial 1..N');
+  });
+
+  // 3) Particionamento sem sobreposição de índices de bloco
+  const sections = partitionAstIntoSections(compiledGo4.ast, go4);
+  const seenIndices = new Set<number>();
+  for (const sec of sections) {
+    for (const bi of sec.blockIndices) {
+      assert.equal(seenIndices.has(bi), false, `Bloco AST ${bi} duplicado entre seções`);
+      seenIndices.add(bi);
+    }
+  }
+
+  // 4) Espelhamento de contexto do paciente respeita userEditedNodes
+  const pedProto = PEP_PROTOCOLS.find((p) => p.id === 'ped-81') || PEP_PROTOCOLS.find((p) => p.mod_id === 'ped')!;
+  assert.ok(pedProto);
+  const compiledPed = compileProtocolForDisplay(pedProto, EMPTY_PATIENT_CONTEXT);
+  let weightNodeId: string | null = null;
+  for (const blk of compiledPed.ast.blocks) {
+    walkInlineNodes(blk.children, (n) => {
+      if (!weightNodeId && n.kind === 'inline-input' && (n.anthroRole === 'peso' || n.mirrorRole === 'peso')) {
+        weightNodeId = n.id;
+      }
+    });
+  }
+  assert.ok(weightNodeId, 'Protocolo pediátrico deve ter nó de peso espelhável');
+
+  const ctx15 = buildClinicalContext({ pesoKg: '15' }, { modId: pedProto.mod_id });
+  const synced15 = applyPatientContextToAstState(compiledPed.ast, compiledPed.initialAstState, ctx15);
+  assert.equal(synced15.inputValues[weightNodeId], '15');
+
+  // Edição manual no nó trava sobrescrita automática
+  const manuallyEdited = {
+    ...synced15,
+    inputValues: { ...synced15.inputValues, [weightNodeId]: '18,5' },
+    userEditedNodes: { ...synced15.userEditedNodes, [weightNodeId]: true },
+  };
+  const ctx22 = buildClinicalContext({ pesoKg: '22' }, { modId: pedProto.mod_id });
+  const syncedAfterManual = applyPatientContextToAstState(compiledPed.ast, manuallyEdited, ctx22);
+  assert.equal(
+    syncedAfterManual.inputValues[weightNodeId],
+    '18,5',
+    'Valor editado manualmente pelo usuário não pode ser sobrescrito pelo espelhamento automático'
+  );
+});
+

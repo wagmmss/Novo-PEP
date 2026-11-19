@@ -84,7 +84,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-[#0b1117] dark:text-slate-100">
+    <div className="min-h-screen bg-[#FAFAFA] text-zinc-900 dark:bg-[#0F1115] dark:text-[#F3F4F6]">
       <TopBar
         world={world}
         beiraLeitoTab={beiraLeitoTab}
@@ -165,7 +165,7 @@ export function App() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed right-4 bottom-4 z-50 rounded-lg border border-slate-200 bg-slate-900 px-3.5 py-2 text-xs font-medium text-white shadow-lg dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
+          className="fixed right-4 bottom-4 z-50 rounded-lg border border-zinc-200/80 bg-zinc-900 px-3.5 py-2 text-xs font-medium text-white shadow-lg dark:border-white/[0.1] dark:bg-[#1C2029] dark:text-[#F3F4F6]"
         >
           {toastMsg}
         </div>

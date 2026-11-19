@@ -10,11 +10,14 @@ import {
 import {
   parsePepToAst,
   createAstSelectionState,
+  applySmartContextPreselection,
+  formatConditionalToggleLabel,
   serializeAstToClinicalText,
+  type AstSelectionState,
+  type PepDocumentAst,
   type PepInlineNode,
 } from '../engine/pepAst.ts';
 import {
-  extractBodiesFromCustomPep,
   hasEmptyPediatricWeight,
   resolvePediatricDoseFieldValue,
 } from '../engine/personalizar.ts';
@@ -33,16 +36,37 @@ export const EMPTY_PATIENT_CONTEXT: PatientContextInput = {
   igSemanas: '',
 };
 
+export type PepSectionId = 'evolucao' | 'conduta' | 'receita' | 'orientacoes' | 'geral';
+
 export interface CopyablePepBlock {
-  id: 'evolucao' | 'conduta' | 'receita' | 'orientacoes' | 'geral';
+  id: PepSectionId;
   title: string;
   text: string;
+}
+
+export interface PepSectionToggle {
+  kind: 'trava' | 'optional';
+  id: string;
+  label: string;
+  fullLabel: string;
+  defaultActive: boolean;
+}
+
+export interface PepAstSection {
+  id: PepSectionId;
+  title: string;
+  blockIndices: number[];
+  blockIndexSet: Set<number>;
+  toggles: PepSectionToggle[];
 }
 
 export interface CompiledProtocolView {
   needsWeightPersonalization: boolean;
   clinicalContext: ClinicalContext;
   plausibilityAlert: AgeWeightPlausibilityAlert | null;
+  ast: PepDocumentAst;
+  initialAstState: AstSelectionState;
+  sections: PepAstSection[];
   fullText: string;
   blocks: CopyablePepBlock[];
 }
@@ -73,7 +97,10 @@ export const PROTOCOL_BY_TRIGGER = new Map<string, ClinicalProtocolItem>(
 
 export const GLOBAL_SEARCH_INDEX = createClinicalSearchIndex(ALL_PROTOCOLS);
 
-function walkInlineNodes(nodes: readonly PepInlineNode[], visitor: (n: PepInlineNode) => void): void {
+export function walkInlineNodes(
+  nodes: readonly PepInlineNode[],
+  visitor: (n: PepInlineNode) => void
+): void {
   for (const node of nodes) {
     visitor(node);
     if (node.kind === 'optional') {
@@ -86,7 +113,7 @@ function walkInlineNodes(nodes: readonly PepInlineNode[], visitor: (n: PepInline
   }
 }
 
-function isBloodTypeChoiceGroup(options: readonly { rawText: string }[]): boolean {
+export function isBloodTypeChoiceGroup(options: readonly { rawText: string }[]): boolean {
   const normalized = new Set(options.map((o) => o.rawText.trim().toUpperCase()));
   return normalized.has('O+') && normalized.has('A+') && normalized.has('O-');
 }
@@ -102,9 +129,288 @@ export function protocolRequiresWeightCalculation(item: ClinicalProtocolItem): b
   return ast.stats.doseFormulas > 0;
 }
 
+const SECTION_TITLES: Record<PepSectionId, string> = {
+  evolucao: 'Evolução / Admissão',
+  conduta: 'Conduta',
+  receita: 'Prescrição / Receita',
+  orientacoes: 'Orientações / Alta',
+  geral: 'Registro PEP',
+};
+
+const RECEITA_BOUNDARY_REGEX =
+  /^(?:>>\s*|#+\s*)?(?:RECEITA(?:\s+DE\s+ALTA|\s+MÉDICA)?|PRESCRIÇÃO\s+DOMICILIAR|PRESCRIÇÃO\s+DE\s+ALTA|PRESCRIÇÃO\s+MÉDICA\s+AMBULATORIAL|PRESCRIÇÃO\s+AMBULATORIAL)\s*:?/i;
+
+const ORIENTACOES_BOUNDARY_REGEX =
+  /^(?:>>\s*|#+\s*)?(?:ORIENTAÇÕES|SINAIS DE ALARME|RETORNO IMEDIATO|CUIDADOS DOMICILIARES)\b/i;
+
+const CONDUTA_BOUNDARY_REGEX =
+  /^(?:(?:#+\s*|>>\s*)\s*|\d+\.\s*)?(?:5\.\s*AVALIAÇÃO\s*&\s*PLANO\s*\/\s*CONDUTA|(?:PLANO\s*\/\s*CONDUTA|PLANO\s+TERAPÊUTICO|PLANO|CONDUTA|PRESCRIÇÃO(?:\s+HOSPITALAR|\s+INICIAL)?)\s*:?\s*$)/i;
+
+const CONDUTA_HEADING_REGEX =
+  /^(?:#+\s*|>>\s*)(?:PLANO\s*\/\s*CONDUTA|PLANO\s+TERAPÊUTICO|PLANO|CONDUTA|PRESCRIÇÃO)\b/i;
+
+function trimBoundaryEmptyLines(ast: PepDocumentAst, indices: number[]): number[] {
+  let start = 0;
+  let end = indices.length - 1;
+  while (start <= end) {
+    const b = ast.blocks[indices[start]];
+    if (b.kind === 'paragraph' && b.isEmptyLine) start++;
+    else break;
+  }
+  while (end >= start) {
+    const b = ast.blocks[indices[end]];
+    if (b.kind === 'paragraph' && b.isEmptyLine) end--;
+    else break;
+  }
+  return indices.slice(start, end + 1);
+}
+
 /**
- * Compila o texto do PEP em prosa clínica limpa pronta para cópia,
- * aplicando dinamicamente idade, peso (doses ponderais + teto adulto) e gestação/IG.
+ * Particiona os blocos da AST real em seções editoriais independentes (sem duplicação),
+ * extraindo todos os interruptores condicionais e opcionais pertencentes a cada seção.
+ */
+export function partitionAstIntoSections(
+  ast: PepDocumentAst,
+  item: Pick<ClinicalProtocolItem, 'has_receita'>
+): PepAstSection[] {
+  const buckets: Record<PepSectionId, number[]> = {
+    evolucao: [],
+    conduta: [],
+    receita: [],
+    orientacoes: [],
+    geral: [],
+  };
+
+  let currentSection: PepSectionId = 'evolucao';
+
+  for (let i = 0; i < ast.blocks.length; i++) {
+    const block = ast.blocks[i];
+    const trimmed = block.rawLine.trim();
+
+    if (trimmed) {
+      if (RECEITA_BOUNDARY_REGEX.test(trimmed)) {
+        currentSection = 'receita';
+        // Se for apenas o banner "# RECEITA:" / "RECEITA:", não duplicar o título do cartão no corpo
+        if (/^(?:#+\s*|>>\s*)?RECEITA(?:\s+DE\s+ALTA|\s+MÉDICA)?\s*:?\s*$/i.test(trimmed)) {
+          continue;
+        }
+      } else if (
+        ORIENTACOES_BOUNDARY_REGEX.test(trimmed) &&
+        (currentSection === 'receita' || currentSection === 'conduta' || currentSection === 'orientacoes')
+      ) {
+        currentSection = 'orientacoes';
+      } else if (
+        currentSection === 'evolucao' &&
+        !RECEITA_BOUNDARY_REGEX.test(trimmed) &&
+        (CONDUTA_BOUNDARY_REGEX.test(trimmed) || CONDUTA_HEADING_REGEX.test(trimmed))
+      ) {
+        currentSection = 'conduta';
+        if (/^(?:#+\s*|>>\s*)?CONDUTA\s*:?\s*$/i.test(trimmed)) {
+          continue;
+        }
+      }
+    }
+
+    buckets[currentSection].push(i);
+  }
+
+  const orderedIds: PepSectionId[] = ['evolucao', 'conduta', 'receita', 'orientacoes'];
+  const sections: PepAstSection[] = [];
+
+  for (const id of orderedIds) {
+    if (id === 'receita' && item.has_receita === false && buckets[id].length === 0) {
+      continue;
+    }
+    const trimmedIndices = trimBoundaryEmptyLines(ast, buckets[id]);
+    if (trimmedIndices.length === 0) continue;
+
+    const toggles: PepSectionToggle[] = [];
+    const seenToggleIds = new Set<string>();
+
+    for (const bi of trimmedIndices) {
+      const blk = ast.blocks[bi];
+      walkInlineNodes(blk.children, (node) => {
+        if (node.kind === 'trava-alert' && !node.isSafetyWarning) {
+          if (!seenToggleIds.has(node.id)) {
+            seenToggleIds.add(node.id);
+            toggles.push({
+              kind: 'trava',
+              id: node.id,
+              label: formatConditionalToggleLabel(node.label),
+              fullLabel: node.label,
+              defaultActive: !node.defaultExcluded,
+            });
+          }
+        } else if (node.kind === 'optional') {
+          if (!seenToggleIds.has(node.id)) {
+            seenToggleIds.add(node.id);
+            toggles.push({
+              kind: 'optional',
+              id: node.id,
+              label: formatConditionalToggleLabel(node.label),
+              fullLabel: node.label,
+              defaultActive: node.defaultOpen,
+            });
+          }
+        }
+      });
+    }
+
+    sections.push({
+      id,
+      title: SECTION_TITLES[id],
+      blockIndices: trimmedIndices,
+      blockIndexSet: new Set(trimmedIndices),
+      toggles,
+    });
+  }
+
+  if (sections.length === 0 && ast.blocks.length > 0) {
+    const allIndices = trimBoundaryEmptyLines(
+      ast,
+      ast.blocks.map((_, i) => i)
+    );
+    if (allIndices.length > 0) {
+      sections.push({
+        id: 'geral',
+        title: SECTION_TITLES.geral,
+        blockIndices: allIndices,
+        blockIndexSet: new Set(allIndices),
+        toggles: [],
+      });
+    }
+  }
+
+  return sections;
+}
+
+/**
+ * Sincroniza dados do paciente (idade, peso, gestante/IG) nos nós não editados manualmente da AST.
+ */
+export function applyPatientContextToAstState(
+  ast: PepDocumentAst,
+  baseState: AstSelectionState,
+  clinicalContext: ClinicalContext
+): AstSelectionState {
+  const nextState: AstSelectionState = {
+    inputValues: { ...baseState.inputValues },
+    choiceSelections: { ...baseState.choiceSelections },
+    choiceMultiModes: { ...baseState.choiceMultiModes },
+    optionalOpen: { ...baseState.optionalOpen },
+    travaExcluded: { ...baseState.travaExcluded },
+    checkboxStates: { ...baseState.checkboxStates },
+    userEditedNodes: { ...baseState.userEditedNodes },
+  };
+
+  let prevLineContext = '';
+  for (const block of ast.blocks) {
+    const lineContext = block.rawLine || '';
+    walkInlineNodes(block.children, (node) => {
+      if (node.kind === 'inline-input') {
+        if (nextState.userEditedNodes[node.id]) return;
+
+        // Espelhamento de idade
+        if (node.mirrorRole === 'idade') {
+          if (clinicalContext.idadeText) {
+            nextState.inputValues[node.id] = clinicalContext.idadeText;
+          } else {
+            delete nextState.inputValues[node.id];
+          }
+          return;
+        }
+
+        // Espelhamento de IG (semanas)
+        if (
+          node.obstetricRole === 'ig-def-w' ||
+          node.obstetricRole === 'ig-dum-w' ||
+          node.obstetricRole === 'ig-usg-w'
+        ) {
+          if (clinicalContext.igWeeks !== null) {
+            nextState.inputValues[node.id] = String(Math.floor(clinicalContext.igWeeks));
+          } else {
+            delete nextState.inputValues[node.id];
+          }
+          return;
+        }
+
+        // Espelhamento de peso e recálculo ponderal inline
+        const isWeightSource = node.anthroRole === 'peso' || node.mirrorRole === 'peso';
+        if (isWeightSource) {
+          if (clinicalContext.weightKg !== null) {
+            nextState.inputValues[node.id] = String(clinicalContext.weightKg).replace('.', ',');
+          } else {
+            delete nextState.inputValues[node.id];
+          }
+          return;
+        }
+
+        if (clinicalContext.weightKg !== null && clinicalContext.weightDoses) {
+          const autoDose = resolvePediatricDoseFieldValue({
+            isWeightSourceInput: false,
+            lineContext,
+            prevLineContext,
+            beforeText: node.beforeText,
+            afterText: node.afterText,
+            placeholder: node.placeholder,
+            weightKg: clinicalContext.weightKg,
+            doses: clinicalContext.weightDoses,
+          });
+          if (autoDose !== null) {
+            nextState.inputValues[node.id] = autoDose;
+          }
+        } else {
+          // Se o peso foi limpo, limpar doses pediátricas auto-preenchidas (preservando defaults fixos)
+          const probe = resolvePediatricDoseFieldValue({
+            isWeightSourceInput: false,
+            lineContext,
+            prevLineContext,
+            beforeText: node.beforeText,
+            afterText: node.afterText,
+            placeholder: node.placeholder,
+            weightKg: 15,
+            doses: buildClinicalContext({ pesoKg: '15' }, { modId: 'ped' }).weightDoses!,
+          });
+          if (probe !== null) {
+            delete nextState.inputValues[node.id];
+          }
+        }
+      } else if (node.kind === 'choice-group') {
+        const currentSel = nextState.choiceSelections[node.id] || [];
+        if (currentSel.length === 0 && node.options.length > 0) {
+          if (!isBloodTypeChoiceGroup(node.options)) {
+            nextState.choiceSelections[node.id] = [0];
+          }
+        }
+      }
+    });
+
+    if (lineContext.trim()) {
+      prevLineContext = lineContext;
+    }
+  }
+
+  applySmartContextPreselection(ast, nextState, clinicalContext);
+  return nextState;
+}
+
+/**
+ * Serializa uma seção específica da AST para texto clínico limpo pronto para colar no prontuário.
+ */
+export function serializeProtocolSection(
+  ast: PepDocumentAst,
+  state: AstSelectionState,
+  clinicalContext: ClinicalContext,
+  section: PepAstSection
+): string {
+  return serializeAstToClinicalText(ast, state, clinicalContext, {
+    keepEmptyBrackets: true,
+    includeDoseFormulaCalc: true,
+    blockSubsetIndices: section.blockIndexSet,
+  }).replace(/\*(\([^*\n]+\)\.?)\*/g, '$1');
+}
+
+/**
+ * Compila o protocolo completo em AST particionada + estado inicial + blocos copiáveis sincronizados.
  */
 export function compileProtocolForDisplay(
   item: ClinicalProtocolItem,
@@ -134,151 +440,28 @@ export function compileProtocolForDisplay(
     clinicalContext.weightKg
   );
 
-  const state = createAstSelectionState(ast, clinicalContext);
+  const baseState = createAstSelectionState(ast, clinicalContext);
+  const initialAstState = applyPatientContextToAstState(ast, baseState, clinicalContext);
+  const sections = partitionAstIntoSections(ast, item);
 
-  // 1) Injetar IG semanas e cálculos ponderais inline em campos de dose pediátrica
-  let prevLineContext = '';
-  for (const block of ast.blocks) {
-    const lineContext = block.rawLine || '';
-    walkInlineNodes(block.children, (node) => {
-      if (node.kind === 'inline-input') {
-        if (
-          clinicalContext.igWeeks !== null &&
-          (node.obstetricRole === 'ig-def-w' ||
-            node.obstetricRole === 'ig-dum-w' ||
-            node.obstetricRole === 'ig-usg-w')
-        ) {
-          state.inputValues[node.id] = String(Math.floor(clinicalContext.igWeeks));
-          return;
-        }
-
-        if (clinicalContext.weightKg !== null && clinicalContext.weightDoses) {
-          const isWeightSource = node.anthroRole === 'peso' || node.mirrorRole === 'peso';
-          if (isWeightSource) {
-            state.inputValues[node.id] = String(clinicalContext.weightKg).replace('.', ',');
-          } else {
-            const autoDose = resolvePediatricDoseFieldValue({
-              isWeightSourceInput: false,
-              lineContext,
-              prevLineContext,
-              beforeText: node.beforeText,
-              afterText: node.afterText,
-              placeholder: node.placeholder,
-              weightKg: clinicalContext.weightKg,
-              doses: clinicalContext.weightDoses,
-            });
-            if (autoDose !== null) {
-              state.inputValues[node.id] = autoDose;
-            }
-          }
-        }
-      } else if (node.kind === 'choice-group') {
-        const currentSel = state.choiceSelections[node.id] || [];
-        if (currentSel.length === 0 && node.options.length > 0) {
-          // Nunca fabricar tipagem sanguínea; para demais grupos sem * default, usa a 1ª redação clínica padrão
-          if (!isBloodTypeChoiceGroup(node.options)) {
-            state.choiceSelections[node.id] = [0];
-          }
-        }
-      }
-    });
-    if (lineContext.trim()) {
-      prevLineContext = lineContext;
-    }
-  }
-
-  // 2) Serializar AST para texto clínico limpo
-  const compiledRaw = serializeAstToClinicalText(ast, state, clinicalContext, {
-    keepEmptyBrackets: true,
-    includeDoseFormulaCalc: true,
-  }).replace(/\*(\([^*\n]+\)\.?)\*/g, '$1');
-
-  const bodies = extractBodiesFromCustomPep(compiledRaw, {
-    has_receita: item.has_receita,
-  });
-
-  // 3) Montar blocos copiáveis sem duplicação de texto entre Conduta, Receita e Orientações
-  const blocks = splitIntoCleanBlocks(bodies);
+  const blocks: CopyablePepBlock[] = sections
+    .map((sec) => ({
+      id: sec.id,
+      title: sec.title,
+      text: serializeProtocolSection(ast, initialAstState, clinicalContext, sec),
+    }))
+    .filter((b) => b.text.trim().length > 0);
 
   return {
     needsWeightPersonalization,
     clinicalContext,
     plausibilityAlert,
+    ast,
+    initialAstState,
+    sections,
     fullText: blocks.map((b) => b.text).join('\n\n'),
     blocks,
   };
-}
-
-function trimSectionOverlap(source: string, markerRegex: RegExp): string {
-  const m = source.match(markerRegex);
-  if (!m || m.index === undefined) return source.trim();
-  return source.slice(0, m.index).trim();
-}
-
-function splitIntoCleanBlocks(bodies: ReturnType<typeof extractBodiesFromCustomPep>): CopyablePepBlock[] {
-  const blocks: CopyablePepBlock[] = [];
-
-  const evolucao = bodies.evolucao_body.trim();
-  const hasReceita = Boolean(bodies.receita_body.trim());
-  const hasOrientacoes = Boolean(bodies.orientacoes_body.trim());
-
-  const receitaMarker =
-    /^(?:RECEITA(?:\s+DE\s+ALTA|\s+MÉDICA)?|PRESCRIÇÃO DOMICILIAR|PRESCRIÇÃO DE ALTA|PRESCRIÇÃO MÉDICA AMBULATORIAL|PRESCRIÇÃO AMBULATORIAL)\s*:?/im;
-  const orientacoesMarker =
-    /^(?:ORIENTAÇÕES|SINAIS DE ALARME|RETORNO IMEDIATO|CUIDADOS DOMICILIARES)/im;
-
-  let conduta = bodies.conduta_body.trim();
-  if (conduta && conduta === evolucao) {
-    conduta = '';
-  }
-  if (conduta && hasReceita) {
-    conduta = trimSectionOverlap(conduta, receitaMarker);
-  }
-  if (conduta && hasOrientacoes) {
-    conduta = trimSectionOverlap(conduta, orientacoesMarker);
-  }
-
-  const receita = (hasOrientacoes ? bodies.receita_meds_body : bodies.receita_body).trim();
-  const orientacoes = bodies.orientacoes_body.trim();
-
-  if (evolucao) {
-    blocks.push({
-      id: 'evolucao',
-      title: 'Evolução / Admissão',
-      text: evolucao,
-    });
-  }
-  if (conduta) {
-    blocks.push({
-      id: 'conduta',
-      title: 'Conduta',
-      text: conduta,
-    });
-  }
-  if (receita) {
-    blocks.push({
-      id: 'receita',
-      title: 'Prescrição / Receita',
-      text: receita,
-    });
-  }
-  if (orientacoes) {
-    blocks.push({
-      id: 'orientacoes',
-      title: 'Orientações / Alta',
-      text: orientacoes,
-    });
-  }
-
-  if (blocks.length === 0 && bodies.pep_body.trim()) {
-    blocks.push({
-      id: 'geral',
-      title: 'Registro PEP',
-      text: bodies.pep_body.trim(),
-    });
-  }
-
-  return blocks;
 }
 
 export interface GuiaSection {

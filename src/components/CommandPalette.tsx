@@ -84,7 +84,7 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/45 px-3 pt-[10vh] backdrop-blur-[1px]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 px-3 pt-[10vh] backdrop-blur-[1px]"
       role="dialog"
       aria-modal="true"
       aria-label="Busca global de protocolos e Pré-Porta"
@@ -93,23 +93,23 @@ export function CommandPalette({
       }}
       onKeyDown={handleKeyDown}
     >
-      <div className="w-full max-w-xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#111827]">
-        <div className="flex items-center gap-2.5 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <Search className="h-4 w-4 shrink-0 text-slate-400" />
+      <div className="w-full max-w-xl overflow-hidden rounded-xl border border-zinc-200/80 bg-white shadow-2xl dark:border-white/[0.08] dark:bg-[#15181F]">
+        <div className="flex items-center gap-2.5 border-b border-zinc-200/80 px-4 py-3 dark:border-white/[0.07]">
+          <Search className="h-4 w-4 shrink-0 text-zinc-400 dark:text-[#9CA3AF]" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar protocolo, sintoma, CID-10 ou cartão Pré-Porta..."
-            className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="w-full bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280]"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
               aria-label="Limpar busca"
-              className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -118,7 +118,7 @@ export function CommandPalette({
 
         <div ref={listRef} className="max-h-[58vh] overflow-y-auto py-1.5">
           {results.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="px-4 py-10 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
               Nenhum protocolo ou cartão Pré-Porta encontrado para “{query}”.
             </div>
           ) : (
@@ -137,19 +137,19 @@ export function CommandPalette({
                   }}
                   className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors ${
                     isSelected
-                      ? 'bg-teal-50/80 text-slate-950 dark:bg-teal-950/40 dark:text-slate-50'
-                      : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50'
+                      ? 'bg-teal-50/75 text-zinc-950 dark:bg-teal-500/12 dark:text-[#F3F4F6]'
+                      : 'text-zinc-700 hover:bg-zinc-100/70 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]'
                   }`}
                 >
                   <div className="flex min-w-0 items-start gap-2.5">
                     {isHab ? (
-                      <Stethoscope className="mt-0.5 h-4 w-4 shrink-0 text-teal-700 dark:text-teal-400" />
+                      <Stethoscope className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E] dark:text-[#2DD4BF]" />
                     ) : (
-                      <FileText className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                      <FileText className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400 dark:text-[#6B7280]" />
                     )}
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium">{item.title}</div>
-                      <div className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                      <div className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-zinc-500 dark:text-[#9CA3AF]">
                         <span>{MOD_SHORT_LABEL[item.mod_id]}</span>
                         <span>·</span>
                         <span className="truncate">{item.category}</span>
@@ -162,14 +162,14 @@ export function CommandPalette({
                         {matchedSymptom && (
                           <>
                             <span>·</span>
-                            <span className="text-teal-700 dark:text-teal-400">{matchedSymptom}</span>
+                            <span className="text-[#0F766E] dark:text-[#2DD4BF]">{matchedSymptom}</span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
                   {isSelected && (
-                    <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-teal-700 dark:text-teal-400" />
+                    <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-[#0F766E] dark:text-[#2DD4BF]" />
                   )}
                 </button>
               );
@@ -177,7 +177,7 @@ export function CommandPalette({
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-200 px-4 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+        <div className="flex items-center justify-between border-t border-zinc-200/80 px-4 py-2 text-[11px] text-zinc-500 dark:border-white/[0.07] dark:text-[#9CA3AF]">
           <span>↑↓ navegar · Enter abrir · Esc fechar</span>
           <span className="font-mono">{items.length} itens indexados</span>
         </div>

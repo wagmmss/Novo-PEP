@@ -203,7 +203,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
   };
 
   return (
-    <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-white dark:bg-[#0b1117]">
+    <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
       <div className="mx-auto max-w-5xl space-y-10 px-4 py-6 sm:px-8 sm:py-8">
         {/* ================================================================
             BLOCO 1 — PRAZOS & CICLOS R1
@@ -213,11 +213,11 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             <div>
               <h1
                 id="r1-prazos-heading"
-                className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100"
+                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
               >
                 Prazos & Ciclos R1
               </h1>
-              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
                 Marcos do internato e provas de residência com contagem regressiva automática.
               </p>
             </div>
@@ -236,7 +236,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                   setFormOpen(true);
                 }
               }}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:border-teal-600/50 hover:text-teal-800 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200 dark:hover:border-teal-400/50 dark:hover:text-teal-300"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-200/80 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40 dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"
             >
               <Plus className="h-3.5 w-3.5" />
               Novo prazo
@@ -246,17 +246,17 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
           {formOpen && (
             <form
               onSubmit={handleSaveMilestone}
-              className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-[#111827]/70"
+              className="space-y-3 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <span className="text-xs font-semibold text-zinc-700 dark:text-[#D1D5DB]">
                   {editingId ? 'Editar prazo' : 'Adicionar prazo R1'}
                 </span>
                 <button
                   type="button"
                   onClick={resetMilestoneForm}
                   aria-label="Fechar formulário de prazo"
-                  className="rounded p-1 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:text-[#6B7280] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -266,7 +266,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                 <div className="sm:col-span-2">
                   <label
                     htmlFor="ms-titulo"
-                    className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+                    className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
                   >
                     Marco / evento
                   </label>
@@ -277,14 +277,14 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                     value={msTitulo}
                     onChange={(e) => setMsTitulo(e.target.value)}
                     placeholder="Ex.: Envio do currículo USP-SP"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="ms-data"
-                    className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+                    className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
                   >
                     Data
                   </label>
@@ -294,14 +294,14 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                     required
                     value={msDateIso}
                     onChange={(e) => setMsDateIso(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-mono text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 font-mono text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="ms-cat"
-                    className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+                    className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
                   >
                     Categoria
                   </label>
@@ -309,7 +309,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                     id="ms-cat"
                     value={msCategoria}
                     onChange={(e) => setMsCategoria(e.target.value as R1Milestone['categoria'])}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                   >
                     {MILESTONE_CATEGORIES.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -324,7 +324,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                 <div className="flex-1">
                   <label
                     htmlFor="ms-nota"
-                    className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
+                    className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
                   >
                     Observação (opcional)
                   </label>
@@ -334,7 +334,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                     value={msNota}
                     onChange={(e) => setMsNota(e.target.value)}
                     placeholder="Ex.: Conferir PDF único e autenticidade das declarações."
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                   />
                 </div>
 
@@ -342,13 +342,13 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                   <button
                     type="button"
                     onClick={resetMilestoneForm}
-                    className="rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-slate-800"
+                    className="rounded-lg px-3 py-2 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+                    className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#0F766E] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0D655E] dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-[#5EEAD4]"
                   >
                     <Check className="h-3.5 w-3.5" />
                     {editingId ? 'Salvar alterações' : 'Adicionar'}
@@ -358,9 +358,9 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             </form>
           )}
 
-          <div className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+          <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
             {milestones.length === 0 ? (
-              <div className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+              <div className="px-4 py-6 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
                 Nenhum prazo cadastrado. Clique em &ldquo;Novo prazo&rdquo; para adicionar.
               </div>
             ) : (
@@ -373,15 +373,15 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        <span className="text-sm font-medium text-zinc-900 dark:text-[#F3F4F6]">
                           {milestone.titulo}
                         </span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                        <span className="text-xs text-zinc-400 dark:text-[#6B7280]">
                           {MILESTONE_CAT_LABEL[milestone.categoria]}
                         </span>
                       </div>
                       {milestone.nota && (
-                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                           {milestone.nota}
                         </p>
                       )}
@@ -395,12 +395,12 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                               ? 'text-red-600 dark:text-red-400'
                               : status === 'soon'
                                 ? 'text-amber-700 dark:text-amber-400'
-                                : 'text-teal-700 dark:text-teal-400'
+                                : 'text-[#0F766E] dark:text-[#2DD4BF]'
                           }`}
                         >
                           {label}
                         </div>
-                        <div className="font-mono text-[11px] tabular-nums text-slate-400 dark:text-slate-500">
+                        <div className="font-mono text-[11px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
                           {formatDateBr(milestone.dateIso)}
                         </div>
                       </div>
@@ -410,7 +410,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                           type="button"
                           onClick={() => openEditMilestone(milestone)}
                           aria-label={`Editar ${milestone.titulo}`}
-                          className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                          className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:text-[#6B7280] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -421,7 +421,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                             onNotify('Prazo removido.');
                           }}
                           aria-label={`Remover ${milestone.titulo}`}
-                          className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800 dark:hover:text-red-400"
+                          className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-red-600 dark:text-[#6B7280] dark:hover:bg-[#1C2029] dark:hover:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -439,28 +439,28 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
            ================================================================ */}
         <section
           aria-labelledby="matriz-curriculo-heading"
-          className="space-y-5 border-t border-slate-200 pt-8 dark:border-slate-800"
+          className="space-y-5 border-t border-zinc-200/80 pt-8 dark:border-white/[0.07]"
         >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2
                 id="matriz-curriculo-heading"
-                className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100"
+                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
               >
                 Matriz Unificada de Currículo
               </h2>
-              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
                 Preencha uma vez e acompanhe a pontuação simultânea em USP-SP, USP-RP e UNICAMP.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
               <div
                 role="group"
                 aria-label="Conceito ENAMED"
-                className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-800 dark:bg-[#111827]"
+                className="inline-flex items-center rounded-lg border border-zinc-200/80 bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.08] dark:bg-[#15181F]"
               >
-                <span className="px-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                <span className="px-2 text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]">
                   ENAMED
                 </span>
                 {([3, 4, 5] as const).map((concept) => {
@@ -473,8 +473,8 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                       onClick={() => cockpitStore.setCurriculumEnamedConcept(concept)}
                       className={`whitespace-nowrap rounded-md px-2 py-1 font-mono text-xs font-medium tabular-nums transition-colors ${
                         active
-                          ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+                          ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                          : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
                       }`}
                     >
                       {concept} ({mult})
@@ -486,10 +486,10 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
               <button
                 type="button"
                 onClick={handleCopyScoreMarkdown}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:bg-slate-800"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-200/80 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:bg-zinc-50 dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
               >
                 {copiedScore ? (
-                  <Check className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                  <Check className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
                 ) : (
                   <Copy className="h-3.5 w-3.5" />
                 )}
@@ -506,34 +506,34 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
               return (
                 <div
                   key={bankId}
-                  className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#111827]"
+                  className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300">
+                    <span className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-[#D1D5DB]">
                       {summary.sigla}
                     </span>
-                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                    <span className="text-[11px] text-zinc-400 dark:text-[#6B7280]">
                       {cfg.pesoNotaFinal}
                     </span>
                   </div>
 
                   <div className="mt-2 flex items-baseline gap-1.5">
-                    <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-slate-100">
+                    <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums text-zinc-900 dark:text-[#F3F4F6]">
                       {formatScore(summary.finalScore, summary.escalaMax)}
                     </span>
-                    <span className="font-mono text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                    <span className="font-mono text-xs tabular-nums text-zinc-400 dark:text-[#6B7280]">
                       / {summary.escalaMax}
                     </span>
                   </div>
 
-                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-white/[0.08]">
                     <div
-                      className="h-full rounded-full bg-teal-600 transition-all duration-300 dark:bg-teal-400"
+                      className="h-full rounded-full bg-[#0F766E] transition-all duration-300 dark:bg-[#2DD4BF]"
                       style={{ width: `${summary.pct}%` }}
                     />
                   </div>
 
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                     <span className="font-mono tabular-nums">
                       Faltam {formatScore(summary.missingToMax, summary.escalaMax)} pts
                     </span>
@@ -545,14 +545,14 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                   </div>
 
                   {showBlocks && (
-                    <ul className="mt-3 space-y-1 border-t border-slate-100 pt-2.5 dark:border-slate-800">
+                    <ul className="mt-3 space-y-1 border-t border-zinc-100 pt-2.5 dark:border-white/[0.06]">
                       {summary.blocks.map((blk) => (
                         <li
                           key={blk.blockId}
-                          className="flex items-center justify-between gap-2 text-[11px] text-slate-600 dark:text-slate-400"
+                          className="flex items-center justify-between gap-2 text-[11px] text-zinc-600 dark:text-[#9CA3AF]"
                         >
                           <span className="truncate">{blk.label}</span>
-                          <span className="shrink-0 font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                          <span className="shrink-0 font-mono tabular-nums text-zinc-700 dark:text-[#D1D5DB]">
                             {formatScore(blk.cappedScore, summary.escalaMax)}/{blk.maxPoints}
                           </span>
                         </li>
@@ -564,11 +564,11 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             })}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500 dark:text-[#9CA3AF]">
             <button
               type="button"
               onClick={() => setShowBlocks((prev) => !prev)}
-              className="inline-flex items-center gap-1 font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+              className="inline-flex items-center gap-1 font-medium text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]"
             >
               {showBlocks ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               {showBlocks ? 'Ocultar detalhamento por bloco' : 'Ver detalhamento por bloco'}
@@ -583,15 +583,15 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
           </div>
 
           {/* Filtros de categoria e comprovante */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-wrap items-center gap-1">
               <button
                 type="button"
                 onClick={() => setCatFilter('todas')}
                 className={`shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   catFilter === 'todas'
-                    ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                    ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                    : 'text-zinc-600 hover:bg-zinc-200/60 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]'
                 }`}
               >
                 Todas
@@ -607,8 +607,8 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                   onClick={() => setCatFilter(catId)}
                   className={`shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                     catFilter === catId
-                      ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                      ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                      : 'text-zinc-600 hover:bg-zinc-200/60 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]'
                   }`}
                 >
                   {meta.label}
@@ -616,10 +616,13 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
               ))}
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1 border-t border-zinc-200/70 pt-2 dark:border-white/[0.06]">
+              <span className="mr-1 text-[11px] font-medium text-zinc-400 dark:text-[#6B7280]">
+                Comprovante:
+              </span>
               {(
                 [
-                  { id: 'todos', label: 'Todos status' },
+                  { id: 'todos', label: 'Todos' },
                   { id: 'falta', label: 'Falta' },
                   { id: 'em_andamento', label: 'Em andamento' },
                   { id: 'pdf_pronto', label: 'Comprovado' },
@@ -631,8 +634,8 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                   onClick={() => setProofFilter(st.id)}
                   className={`whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                     proofFilter === st.id
-                      ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-zinc-900 text-white dark:bg-[#F3F4F6] dark:text-[#0F1115]'
+                      : 'text-zinc-500 hover:bg-zinc-200/60 hover:text-zinc-800 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]'
                   }`}
                 >
                   {st.label}
@@ -642,9 +645,9 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
           </div>
 
           {/* Tabela / Lista limpa dos 20 itens */}
-          <div className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+          <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
             {filteredCatalog.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
                 Nenhum item de currículo corresponde aos filtros selecionados.
               </div>
             ) : (
@@ -665,22 +668,22 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                     className="flex flex-col gap-3 px-4 py-3.5 lg:flex-row lg:items-center lg:justify-between"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      <div className="text-sm font-medium text-zinc-900 dark:text-[#F3F4F6]">
                         {item.titulo}
                       </div>
-                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                         {item.descricao}
                       </p>
 
                       {/* Pontos por banca em texto tabular discreto */}
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
-                        <span className={pts.usp_sp > 0 ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-[11px] tabular-nums text-zinc-500 dark:text-[#9CA3AF]">
+                        <span className={pts.usp_sp > 0 ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]' : ''}>
                           USP-SP: {item.rules.usp_sp ? `${formatScore(pts.usp_sp, 100)}/${item.rules.usp_sp.maxItemPoints}` : '—'}
                         </span>
-                        <span className={pts.usp_rp > 0 ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
+                        <span className={pts.usp_rp > 0 ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]' : ''}>
                           USP-RP: {item.rules.usp_rp ? `${formatScore(pts.usp_rp, 10)}/${item.rules.usp_rp.maxItemPoints}` : '—'}
                         </span>
-                        <span className={pts.unicamp > 0 ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
+                        <span className={pts.unicamp > 0 ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]' : ''}>
                           UNICAMP: {item.rules.unicamp ? `${formatScore(pts.unicamp, 100)}/${item.rules.unicamp.maxItemPoints}` : '—'}
                         </span>
                       </div>
@@ -699,15 +702,15 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                           aria-pressed={val > 0}
                           className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                             val > 0
-                              ? 'border-teal-700 bg-teal-700 text-white dark:border-teal-500 dark:bg-teal-500 dark:text-slate-950'
-                              : 'border-slate-200 bg-white text-slate-600 hover:border-teal-600/50 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300'
+                              ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                              : 'border-zinc-200/90 bg-white text-zinc-600 hover:border-[#0F766E]/40 dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40'
                           }`}
                         >
                           {val > 0 && <Check className="h-3.5 w-3.5" />}
                           {val > 0 ? 'Concluído' : 'Marcar'}
                         </button>
                       ) : (
-                        <div className="inline-flex items-center rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]">
+                        <div className="inline-flex items-center rounded-md border border-zinc-200/90 bg-white dark:border-white/[0.09] dark:bg-[#0F1115]">
                           <button
                             type="button"
                             onClick={() =>
@@ -717,11 +720,11 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                             }
                             disabled={val <= 0}
                             aria-label={`Diminuir ${item.titulo}`}
-                            className="p-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
+                            className="p-1.5 text-zinc-600 hover:bg-zinc-100 disabled:opacity-30 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="min-w-[4.5rem] px-2 text-center font-mono text-xs font-medium tabular-nums text-slate-900 dark:text-slate-100">
+                          <span className="min-w-[4.5rem] px-2 text-center font-mono text-xs font-medium tabular-nums text-zinc-900 dark:text-[#F3F4F6]">
                             {val}
                             {item.unitLabel ? ` ${item.unitLabel}` : ''}
                           </span>
@@ -734,7 +737,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                             }
                             disabled={val >= item.maxInput}
                             aria-label={`Aumentar ${item.titulo}`}
-                            className="p-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
+                            className="p-1.5 text-zinc-600 hover:bg-zinc-100 disabled:opacity-30 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -749,12 +752,12 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
                             proofStatus: e.target.value as ProofStatus,
                           })
                         }
-                        className={`rounded-md border px-2 py-1.5 text-xs font-medium outline-none focus:border-teal-600 dark:focus:border-teal-400 ${
+                        className={`rounded-md border px-2 py-1.5 text-xs font-medium outline-none focus:border-[#0F766E] dark:focus:border-[#2DD4BF] ${
                           proofStatus === 'pdf_pronto'
-                            ? 'border-teal-600/40 bg-teal-50/70 text-teal-800 dark:border-teal-500/40 dark:bg-teal-950/40 dark:text-teal-300'
+                            ? 'border-[#0F766E]/35 bg-[#0F766E]/[0.08] text-[#0F766E] dark:border-[#2DD4BF]/35 dark:bg-[#2DD4BF]/[0.10] dark:text-[#2DD4BF]'
                             : proofStatus === 'em_andamento'
                               ? 'border-amber-300 bg-amber-50/60 text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200'
-                              : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-400'
+                              : 'border-zinc-200/90 bg-white text-zinc-600 dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#9CA3AF]'
                         }`}
                       >
                         {PROOF_OPTIONS.map((opt) => (

@@ -19,23 +19,28 @@ import {
 import type { ClinicalProtocolItem } from '../data/clinical_data.ts';
 import { resolveClinicalLinksForPep } from '../data/clinical_links.ts';
 import {
+  applyPatientContextToAstState,
   compileProtocolForDisplay,
   EMPTY_PATIENT_CONTEXT,
   GLOBAL_SEARCH_INDEX,
   PEP_PROTOCOLS,
   PROTOCOL_BY_ID,
   protocolRequiresWeightCalculation,
+  serializeProtocolSection,
   splitGuiaIntoSections,
-  type CopyablePepBlock,
+  walkInlineNodes,
   type PatientContextInput,
+  type PepAstSection,
 } from '../data/protocolsRepo.ts';
+import type { AstSelectionState, ChoiceGroupNode, InlineInputNode } from '../engine/pepAst.ts';
 import { searchClinicalProtocols } from '../engine/search.ts';
 import { classifyGuiaSectionTheme, renderGuiaSectionBodyHtml } from '../engine/diretrizes.ts';
 import { cockpitStore } from '../state/store.ts';
 import { copyToClipboard } from '../utils/clipboard.ts';
+import { PepBlockRenderer } from './PepBlockRenderer.tsx';
 import type { QuickCaptureRequest } from './QuickCaptureModal.tsx';
 
-type AreaFilter = 'todos' | 'go' | 'upa' | 'enf' | 'ped' | 'favoritos';
+type AreaFilter = 'todos' | 'go' | 'upa' | 'enf' | 'ped';
 
 const AREA_FILTERS: Array<{ id: AreaFilter; label: string }> = [
   { id: 'todos', label: 'Todos' },
@@ -43,7 +48,6 @@ const AREA_FILTERS: Array<{ id: AreaFilter; label: string }> = [
   { id: 'upa', label: 'UPA' },
   { id: 'enf', label: 'Enfermaria' },
   { id: 'ped', label: 'Pediatria' },
-  { id: 'favoritos', label: 'Favoritos' },
 ];
 
 const MOD_LABELS: Record<ClinicalProtocolItem['mod_id'], string> = {
@@ -60,6 +64,37 @@ const MOD_TO_RODIZIO: Record<string, string> = {
   enf: 'cm',
   ped: 'ped',
 };
+
+const SUBCAT_DISPLAY_MAP: Record<string, string> = {
+  'Enfermaria Puerperio': 'Enfermaria Puerpério',
+  'Ambulatorio GO': 'Ambulatório GO',
+  'Procedimentos Ambulatoriais': 'Procedimentos Ambulatoriais',
+  'Centro Obstetrico Cirurgias': 'Centro Obstétrico & Cirurgias',
+  'Emergencias GO': 'Emergências GO',
+  'Triagem e Ficha Mestra': 'Triagem e Ficha Mestra',
+  'Infeccoes e Vias Aereas': 'Infecções e Vias Aéreas',
+  'Gastrointestinal e Abdominal': 'Gastrointestinal e Abdominal',
+  'Cardiovascular e Respiratorio': 'Cardiovascular e Respiratório',
+  'Neurologia e Saude Mental': 'Neurologia e Saúde Mental',
+  'Nefrologia Urologia e Dermatologia': 'Nefrologia, Urologia e Dermatologia',
+  'Emergencias Graves e Procedimentos': 'Emergências Graves e Procedimentos',
+  'Admissao e Avaliacao Inicial': 'Admissão e Avaliação Inicial',
+  'Evolucao Diaria SOAP': 'Evolução Diária SOAP',
+  'Passagem de Plantao e Rounds': 'Passagem de Plantão e Rounds',
+  'Altas e Desospitalizacao': 'Altas e Desospitalização',
+  'Declaracao de Obito e Cuidados': 'Declaração de Óbito e Cuidados',
+  'Ficha Mestra e Triagem': 'Ficha Mestra e Triagem',
+  'Puericultura e Ambulatorio': 'Puericultura e Ambulatório',
+  'Respiratorio e IVAS': 'Respiratório e IVAS',
+  'Gastrointestinal e Desidratacao': 'Gastrointestinal e Desidratação',
+  'Febre e Infeccoes Sistemicas': 'Febre e Infecções Sistêmicas',
+};
+
+function getSubcategoryLabel(item: ClinicalProtocolItem): string {
+  const withSubcat = item as ClinicalProtocolItem & { subcat?: string };
+  const raw = (withSubcat.subcat || item.category || MOD_LABELS[item.mod_id] || 'Geral').trim();
+  return SUBCAT_DISPLAY_MAP[raw] || raw;
+}
 
 interface ProtocolosViewProps {
   selectedId: string | null;
@@ -84,11 +119,12 @@ export function ProtocolosView({
 }: ProtocolosViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<AreaFilter>('todos');
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [patient, setPatient] = useState<PatientContextInput>(EMPTY_PATIENT_CONTEXT);
   const [personalizeOpen, setPersonalizeOpen] = useState(false);
   const [guiaOpen, setGuiaOpen] = useState(false);
 
-  // Estado local de edição opcional por bloco (limpa ao trocar de protocolo ou limpar paciente)
+  // Estado interativo da AST real + modo de edição livre opcional por bloco
   const [editingBlockIds, setEditingBlockIds] = useState<Record<string, boolean>>({});
   const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -103,36 +139,67 @@ export function ProtocolosView({
     return PEP_PROTOCOLS[0];
   }, [selectedId]);
 
-  const mainRef = useRef<HTMLElement | null>(null);
-
-  // Auto-expandir Personalizar paciente apenas quando o protocolo exige cálculo ponderal/pediátrico
-  useEffect(() => {
-    const requiresWeight = protocolRequiresWeightCalculation(activeProtocol);
-    setPersonalizeOpen(requiresWeight);
-    setGuiaOpen(false);
-    setEditingBlockIds({});
-    setEditedTexts({});
-    setCopiedKey(null);
-    mainRef.current?.scrollTo({ top: 0 });
-  }, [activeProtocol]);
-
-  const filteredProtocols = useMemo(() => {
-    const base =
-      areaFilter === 'todos'
-        ? PEP_PROTOCOLS
-        : areaFilter === 'favoritos'
-          ? PEP_PROTOCOLS.filter((p) => favoriteSet.has(p.id))
-          : PEP_PROTOCOLS.filter((p) => p.mod_id === areaFilter);
-
-    const q = searchQuery.trim();
-    if (!q) return base;
-    return searchClinicalProtocols(GLOBAL_SEARCH_INDEX, base, q, base.length).map((r) => r.item);
-  }, [areaFilter, favoriteSet, searchQuery]);
-
   const compiled = useMemo(
     () => compileProtocolForDisplay(activeProtocol, patient),
     [activeProtocol, patient]
   );
+
+  const [astState, setAstState] = useState<AstSelectionState>(() => compiled.initialAstState);
+  const prevProtocolIdRef = useRef<string>(activeProtocol.id);
+  const mainRef = useRef<HTMLElement | null>(null);
+
+  // Reinicia AST limpa ao trocar de protocolo; ao mudar apenas dados do paciente, sincroniza sem sobrescrever edições manuais
+  useEffect(() => {
+    if (prevProtocolIdRef.current !== activeProtocol.id) {
+      prevProtocolIdRef.current = activeProtocol.id;
+      const requiresWeight = protocolRequiresWeightCalculation(activeProtocol);
+      setPersonalizeOpen(requiresWeight);
+      setGuiaOpen(false);
+      setEditingBlockIds({});
+      setEditedTexts({});
+      setCopiedKey(null);
+      setAstState(compiled.initialAstState);
+      mainRef.current?.scrollTo({ top: 0 });
+    } else {
+      setAstState((prev) =>
+        applyPatientContextToAstState(compiled.ast, prev, compiled.clinicalContext)
+      );
+    }
+  }, [activeProtocol, compiled]);
+
+  const filteredProtocols = useMemo(() => {
+    let base =
+      areaFilter === 'todos'
+        ? PEP_PROTOCOLS
+        : PEP_PROTOCOLS.filter((p) => p.mod_id === areaFilter);
+
+    if (onlyFavorites) {
+      base = base.filter((p) => favoriteSet.has(p.id));
+    }
+
+    const q = searchQuery.trim();
+    if (!q) return base;
+    return searchClinicalProtocols(GLOBAL_SEARCH_INDEX, base, q, base.length).map((r) => r.item);
+  }, [areaFilter, onlyFavorites, favoriteSet, searchQuery]);
+
+  // Agrupamento por subcategoria preservando a ordem natural / de relevância
+  const groupedProtocols = useMemo(() => {
+    const groups: Array<{ key: string; label: string; items: ClinicalProtocolItem[] }> = [];
+    const byKey = new Map<string, { key: string; label: string; items: ClinicalProtocolItem[] }>();
+
+    for (const item of filteredProtocols) {
+      const label = getSubcategoryLabel(item);
+      const key = `${item.mod_id}::${label}`;
+      let grp = byKey.get(key);
+      if (!grp) {
+        grp = { key, label, items: [] };
+        byKey.set(key, grp);
+        groups.push(grp);
+      }
+      grp.items.push(item);
+    }
+    return groups;
+  }, [filteredProtocols]);
 
   const clinicalLinks = useMemo(
     () => resolveClinicalLinksForPep(activeProtocol),
@@ -155,8 +222,103 @@ export function ProtocolosView({
 
   const isFavorite = favoriteSet.has(activeProtocol.id);
 
-  const getBlockText = (block: CopyablePepBlock): string => {
-    return editedTexts[block.id] !== undefined ? editedTexts[block.id] : block.text;
+  // Handlers de interação direta na AST (espelhamento + condicionais + escolhas)
+  const handleAstInputChange = (node: InlineInputNode, value: string) => {
+    setAstState((prev) => {
+      const nextInputValues = { ...prev.inputValues, [node.id]: value };
+      const nextUserEdited = { ...prev.userEditedNodes, [node.id]: true };
+
+      // Espelhamento entre campos com mesmo mirrorRole (ex: Nome, Idade, Peso)
+      if (node.mirrorRole) {
+        for (const blk of compiled.ast.blocks) {
+          walkInlineNodes(blk.children, (other) => {
+            if (
+              other.kind === 'inline-input' &&
+              other.id !== node.id &&
+              other.mirrorRole === node.mirrorRole &&
+              !prev.userEditedNodes[other.id]
+            ) {
+              nextInputValues[other.id] = value;
+            }
+          });
+        }
+      }
+
+      return {
+        ...prev,
+        inputValues: nextInputValues,
+        userEditedNodes: nextUserEdited,
+      };
+    });
+
+    // Sincronizar Peso/Idade digitado inline com a faixa do paciente para recalcular doses automaticamente
+    if (node.anthroRole === 'peso' || node.mirrorRole === 'peso') {
+      setPatient((p) => (p.pesoKg === value ? p : { ...p, pesoKg: value }));
+    } else if (node.mirrorRole === 'idade') {
+      setPatient((p) => (p.idade === value ? p : { ...p, idade: value }));
+    }
+  };
+
+  const handleAstChoiceSelect = (group: ChoiceGroupNode, nextIndices: number[]) => {
+    setAstState((prev) => ({
+      ...prev,
+      choiceSelections: {
+        ...prev.choiceSelections,
+        [group.id]: nextIndices,
+      },
+      userEditedNodes: {
+        ...prev.userEditedNodes,
+        [group.id]: true,
+      },
+    }));
+  };
+
+  const handleToggleTrava = (travaId: string) => {
+    setAstState((prev) => ({
+      ...prev,
+      travaExcluded: {
+        ...prev.travaExcluded,
+        [travaId]: !prev.travaExcluded[travaId],
+      },
+      userEditedNodes: {
+        ...prev.userEditedNodes,
+        [travaId]: true,
+      },
+    }));
+  };
+
+  const handleToggleOptional = (optionalId: string) => {
+    setAstState((prev) => ({
+      ...prev,
+      optionalOpen: {
+        ...prev.optionalOpen,
+        [optionalId]: !prev.optionalOpen[optionalId],
+      },
+      userEditedNodes: {
+        ...prev.userEditedNodes,
+        [optionalId]: true,
+      },
+    }));
+  };
+
+  const handleToggleCheckbox = (blockId: string) => {
+    setAstState((prev) => ({
+      ...prev,
+      checkboxStates: {
+        ...prev.checkboxStates,
+        [blockId]: !(prev.checkboxStates[blockId] ?? true),
+      },
+    }));
+  };
+
+  const getSectionSerializedText = (section: PepAstSection): string => {
+    return serializeProtocolSection(compiled.ast, astState, compiled.clinicalContext, section);
+  };
+
+  const getBlockText = (section: PepAstSection): string => {
+    return editedTexts[section.id] !== undefined
+      ? editedTexts[section.id]
+      : getSectionSerializedText(section);
   };
 
   const handleCopyBlock = async (key: string, text: string) => {
@@ -172,49 +334,76 @@ export function ProtocolosView({
   };
 
   const handleCopyAll = async () => {
-    const combined = compiled.blocks.map((b) => getBlockText(b)).join('\n\n');
+    const combined = compiled.sections
+      .map((sec) => getBlockText(sec))
+      .filter((t) => t.trim().length > 0)
+      .join('\n\n');
     await handleCopyBlock('all', combined);
   };
 
   const handleClearPatient = () => {
     setPatient(EMPTY_PATIENT_CONTEXT);
     setEditedTexts({});
+    const fresh = compileProtocolForDisplay(activeProtocol, EMPTY_PATIENT_CONTEXT);
+    setAstState(fresh.initialAstState);
   };
 
   return (
     <div className="mx-auto flex h-[calc(100vh-3.25rem)] w-full overflow-hidden">
-      {/* COLUNA ESQUERDA: Lista de Protocolos (300px em >=1024px; 100% em <1024px quando lista ativa) */}
+      {/* COLUNA ESQUERDA: Lista de Protocolos agrupada por subcategoria (320px em >=1024px) */}
       <aside
         aria-label="Lista de protocolos clínicos"
         className={`${
           mobileShowDetail ? 'hidden lg:flex' : 'flex'
-        } h-full w-full shrink-0 flex-col border-r border-slate-200/90 bg-slate-50/40 lg:w-[300px] dark:border-slate-800 dark:bg-[#0d141c]`}
+        } h-full w-full shrink-0 flex-col border-r border-zinc-200/80 bg-[#FAFAFA] lg:w-[320px] dark:border-white/[0.07] dark:bg-[#0F1115]`}
       >
-        <div className="space-y-2.5 border-b border-slate-200/80 p-3 dark:border-slate-800">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filtrar protocolo, queixa ou CID..."
-              aria-label="Filtrar protocolos"
-              className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pr-7 pl-8 text-xs text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-800 dark:bg-[#0b1117] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                aria-label="Limpar filtro"
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
+        <div className="space-y-2.5 border-b border-zinc-200/80 p-3 dark:border-white/[0.07]">
+          {/* Busca + botão discreto de estrela (Favoritos) */}
+          <div className="flex items-center gap-1.5">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 dark:text-[#9CA3AF]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filtrar protocolo, queixa ou CID..."
+                aria-label="Filtrar protocolos"
+                className="w-full rounded-lg border border-zinc-200/90 bg-white py-1.5 pr-7 pl-8 text-xs text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Limpar filtro"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 dark:hover:text-[#F3F4F6]"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setOnlyFavorites((v) => !v)}
+              aria-pressed={onlyFavorites}
+              aria-label="Filtrar favoritos"
+              title={onlyFavorites ? 'Mostrando apenas favoritos' : 'Filtrar favoritos'}
+              className={`inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                onlyFavorites
+                  ? 'border-amber-400/70 bg-amber-50 text-amber-500 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-400'
+                  : 'border-zinc-200/90 bg-white text-zinc-400 hover:border-zinc-300 hover:text-zinc-700 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#9CA3AF] dark:hover:border-white/[0.15] dark:hover:text-[#F3F4F6]'
+              }`}
+            >
+              <Star className={`h-3.5 w-3.5 ${onlyFavorites ? 'fill-current' : ''}`} />
+            </button>
           </div>
 
-          {/* Filtros rápidos por área */}
-          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filtrar por área">
+          {/* Filtros de área em 1 linha limpa sem quebrar */}
+          <div
+            className="flex items-center justify-between gap-0.5"
+            role="group"
+            aria-label="Filtrar por área"
+          >
             {AREA_FILTERS.map((f) => {
               const active = areaFilter === f.id;
               return (
@@ -223,14 +412,13 @@ export function ProtocolosView({
                   type="button"
                   onClick={() => setAreaFilter(f.id)}
                   aria-pressed={active}
-                  className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                  className={`flex-1 whitespace-nowrap rounded-md px-1.5 py-1 text-center text-[11px] font-medium transition-colors ${
                     active
-                      ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                      : 'text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                      ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                      : 'text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]'
                   }`}
                 >
                   {f.label}
-                  {f.id === 'favoritos' && favoriteIds.length > 0 ? ` (${favoriteIds.length})` : ''}
                 </button>
               );
             })}
@@ -238,89 +426,97 @@ export function ProtocolosView({
         </div>
 
         {/* Contador discreto */}
-        <div className="flex items-center justify-between border-b border-slate-200/60 px-3 py-1.5 text-[11px] text-slate-500 dark:border-slate-800/70 dark:text-slate-400">
-          <span>
+        <div className="flex items-center justify-between border-b border-zinc-200/60 px-3 py-1.5 text-[11px] text-zinc-500 dark:border-white/[0.06] dark:text-[#9CA3AF]">
+          <span className="tabular-nums">
             {filteredProtocols.length}{' '}
             {filteredProtocols.length === 1 ? 'protocolo' : 'protocolos'}
+            {onlyFavorites ? ' · favoritos' : ''}
           </span>
-          {areaFilter !== 'todos' && (
+          {(areaFilter !== 'todos' || onlyFavorites) && (
             <button
               type="button"
-              onClick={() => setAreaFilter('todos')}
-              className="text-teal-700 hover:underline dark:text-teal-400"
+              onClick={() => {
+                setAreaFilter('todos');
+                setOnlyFavorites(false);
+              }}
+              className="text-[#0F766E] hover:underline dark:text-[#2DD4BF]"
             >
               Ver todos
             </button>
           )}
         </div>
 
-        {/* Lista limpa */}
-        <div className="flex-1 overflow-y-auto py-1">
+        {/* Lista agrupada por subcategoria com micro-cabeçalhos sticky */}
+        <div className="flex-1 overflow-y-auto">
           {filteredProtocols.length === 0 ? (
-            <div className="px-4 py-10 text-center text-xs text-slate-500 dark:text-slate-400">
-              {areaFilter === 'favoritos'
-                ? 'Nenhum protocolo favoritado ainda.'
+            <div className="px-4 py-10 text-center text-xs text-zinc-500 dark:text-[#9CA3AF]">
+              {onlyFavorites
+                ? 'Nenhum protocolo favoritado neste filtro.'
                 : 'Nenhum protocolo encontrado.'}
             </div>
           ) : (
-            filteredProtocols.map((item) => {
-              const isSelected = item.id === activeProtocol.id;
-              const isFav = favoriteSet.has(item.id);
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onSelectProtocol(item.id)}
-                  className={`group flex w-full items-start justify-between gap-2 border-b border-slate-100/80 px-3 py-2.5 text-left transition-colors dark:border-slate-800/50 ${
-                    isSelected
-                      ? 'bg-teal-50/70 text-slate-950 dark:bg-teal-950/35 dark:text-slate-50'
-                      : 'text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800/50'
-                  }`}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div
-                      className={`truncate text-[13px] leading-snug ${
-                        isSelected ? 'font-semibold text-teal-900 dark:text-teal-200' : 'font-medium'
+            groupedProtocols.map((group) => (
+              <div key={group.key}>
+                <div className="sticky top-0 z-10 border-b border-zinc-200/60 bg-[#FAFAFA]/95 px-3 py-1.5 text-[10px] font-semibold tracking-[0.06em] text-zinc-500 uppercase backdrop-blur-xs dark:border-white/[0.05] dark:bg-[#0F1115]/95 dark:text-[#9CA3AF]">
+                  {group.label}
+                </div>
+                {group.items.map((item) => {
+                  const isSelected = item.id === activeProtocol.id;
+                  const isFav = favoriteSet.has(item.id);
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => onSelectProtocol(item.id)}
+                      className={`group flex w-full items-start justify-between gap-2.5 border-b border-zinc-200/40 px-3 py-2.5 text-left transition-colors dark:border-white/[0.04] ${
+                        isSelected
+                          ? 'bg-teal-50/75 text-zinc-950 dark:bg-teal-500/12 dark:text-[#F3F4F6]'
+                          : 'text-zinc-700 hover:bg-zinc-100/80 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]/70'
                       }`}
                     >
-                      {item.title}
-                    </div>
-                    <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-slate-500 dark:text-slate-400">
-                      <span>{MOD_LABELS[item.mod_id]}</span>
-                      <span>·</span>
-                      <span className="truncate">{item.category}</span>
-                      {item.cid10 && (
-                        <>
-                          <span>·</span>
-                          <span className="font-mono text-[10px]">{item.cid10}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  {isFav && (
-                    <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
-                  )}
-                </button>
-              );
-            })
+                      <span
+                        className={`line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug ${
+                          isSelected
+                            ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]'
+                            : 'font-medium'
+                        }`}
+                      >
+                        {item.title}
+                      </span>
+
+                      <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
+                        {item.cid10 && (
+                          <span className="font-mono text-[10px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
+                            {item.cid10}
+                          </span>
+                        )}
+                        {isFav && (
+                          <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))
           )}
         </div>
       </aside>
 
-      {/* COLUNA DIREITA: Documento Único Editorial (max-w-3xl centrado) */}
+      {/* COLUNA DIREITA: Documento Único Editorial (max-w-4xl centrado) */}
       <main
         ref={mainRef}
         className={`${
           mobileShowDetail ? 'block' : 'hidden lg:block'
-        } h-full flex-1 overflow-y-auto bg-white dark:bg-[#0b1117]`}
+        } h-full flex-1 overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]`}
       >
-        <div className="mx-auto max-w-3xl px-4 py-5 sm:px-7 sm:py-7">
+        <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8 sm:py-7">
           {/* Botão Voltar em meia tela / tablet (< 1024px) */}
           <div className="mb-3 lg:hidden">
             <button
               type="button"
               onClick={onBackToList}
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Protocolos
@@ -328,13 +524,13 @@ export function ProtocolosView({
           </div>
 
           {/* Cabeçalho Editorial do Protocolo */}
-          <header className="border-b border-slate-200 pb-5 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <span className="font-medium text-slate-700 dark:text-slate-300">
+          <header className="border-b border-zinc-200/80 pb-5 dark:border-white/[0.07]">
+            <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-[#9CA3AF]">
+              <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
                 {MOD_LABELS[activeProtocol.mod_id]}
               </span>
               <span>·</span>
-              <span>{activeProtocol.category}</span>
+              <span>{getSubcategoryLabel(activeProtocol)}</span>
               {activeProtocol.cid10 && (
                 <>
                   <span>·</span>
@@ -352,7 +548,7 @@ export function ProtocolosView({
             </div>
 
             <div className="mt-1.5 flex items-start justify-between gap-3">
-              <h1 className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl dark:text-slate-50">
+              <h1 className="text-xl font-bold tracking-tight text-zinc-950 sm:text-2xl dark:text-[#F3F4F6]">
                 {activeProtocol.title}
               </h1>
               <button
@@ -363,7 +559,7 @@ export function ProtocolosView({
                 }}
                 aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar protocolo'}
                 title={isFavorite ? 'Remover dos favoritos' : 'Favoritar protocolo'}
-                className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-200/60 hover:text-zinc-700 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
               >
                 <Star
                   className={`h-4 w-4 ${
@@ -378,7 +574,7 @@ export function ProtocolosView({
               <button
                 type="button"
                 onClick={handleCopyAll}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-teal-300"
               >
                 {copiedKey === 'all' ? (
                   <>
@@ -399,8 +595,8 @@ export function ProtocolosView({
                 aria-expanded={personalizeOpen}
                 className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
                   personalizeOpen || hasPatientValues
-                    ? 'border-teal-600/40 bg-teal-50/70 text-teal-800 dark:border-teal-400/40 dark:bg-teal-950/35 dark:text-teal-300'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-[#0b1117] dark:text-slate-300 dark:hover:bg-slate-800/70'
+                    ? 'border-[#0F766E]/40 bg-teal-50/70 text-[#0F766E] dark:border-[#2DD4BF]/35 dark:bg-teal-500/12 dark:text-[#2DD4BF]'
+                    : 'border-zinc-200/90 bg-white text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]'
                 }`}
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -412,9 +608,9 @@ export function ProtocolosView({
                   type="button"
                   onClick={() => onOpenPrePorta(linkedPrePorta.id)}
                   title={`Pré-Porta: ${linkedPrePorta.title.replace(/^[^\wÀ-ÿ]+/, '')}`}
-                  className="inline-flex max-w-[260px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-[#0b1117] dark:text-slate-300 dark:hover:bg-slate-800/70"
+                  className="inline-flex max-w-[260px] items-center gap-1.5 rounded-lg border border-zinc-200/90 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
                 >
-                  <Stethoscope className="h-3.5 w-3.5 shrink-0 text-teal-700 dark:text-teal-400" />
+                  <Stethoscope className="h-3.5 w-3.5 shrink-0 text-[#0F766E] dark:text-[#2DD4BF]" />
                   <span className="truncate">
                     Pré-Porta: {linkedPrePorta.title.replace(/^[^\wÀ-ÿ]+/, '')}
                   </span>
@@ -431,7 +627,7 @@ export function ProtocolosView({
                       defaultRodizio: MOD_TO_RODIZIO[activeProtocol.mod_id],
                     })
                   }
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Logbook
@@ -445,7 +641,7 @@ export function ProtocolosView({
                       defaultRodizio: MOD_TO_RODIZIO[activeProtocol.mod_id],
                     })
                   }
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Ponto Cego
@@ -455,12 +651,12 @@ export function ProtocolosView({
 
             {/* Faixa horizontal compacta: Personalização Dinâmica do Paciente */}
             {personalizeOpen && (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-[#111827]">
+              <div className="mt-4 rounded-lg border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
                 <div className="flex flex-wrap items-end gap-3">
-                  <div className="w-24">
+                  <div className="w-28">
                     <label
                       htmlFor="pt-idade"
-                      className="mb-1 block text-[11px] font-medium text-slate-500 dark:text-slate-400"
+                      className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
                     >
                       Idade
                     </label>
@@ -470,14 +666,14 @@ export function ProtocolosView({
                       value={patient.idade}
                       onChange={(e) => setPatient((p) => ({ ...p, idade: e.target.value }))}
                       placeholder="Ex: 5a / 8m"
-                      className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                      className="w-full rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
                   </div>
 
                   <div className="w-24">
                     <label
                       htmlFor="pt-peso"
-                      className="mb-1 block text-[11px] font-medium text-slate-500 dark:text-slate-400"
+                      className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
                     >
                       Peso (kg)
                     </label>
@@ -488,11 +684,11 @@ export function ProtocolosView({
                       value={patient.pesoKg}
                       onChange={(e) => setPatient((p) => ({ ...p, pesoKg: e.target.value }))}
                       placeholder="Ex: 14"
-                      className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                      className="w-full rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
                   </div>
 
-                  <label className="flex h-[30px] cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <label className="flex h-[30px] cursor-pointer items-center gap-1.5 text-xs font-medium text-zinc-700 dark:text-[#D1D5DB]">
                     <input
                       type="checkbox"
                       checked={patient.gestante}
@@ -503,7 +699,7 @@ export function ProtocolosView({
                           igSemanas: e.target.checked ? p.igSemanas : '',
                         }))
                       }
-                      className="h-3.5 w-3.5 rounded border-slate-300 accent-teal-700 dark:accent-teal-400"
+                      className="h-3.5 w-3.5 rounded border-zinc-300 accent-[#0F766E] dark:accent-[#2DD4BF]"
                     />
                     Gestante
                   </label>
@@ -512,7 +708,7 @@ export function ProtocolosView({
                     <div className="w-24">
                       <label
                         htmlFor="pt-ig"
-                        className="mb-1 block text-[11px] font-medium text-slate-500 dark:text-slate-400"
+                        className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
                       >
                         IG (sem)
                       </label>
@@ -529,7 +725,7 @@ export function ProtocolosView({
                           }))
                         }
                         placeholder="Ex: 32"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                        className="w-full rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                       />
                     </div>
                   )}
@@ -538,7 +734,7 @@ export function ProtocolosView({
                     <button
                       type="button"
                       onClick={handleClearPatient}
-                      className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-md px-2.5 text-xs font-medium text-slate-500 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                      className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-md px-2.5 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                     >
                       <X className="h-3.5 w-3.5" />
                       Limpar
@@ -552,8 +748,8 @@ export function ProtocolosView({
                     role="alert"
                     className={`mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs ${
                       compiled.plausibilityAlert.severity === 'critical'
-                        ? 'border-red-200 bg-red-50/80 text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200'
-                        : 'border-amber-200 bg-amber-50/80 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200'
+                        ? 'border-red-200 bg-red-50/80 text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200'
+                        : 'border-amber-200 bg-amber-50/80 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200'
                     }`}
                   >
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -566,9 +762,9 @@ export function ProtocolosView({
 
                 {/* Resumo rápido de doses ponderais calculadas + alertas de teto adulto */}
                 {compiled.clinicalContext.weightDoses && (
-                  <div className="mt-3 border-t border-slate-200/80 pt-2.5 dark:border-slate-800">
-                    <div className="mb-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                  <div className="mt-3 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">
+                    <div className="mb-1.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                      <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
                         Doses ponderais para{' '}
                         <span className="font-mono">
                           {String(compiled.clinicalContext.weightDoses.weightKg).replace('.', ',')} kg
@@ -582,7 +778,7 @@ export function ProtocolosView({
                           key={doseItem.drug}
                           className="flex items-baseline justify-between gap-2 py-0.5"
                         >
-                          <span className="truncate text-slate-600 dark:text-slate-400">
+                          <span className="truncate text-zinc-600 dark:text-[#9CA3AF]">
                             {doseItem.drug.split('(')[0].trim()}
                           </span>
                           <span
@@ -591,7 +787,7 @@ export function ProtocolosView({
                                 ? 'text-red-700 dark:text-red-400'
                                 : doseItem.ceilingHit
                                   ? 'text-amber-700 dark:text-amber-400'
-                                  : 'text-slate-900 dark:text-slate-100'
+                                  : 'text-zinc-900 dark:text-[#F3F4F6]'
                             }`}
                           >
                             {doseItem.formattedDose.split('|')[0].trim()}
@@ -606,28 +802,30 @@ export function ProtocolosView({
             )}
           </header>
 
-          {/* BLOCOS COPIÁVEIS DO PEP */}
+          {/* BLOCOS INTERATIVOS E COPIÁVEIS DO PEP (AST REAL) */}
           <div className="mt-6 space-y-6">
-            {compiled.blocks.map((block) => {
-              const isEditing = Boolean(editingBlockIds[block.id]);
-              const isEdited = editedTexts[block.id] !== undefined && editedTexts[block.id] !== block.text;
-              const currentText = getBlockText(block);
-              const isCopied = copiedKey === block.id;
+            {compiled.sections.map((section) => {
+              const isEditing = Boolean(editingBlockIds[section.id]);
+              const serializedText = getSectionSerializedText(section);
+              const isEdited =
+                editedTexts[section.id] !== undefined && editedTexts[section.id] !== serializedText;
+              const currentText = getBlockText(section);
+              const isCopied = copiedKey === section.id;
 
               return (
                 <section
-                  key={block.id}
-                  aria-label={block.title}
-                  className="rounded-lg border border-slate-200/90 bg-white dark:border-slate-800 dark:bg-[#0f1620]"
+                  key={section.id}
+                  aria-label={section.title}
+                  className="rounded-lg border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5 dark:border-slate-800/80">
+                  <div className="flex items-center justify-between gap-2 border-b border-zinc-200/70 px-4 py-2.5 dark:border-white/[0.06]">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xs font-semibold tracking-wide text-slate-700 uppercase dark:text-slate-300">
-                        {block.title}
+                      <h2 className="text-xs font-semibold tracking-wide text-zinc-700 uppercase dark:text-[#D1D5DB]">
+                        {section.title}
                       </h2>
                       {isEdited && (
-                        <span className="text-[11px] text-teal-700 dark:text-teal-400">
-                          · Editado
+                        <span className="text-[11px] text-[#0F766E] dark:text-[#2DD4BF]">
+                          · Editado livremente
                         </span>
                       )}
                     </div>
@@ -639,12 +837,12 @@ export function ProtocolosView({
                           onClick={() =>
                             setEditedTexts((prev) => {
                               const next = { ...prev };
-                              delete next[block.id];
+                              delete next[section.id];
                               return next;
                             })
                           }
-                          title="Restaurar texto original do protocolo"
-                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                          title="Restaurar sincronização automática do protocolo"
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                         >
                           <RotateCcw className="h-3 w-3" />
                           Restaurar
@@ -653,16 +851,22 @@ export function ProtocolosView({
 
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
+                          if (!isEditing && editedTexts[section.id] === undefined) {
+                            setEditedTexts((prev) => ({
+                              ...prev,
+                              [section.id]: serializedText,
+                            }));
+                          }
                           setEditingBlockIds((prev) => ({
                             ...prev,
-                            [block.id]: !prev[block.id],
-                          }))
-                        }
+                            [section.id]: !prev[section.id],
+                          }));
+                        }}
                         className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
                           isEditing
-                            ? 'bg-slate-200/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                            ? 'bg-zinc-200/80 text-zinc-900 dark:bg-[#1C2029] dark:text-[#F3F4F6]'
+                            : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]'
                         }`}
                       >
                         <Edit3 className="h-3 w-3" />
@@ -671,11 +875,11 @@ export function ProtocolosView({
 
                       <button
                         type="button"
-                        onClick={() => handleCopyBlock(block.id, currentText)}
+                        onClick={() => handleCopyBlock(section.id, currentText)}
                         className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                           isCopied
-                            ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-slate-950'
-                            : 'border border-slate-200 bg-white text-slate-700 hover:border-teal-600/50 hover:text-teal-800 dark:border-slate-700 dark:bg-[#0b1117] dark:text-slate-200 dark:hover:border-teal-400/50 dark:hover:text-teal-300'
+                            ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                            : 'border border-zinc-200/90 bg-white text-zinc-700 hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]'
                         }`}
                       >
                         {isCopied ? (
@@ -693,26 +897,38 @@ export function ProtocolosView({
                     </div>
                   </div>
 
-                  <div className="p-4">
-                    {isEditing ? (
+                  {isEditing ? (
+                    <div className="p-4">
                       <textarea
                         value={currentText}
                         onChange={(e) =>
                           setEditedTexts((prev) => ({
                             ...prev,
-                            [block.id]: e.target.value,
+                            [section.id]: e.target.value,
                           }))
                         }
                         rows={Math.min(24, Math.max(5, currentText.split('\n').length + 1))}
-                        aria-label={`Editar ${block.title}`}
-                        className="w-full resize-y rounded-md border border-teal-600/40 bg-slate-50/50 p-3 font-sans text-[14px] leading-relaxed text-slate-900 outline-none focus:border-teal-600 dark:border-teal-400/40 dark:bg-[#0b1117] dark:text-slate-100 dark:focus:border-teal-400"
+                        aria-label={`Editar ${section.title}`}
+                        className="w-full resize-y rounded-md border border-[#0F766E]/40 bg-[#FAFAFA] p-3 font-sans text-[14px] leading-relaxed text-zinc-900 outline-none focus:border-[#0F766E] dark:border-[#2DD4BF]/40 dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                       />
-                    ) : (
-                      <div className="whitespace-pre-wrap text-[14px] leading-[1.68] text-slate-800 dark:text-slate-200">
-                        {currentText}
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : isEdited ? (
+                    <div className="px-5 py-4 whitespace-pre-wrap text-[14px] leading-[1.68] text-zinc-800 dark:text-[#D1D5DB]">
+                      {currentText}
+                    </div>
+                  ) : (
+                    <PepBlockRenderer
+                      ast={compiled.ast}
+                      section={section}
+                      state={astState}
+                      clinicalContext={compiled.clinicalContext}
+                      onInputChange={handleAstInputChange}
+                      onChoiceSelect={handleAstChoiceSelect}
+                      onToggleTrava={handleToggleTrava}
+                      onToggleOptional={handleToggleOptional}
+                      onToggleCheckbox={handleToggleCheckbox}
+                    />
+                  )}
                 </section>
               );
             })}
@@ -720,26 +936,26 @@ export function ProtocolosView({
 
           {/* DIRETRIZES & FUNDAMENTAÇÃO CLÍNICA (Colapsável fechada por padrão) */}
           {guiaSections.length > 0 && (
-            <section className="mt-8 border-t border-slate-200 pt-5 dark:border-slate-800">
+            <section className="mt-8 border-t border-zinc-200/80 pt-5 dark:border-white/[0.07]">
               <button
                 type="button"
                 onClick={() => setGuiaOpen((v) => !v)}
                 aria-expanded={guiaOpen}
-                className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
+                className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left transition-colors hover:bg-zinc-100/80 dark:hover:bg-[#15181F]"
               >
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-teal-700 dark:text-teal-400" />
-                  <span className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <BookOpen className="h-4 w-4 text-[#0F766E] dark:text-[#2DD4BF]" />
+                  <span className="font-display text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
                     Diretrizes &amp; Fundamentação Clínica
                   </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                  <span className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
                     ({guiaSections.length} {guiaSections.length === 1 ? 'seção' : 'seções'})
                   </span>
                 </div>
                 {guiaOpen ? (
-                  <ChevronDown className="h-4 w-4 text-slate-400" />
+                  <ChevronDown className="h-4 w-4 text-zinc-400" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                  <ChevronRight className="h-4 w-4 text-zinc-400" />
                 )}
               </button>
 
@@ -754,19 +970,19 @@ export function ProtocolosView({
                         key={`${idx}-${sec.title}`}
                         className={
                           isDanger
-                            ? 'rounded-lg border border-amber-200/90 bg-amber-50/40 p-4 dark:border-amber-900/50 dark:bg-amber-950/20'
+                            ? 'rounded-lg border border-amber-200/90 bg-amber-50/40 p-4 dark:border-amber-500/25 dark:bg-amber-500/10'
                             : 'space-y-2'
                         }
                       >
                         <div className="flex items-baseline justify-between gap-2">
-                          <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                          <h3 className="text-sm font-semibold text-zinc-950 dark:text-[#F3F4F6]">
                             {cleanTitle}
                           </h3>
                           <span
                             className={`shrink-0 text-[11px] font-medium ${
                               isDanger
                                 ? 'text-amber-800 dark:text-amber-300'
-                                : 'text-slate-400 dark:text-slate-500'
+                                : 'text-zinc-400 dark:text-[#9CA3AF]'
                             }`}
                           >
                             {meta.tag}
