@@ -1243,10 +1243,10 @@ function Plano6AnoTool({
             return (
               <label
                 key={item.id}
-                className="flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-zinc-50/70 dark:hover:bg-[#1C2029]/60"
+                className="relative flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-zinc-50/70 dark:hover:bg-[#1C2029]/60"
               >
                 <span
-                  className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${
+                  className={`relative mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${
                     checked
                       ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
                       : 'border-zinc-300 bg-white dark:border-white/[0.18] dark:bg-[#0F1115]'

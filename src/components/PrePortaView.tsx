@@ -384,9 +384,9 @@ export function PrePortaView({
                         const checked = Boolean(checks[it.id]);
                         return (
                           <li key={it.id}>
-                            <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-snug">
+                            <label className="relative flex cursor-pointer items-start gap-2.5 text-sm leading-snug">
                               <span
-                                className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                                className={`relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                                   checked
                                     ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
                                     : 'border-zinc-300 bg-white dark:border-white/[0.18] dark:bg-[#0F1115]'
