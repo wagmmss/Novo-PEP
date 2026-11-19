@@ -1,0 +1,77 @@
+# Atendimento de Pronto Atendimento - Crise Convulsiva e Estado de Mal Epiléptico
+**Categoria:** Neurologia e Saude Mental  
+**Atalho:** `;convulsao`  
+**Gravidade:** Emergência (Vermelho)  
+**CID-10:** G40.9 / G41.9  
+
+---
+
+## 📋 Snippet para Prontuário Eletrônico (PEP)
+
+```text
+# IDENTIFICAÇÃO:
+ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso estimado: [ ] kg.
+Comorbidades: [+ *Hígido(a) / [ ]].
+Alergias: [*Nega / Sim: [ ]].
+# HISTÓRICO CONVULSIVO: [Epilepsia conhecida sob tratamento prévio / Primeiro episódio convulsivo da vida / Histórico de etilismo crônico].
+
+# QP:
+- [Queixa principal] há [ ] [hora(s) / dia(s)].
+
+# HMA:
+Trazido após crise convulsiva generalizada testemunhada, caracterizada por abalos tônico-clônicos nos quatro membros, versão ocular, sialorreia, mordedura de borda lateral da língua e perda súbita da consciência, com duração estimada de [ ] minutos e liberação esfincteriana [ausente / urinária / fecal]. Fator desencadeante provável: [abandono recente de anticonvulsivantes / febre alta prévia / abstinência alcoólica aguda há [ ] horas / privação grave de sono / uso de substâncias ilícitas / TCE recente / não identificado].
+
+# EXAME FÍSICO:
+- SINAIS VITAIS: PA: [ ]x[ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% | Tax: [ ] °C.
+- GLICEMIA CAPILAR (HGT) DE ADMISSÃO: [ ] mg/dL (AFASTADA HIPOGLICEMIA SEVERA).
+- Avaliação Pós-Ictal Imediata:
+  * Nível de Consciência: [Sonolento, despertável ao chamado verbal / Confuso / Em torpor / Lúcido].
+  * Escala de Coma de Glasgow: [ ] / 15 pontos.
+  * Oroscopia: Presença de ferimento cortocontuso recente na borda lateral da língua com estrias hemáticas (sinal característico de crise epiléptica motora generalizada).
+  * Exame Neurológico Pós-Ictal: Pupilas isocóricas e fotorreagentes, ausência de assimetria de reflexos, reflexo cutâneo-plantar em flexão bilateral [ou Paralisia de Todd transitória em hemicorpo ( ) com recuperação gradual]. Ausência de rigidez de nuca.
+  * Inspeção Corporal: Ausência de estigmas de trauma cranioencefálico grave ou fraturas por queda.
+
+# HIPÓTESES DIAGNÓSTICAS:
+1. Crise Convulsiva Tônico-Clônica Generalizada [Crise única autolimitada pós-ictal / Estado de Mal Epiléptico em evolução] (CID-10: G40.9 / R56.8).
+2. [Etiologia em investigação / Descompensação de epilepsia prévia / Crise por abstinência etílica].
+
+# CONDUTA:
+
+>> ETAPA 1 (MINUTOS 0 A 5) - PROTEÇÃO DE VIAS AÉREAS & SUPORTE:
+1. Decúbito lateral esquerdo (posição de recuperação) para prevenir aspiração brônquica de saliva ou vômito.
+2. Oxigenoterapia sob máscara facial a 10 L/min.
+3. PROIBIÇÃO ABSOLUTA: NUNCA colocar objetos (colheres, panos) ou dedos na boca do paciente durante a crise.
+4. Puncionado acesso venoso periférico calibroso e coleta de sangue (Hemograma, Eletrólitos: Sódio/Potássio/Cálcio/Magnésio, Ureia, Creatinina, Gasometria e CPK).
+5. [SE HGT < 70 MG/DL (HIPOGLICEMIA)]:
+   - [Se etilista/desnutrido]: TIAMINA (Vitamina B1) 100 mg EV lento ANTES DA GLICOSE (prevenção mandatória de Encefalopatia de Wernicke).
+   - Glicose a 50%: 4 ampolas (40 mL) EV em bólus direto de imediato.
+
+>> ETAPA 2 (MINUTOS 5 A 10) - SE A CRISE PERSISTIR > 5 MINUTOS (1ª LINHA - BENZODIAZEPÍNICO):
+1. Diazepam 10 mg (2 mL) EV direto lento (em 2 minutos), sem diluir.
+   - [Se a crise persistir após 5 minutos]: Repetir 2ª dose de Diazepam 10 mg EV (dose máxima de 20 mg).
+   - [Se paciente SEM acesso venoso periférico]: Midazolam 10 mg intramuscular (IM) profunda no deltoide ou coxa.
+
+>> ETAPA 3 (MINUTOS 10 A 30) - SE A CRISE NÃO CESSAR (2ª LINHA - FENITOINIZAÇÃO):
+1. Fenitoína Sódica (Hidantal ampola 250 mg/5 mL):
+   - Dose de Ataque: 20 mg/kg de peso (ex: paciente de 70 kg = 1.400 mg = cerca de 5 a 6 ampolas).
+   - Diluição OBRIGATÓRIA: Diluir exclusivamente em 250 mL de SORO FISIOLÓGICO 0,9% (NUNCA em Soro Glicosado, pois precipita cristais nos vasos!).
+   - Velocidade de Infusão: Correr em 30 a 40 minutos sob monitorização cardíaca contínua (velocidade máxima de 50 mg/minuto; risco de hipotensão e arritmias cardíacas).
+
+>> CONDUTA PÓS-CRISE & OBSERVAÇÃO CLÍNICA:
+1. Manter em observação neurológica contínua por no mínimo 4 a 6 horas até recuperação total da consciência (Glasgow 15).
+2. Se primeiro episódio na vida: Indicação de Tomografia Computadorizada de Crânio sem contraste para afastar hemorragia intracraniana, neoplasia ou AVC.
+3. Se epiléptico conhecido: Restabelecer a dosagem habitual dos anticonvulsivantes prévios e orientar retorno ao ambulatório de Neurologia na UBS.
+```
+
+---
+
+## 🎯 Diretrizes & Raciocínio Clínico
+
+### 🧠 1. Por Que o Estado de Mal Epiléptico Exige Benzodiazepínico nos Primeiros 5 Minutos?
+Toda crise epiléptica tônico-clônica generalizada que dura **≥ 5 minutos** (ou duas crises sem recuperação completa da consciência entre elas — *T1 operacional da ILAE*) define **Estado de Mal Epiléptico (EME)**. Fisiopatologicamente, nos primeiros minutos de descarga neuronal hipersincrônica contínua, ocorre **internalização endocítica dos receptores sinápticos inibitórios GABA-A** e migração de receptores excitatórios NMDA/AMPA para a membrana pós-sináptica. Isso explica a perda progressiva de potência dos benzodiazepínicos quanto mais se demora a administrá-los e por que jamais se deve aguardar acesso venoso difícil: na ausência de veia pérvia imediata, o **Midazolam 10 mg IM** (estudo *RAMPART*) é tão ou mais rápido para abortar a crise quanto o Diazepam IV.
+
+### 🧭 3. Primeira Crise no Adulto: Quem Precisa de TC de Crânio no PS e Quem Vai de Alta?
+Todo adulto com **primeira crise não provocada** requer investigação metabólica (Na, Ca, Mg, função renal, glicemia) e **TC de Crânio sem contraste na urgência** para excluir lesão estrutural aguda (AVCh, neoplasia, neurocisticercose, trombose venosa cerebral). Em crise única autolimitada, com retorno completo ao Glasgow 15 basal, exame neurológico sem déficit focal (excluída paralisia pós-ictal de Todd transitória) e TC/eletrólitos normais, **não se inicia anticonvulsivante de manutenção no PS** na primeira crise sem lesão estrutural, orientando-se proibição de direção veicular, trabalho em altura e encaminhamento ao neurologista.
+
+### 💊 2. Por Que a Fenitoína É Diluída Apenas em SF 0,9% e Por Que Checar Glicemia + Sódio Antes de Tudo?
+Antes de rotular uma crise como epiléptica primária, a **glicemia capilar (HGT)** é o "quinto sinal vital": a hipoglicemia neuroglicopênica mimetiza EME refratário e só cessa com **Glicose 50% IV** (precedida de **Tiamina 100 mg IV** em etilistas ou desnutridos para prevenir encefalopatia de Wernicke). Na 2ª linha (crise refratária a 2 doses de benzodiazepínico), a **Fenitoína (20 mg/kg IV)** estabiliza canais de sódio voltagem-dependentes, mas possui pH altamente alcalino (~12): se diluída em Soro Glicosado 5%, precipita em microcristais insolúveis; se infundida a **> 50 mg/min**, bloqueia canais de sódio miocárdicos causando bradiarritmia grave e hipotensão.

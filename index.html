@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" id="metaThemeColor" content="#ffffff" />
+  <title>Cockpit Clínico — PEP &amp; Habilidades</title>
+  <meta name="description" content="Motor clínico de prontuário eletrônico (PEP), busca semântica por queixas e sintomas (Ctrl+K), calculadora ponderal de doses críticas e cartões de habilidades médicas para plantão." />
+  <meta property="og:title" content="Cockpit Clínico — PEP &amp; Habilidades" />
+  <meta property="og:description" content="Motor clínico de prontuário eletrônico (PEP), busca semântica por queixas e sintomas (Ctrl+K), calculadora ponderal de doses críticas e cartões de habilidades médicas para plantão." />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <script>
+    try {
+      if (localStorage.getItem('mq_clinical_theme_v1') === 'dark') {
+        document.documentElement.classList.add('dark');
+        var mt = document.getElementById('metaThemeColor');
+        if (mt) mt.setAttribute('content', '#0b1117');
+      }
+    } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 antialiased dark:bg-[#0b1117] dark:text-slate-100">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
