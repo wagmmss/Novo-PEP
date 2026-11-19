@@ -11,7 +11,6 @@ import {
   Plus,
   RotateCcw,
   Search,
-  SlidersHorizontal,
   Star,
   Stethoscope,
   X,
@@ -25,7 +24,6 @@ import {
   GLOBAL_SEARCH_INDEX,
   PEP_PROTOCOLS,
   PROTOCOL_BY_ID,
-  protocolRequiresWeightCalculation,
   serializeProtocolSection,
   splitGuiaIntoSections,
   walkInlineNodes,
@@ -125,7 +123,6 @@ export function ProtocolosView({
   const [areaFilter, setAreaFilter] = useState<AreaFilter>('todos');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [patient, setPatient] = useState<PatientContextInput>(EMPTY_PATIENT_CONTEXT);
-  const [personalizeOpen, setPersonalizeOpen] = useState(false);
   const [guiaOpen, setGuiaOpen] = useState(false);
 
   // Estado interativo da AST real + modo de edição livre opcional por bloco
@@ -153,15 +150,13 @@ export function ProtocolosView({
   const prevProtocolIdRef = useRef<string>(activeProtocol.id);
   const mainRef = useRef<HTMLElement | null>(null);
 
-  // Reinicia AST limpa ao trocar de protocolo sem ocultar paciente ativo; ao mudar dados do paciente, sincroniza AST
+  // Reinicia AST limpa ao trocar de protocolo; limpa peso/idade automaticamente ao sair para protocolo sem cálculo ponderal
   useEffect(() => {
     if (prevProtocolIdRef.current !== activeProtocol.id) {
       prevProtocolIdRef.current = activeProtocol.id;
-      const requiresWeight = protocolRequiresWeightCalculation(activeProtocol);
-      const hasActivePatient = Boolean(
-        patient.idade.trim() || patient.pesoKg.trim() || patient.gestante || patient.igSemanas.trim()
-      );
-      setPersonalizeOpen(requiresWeight || hasActivePatient);
+      if (!compiled.needsWeightPersonalization && (patient.idade.trim() || patient.pesoKg.trim() || patient.gestante || patient.igSemanas.trim())) {
+        setPatient(EMPTY_PATIENT_CONTEXT);
+      }
       setGuiaOpen(false);
       setEditingBlockIds({});
       setEditedTexts({});
@@ -225,21 +220,7 @@ export function ProtocolosView({
     [activeProtocol.guia_body]
   );
 
-  const hasPatientValues = Boolean(
-    patient.idade.trim() || patient.pesoKg.trim() || patient.gestante || patient.igSemanas.trim()
-  );
-
-  const activePatientSummary = useMemo(() => {
-    const parts: string[] = [];
-    if (patient.idade.trim()) parts.push(patient.idade.trim());
-    if (patient.pesoKg.trim()) parts.push(`${patient.pesoKg.trim()} kg`);
-    if (patient.gestante) {
-      parts.push(patient.igSemanas.trim() ? `Gestante · IG ${patient.igSemanas.trim()} sem` : 'Gestante');
-    } else if (patient.igSemanas.trim()) {
-      parts.push(`IG ${patient.igSemanas.trim()} sem`);
-    }
-    return parts.join(' · ');
-  }, [patient]);
+  const hasPatientValues = Boolean(patient.idade.trim() || patient.pesoKg.trim());
 
   const isFavorite = favoriteSet.has(activeProtocol.id);
 
@@ -612,20 +593,6 @@ export function ProtocolosView({
                 )}
               </button>
 
-              <button
-                type="button"
-                onClick={() => setPersonalizeOpen((v) => !v)}
-                aria-expanded={personalizeOpen}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                  personalizeOpen || hasPatientValues
-                    ? 'border-[#0F766E]/40 bg-teal-50/70 text-[#0F766E] dark:border-[#2DD4BF]/35 dark:bg-teal-500/12 dark:text-[#2DD4BF]'
-                    : 'border-zinc-200/90 bg-white text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]'
-                }`}
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                Personalizar paciente
-              </button>
-
               {linkedPrePorta && (
                 <button
                   type="button"
@@ -672,67 +639,18 @@ export function ProtocolosView({
               </div>
             </div>
 
-            {/* Banner de segurança clínica: paciente ativo nunca fica oculto quando a faixa está recolhida */}
-            {!personalizeOpen && hasPatientValues && (
-              <div
-                role="status"
-                className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200/90 bg-amber-50/70 px-3 py-2 text-xs text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
-              >
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-400" />
-                  <span>
-                    <strong className="font-semibold">Paciente ativo:</strong>{' '}
-                    <span className="font-mono">{activePatientSummary}</span>
+            {/* Faixa contextual: exibida exclusivamente em protocolos com cálculo de dose por peso */}
+            {compiled.needsWeightPersonalization && (
+              <div className="mt-4 rounded-lg border border-zinc-200/80 bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className="text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                    Doses por peso
                   </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPersonalizeOpen(true)}
-                    className="font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-200"
-                  >
-                    Editar dados
-                  </button>
-                  <span aria-hidden="true" className="opacity-40">
-                    ·
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleClearPatient}
-                    className="inline-flex items-center gap-1 font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
-                  >
-                    <X className="h-3 w-3" />
-                    Limpar / Novo paciente
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {/* Faixa horizontal compacta: Personalização Dinâmica do Paciente */}
-            {personalizeOpen && (
-              <div className="mt-4 rounded-lg border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
-                <div className="flex flex-wrap items-end gap-3">
-                  <div className="w-28">
-                    <label
-                      htmlFor="pt-idade"
-                      className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
-                    >
-                      Idade
-                    </label>
-                    <input
-                      id="pt-idade"
-                      type="text"
-                      value={patient.idade}
-                      onChange={(e) => setPatient((p) => ({ ...p, idade: e.target.value }))}
-                      placeholder="Ex: 5a / 8m"
-                      className="w-full rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
-                    />
-                  </div>
-
-                  <div className="w-24">
+                  <div className="flex items-center gap-1.5">
                     <label
                       htmlFor="pt-peso"
-                      className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
+                      className="text-xs font-medium text-zinc-600 dark:text-[#D1D5DB]"
                     >
                       Peso (kg)
                     </label>
@@ -743,60 +661,35 @@ export function ProtocolosView({
                       value={patient.pesoKg}
                       onChange={(e) => setPatient((p) => ({ ...p, pesoKg: e.target.value }))}
                       placeholder="Ex: 14"
-                      className="w-full rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                      className="w-20 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
                   </div>
 
-                  <label className="flex h-[30px] cursor-pointer items-center gap-1.5 text-xs font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                  <div className="flex items-center gap-1.5">
+                    <label
+                      htmlFor="pt-idade"
+                      className="text-xs font-medium text-zinc-500 dark:text-[#9CA3AF]"
+                    >
+                      Idade
+                    </label>
                     <input
-                      type="checkbox"
-                      checked={patient.gestante}
-                      onChange={(e) =>
-                        setPatient((p) => ({
-                          ...p,
-                          gestante: e.target.checked,
-                          igSemanas: e.target.checked ? p.igSemanas : '',
-                        }))
-                      }
-                      className="h-3.5 w-3.5 rounded border-zinc-300 accent-[#0F766E] dark:accent-[#2DD4BF]"
+                      id="pt-idade"
+                      type="text"
+                      value={patient.idade}
+                      onChange={(e) => setPatient((p) => ({ ...p, idade: e.target.value }))}
+                      placeholder="Ex: 3a / 8m"
+                      className="w-24 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
-                    Gestante
-                  </label>
-
-                  {(patient.gestante || activeProtocol.mod_id === 'go') && (
-                    <div className="w-24">
-                      <label
-                        htmlFor="pt-ig"
-                        className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
-                      >
-                        IG (sem)
-                      </label>
-                      <input
-                        id="pt-ig"
-                        type="text"
-                        inputMode="numeric"
-                        value={patient.igSemanas}
-                        onChange={(e) =>
-                          setPatient((p) => ({
-                            ...p,
-                            igSemanas: e.target.value,
-                            gestante: Boolean(e.target.value.trim()) || p.gestante,
-                          }))
-                        }
-                        placeholder="Ex: 32"
-                        className="w-full rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
-                      />
-                    </div>
-                  )}
+                  </div>
 
                   {hasPatientValues && (
                     <button
                       type="button"
                       onClick={handleClearPatient}
-                      className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-md px-2.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
+                      className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                     >
                       <X className="h-3.5 w-3.5" />
-                      Limpar / Novo paciente
+                      Novo paciente
                     </button>
                   )}
                 </div>
