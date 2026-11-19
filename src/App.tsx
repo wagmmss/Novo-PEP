@@ -129,7 +129,11 @@ export function App() {
       )}
 
       {world === 'sexto-ano' && sextoAnoTab === 'pratica' && (
-        <PraticaView central6Ano={storeState.central6Ano} onNotify={notify} />
+        <PraticaView
+          central6Ano={storeState.central6Ano}
+          onOpenPrePorta={handleOpenPrePortaFromProtocol}
+          onNotify={notify}
+        />
       )}
 
       {world === 'sexto-ano' && sextoAnoTab === 'teoria' && (

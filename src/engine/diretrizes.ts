@@ -289,11 +289,58 @@ function splitMdTableRow(trimmed: string): string[] {
   return cells;
 }
 
+function stripHeadingDecorators(text: string): string {
+  let clean = String(text || '')
+    .replace(/^\*\*([\s\S]+?)\*\*(:?)$/, '$1$2')
+    .replace(/^(?:[0-9]\uFE0F?\u20E3|[\p{Extended_Pictographic}\uFE0F\u200D])+\s*/u, '')
+    .trim();
+  clean = clean.replace(/^\*\*([\s\S]+?)\*\*(:?)$/, '$1$2').trim();
+  return clean;
+}
+
+function isMostlyUppercaseHeading(text: string): boolean {
+  const letters = text.replace(/[^A-Za-zÀ-ÿ]/g, '');
+  if (letters.length < 4) return false;
+  const upper = letters.replace(/[^A-ZÀ-Ý]/g, '').length;
+  return upper / letters.length >= 0.65;
+}
+
+function extractEditorialSubheading(trimmed: string, nextNonEmptyTrimmed: string): string | null {
+  // 1) Cabeçalho numerado que termina em ":" (ex: "1. **OTOSCOPIA SEGURA:**" ou "2. ENQUADRAMENTO CLÍNICO:")
+  const numMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+  if (numMatch) {
+    const rawBody = numMatch[1].trim();
+    const unwrapped = rawBody.replace(/^\*\*([^*]+?)\*\*(:?)$/, '$1$2').trim();
+    if (unwrapped.endsWith(':') && unwrapped.length <= 140) {
+      const withoutColon = unwrapped.slice(0, -1).trim();
+      const nextIsList = /^[-*]\s+|^\d+\.\s+/.test(nextNonEmptyTrimmed);
+      const isBoldHeader = /^\*\*[^*]+?\*\*:?$/.test(rawBody);
+      const isPassoHeader = /^PASSO\s+\d+\b/i.test(withoutColon);
+      if (nextIsList || isBoldHeader || isPassoHeader || isMostlyUppercaseHeading(withoutColon)) {
+        return stripHeadingDecorators(withoutColon);
+      }
+    }
+    return null;
+  }
+
+  // 2) Cabeçalho editorial avulso sem número que termina em ":" (ex: "LABORATÓRIO CRÍTICO DE PLANTÃO:")
+  const unwrapped = trimmed.replace(/^\*\*([^*]+?)\*\*(:?)$/, '$1$2').trim();
+  if (unwrapped.endsWith(':') && unwrapped.length >= 5 && unwrapped.length <= 120) {
+    const withoutColon = unwrapped.slice(0, -1).trim();
+    if (/^PASSO\s+\d+\s*[—–-]/i.test(withoutColon) || isMostlyUppercaseHeading(withoutColon)) {
+      return stripHeadingDecorators(withoutColon);
+    }
+  }
+
+  return null;
+}
+
 export function renderTeoriaMarkdownToHtml(md: string): string {
   const lines = String(md || '').split('\n');
   const out: string[] = [];
   let inUl = false;
   let inOl = false;
+  let olNextNum = 1;
   let tableRows: string[][] = [];
   let quoteBuffer: string[] = [];
 
@@ -305,6 +352,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     if (inOl) {
       out.push('</ol>');
       inOl = false;
+      olNextNum = 1;
     }
   };
 
@@ -334,6 +382,14 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     html += '</tbody></table></div>';
     out.push(html);
     tableRows = [];
+  };
+
+  const findNextNonEmpty = (fromIdx: number): string => {
+    for (let j = fromIdx + 1; j < lines.length; j++) {
+      const t = lines[j].trim();
+      if (t) return t;
+    }
+    return '';
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -373,14 +429,36 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     }
     if (trimmed.startsWith('# ')) {
       closeLists();
-      out.push(`<h1>${formatInlineTeoriaMd(trimmed.slice(2))}</h1>`);
-    } else if (trimmed.startsWith('## ')) {
+      out.push(`<h1>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(2)))}</h1>`);
+      continue;
+    }
+    if (trimmed.startsWith('## ')) {
       closeLists();
-      out.push(`<h2>${formatInlineTeoriaMd(trimmed.slice(3))}</h2>`);
-    } else if (trimmed.startsWith('### ')) {
+      out.push(`<h2>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(3)))}</h2>`);
+      continue;
+    }
+    if (trimmed.startsWith('### ')) {
       closeLists();
-      out.push(`<h3>${formatInlineTeoriaMd(trimmed.slice(4))}</h3>`);
-    } else if (/^[-*]\s+/.test(trimmed)) {
+      out.push(`<h3>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(4)))}</h3>`);
+      continue;
+    }
+    if (trimmed.startsWith('#### ')) {
+      closeLists();
+      out.push(`<h4 class="preporta-subhead">${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(5)))}</h4>`);
+      continue;
+    }
+
+    // Subtítulo editorial (distingue cabeçalhos como "1. **OTOSCOPIA SEGURA:**" de listas numeradas)
+    if (!isIndented) {
+      const subhead = extractEditorialSubheading(trimmed, findNextNonEmpty(i));
+      if (subhead) {
+        closeLists();
+        out.push(`<h4 class="preporta-subhead">${formatInlineTeoriaMd(subhead)}</h4>`);
+        continue;
+      }
+    }
+
+    if (/^[-*]\s+/.test(trimmed)) {
       if (inOl && isIndented) {
         out.push(
           `<li style="list-style:disc; margin-left:22px;">${formatInlineTeoriaMd(trimmed.replace(/^[-*]\s+/, ''))}</li>`
@@ -389,6 +467,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
         if (inOl) {
           out.push('</ol>');
           inOl = false;
+          olNextNum = 1;
         }
         if (!inUl) {
           out.push('<ul>');
@@ -397,15 +476,22 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
         out.push(`<li>${formatInlineTeoriaMd(trimmed.replace(/^[-*]\s+/, ''))}</li>`);
       }
     } else if (/^\d+\.\s+/.test(trimmed)) {
+      const numMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+      const itemNum = numMatch ? Number(numMatch[1]) : 1;
+      const itemBody = numMatch ? numMatch[2] : trimmed.replace(/^\d+\.\s+/, '');
+
       if (inUl) {
         out.push('</ul>');
         inUl = false;
       }
       if (!inOl) {
-        out.push('<ol>');
+        out.push(itemNum !== 1 ? `<ol start="${itemNum}">` : '<ol>');
         inOl = true;
+        olNextNum = itemNum;
       }
-      out.push(`<li>${formatInlineTeoriaMd(trimmed.replace(/^\d+\.\s+/, ''))}</li>`);
+      const liAttr = itemNum !== olNextNum ? ` value="${itemNum}"` : '';
+      out.push(`<li${liAttr}>${formatInlineTeoriaMd(itemBody)}</li>`);
+      olNextNum = itemNum + 1;
     } else {
       closeLists();
       out.push(`<p>${formatInlineTeoriaMd(trimmed)}</p>`);
@@ -417,3 +503,89 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
   flushTable();
   return out.join('\n');
 }
+
+// ============================================================================
+// PARSER ESTRUTURADO & FORMATAÇÃO DE TÍTULOS DO PRÉ-PORTA (hab-*)
+// ============================================================================
+
+export interface PrePortaParsedSections {
+  resumo30s: string;
+  mnemonico: string;
+  coreografia: string;
+  fallback: string;
+}
+
+const PRE_PORTA_RESUMO_RE = /^\s*(?:\d+\.\s*)?O QUE N[ÃA]O ESQUECER(?:\s*\([^)]*\))?\s*:?\s*$/i;
+const PRE_PORTA_MNEMONICO_RE = /^\s*(?:\d+\.\s*)?MNEM[ÔO]NICO\s*\/\s*REGRA DE OURO\s*:?\s*$/i;
+const PRE_PORTA_COREOGRAFIA_RE =
+  /^\s*(?:\d+\.\s*)?(?:COREOGRAFIA(?:\s*\/\s*PASSO A PASSO(?:\s+T[ÉE]CNICO)?)?|PASSO A PASSO(?:\s+T[ÉE]CNICO)?)\s*:?\s*$/i;
+
+function cleanDoubleNumberingLine(line: string): string {
+  return line
+    .replace(/^(\s*)\d+\.\s+(\d+\.\s+)/, '$1$2')
+    .replace(/^(\s*)\d+\.\s+(PASSO\s+\d+\b)/i, '$1$2')
+    .replace(/^(\s*)\d+\.\s+([A-F]\.\s+)/, '$1$2');
+}
+
+/**
+ * Divide o campo `pre_porta` em seções editoriais limpas (Resumo 30s, Mnemônico / Regra de Ouro
+ * e Coreografia / Passo a Passo), removendo cabeçalhos numerados falsos e numerações duplicadas.
+ */
+export function parsePrePortaContent(raw: string): PrePortaParsedSections {
+  const text = String(raw || '').trim();
+  if (!text) {
+    return { resumo30s: '', mnemonico: '', coreografia: '', fallback: '' };
+  }
+
+  const lines = text.split('\n');
+  let activeKey: 'resumo30s' | 'mnemonico' | 'coreografia' | 'fallback' = 'fallback';
+  const buckets: Record<'resumo30s' | 'mnemonico' | 'coreografia' | 'fallback', string[]> = {
+    resumo30s: [],
+    mnemonico: [],
+    coreografia: [],
+    fallback: [],
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (PRE_PORTA_RESUMO_RE.test(trimmed)) {
+      activeKey = 'resumo30s';
+      continue;
+    }
+    if (PRE_PORTA_MNEMONICO_RE.test(trimmed)) {
+      activeKey = 'mnemonico';
+      continue;
+    }
+    if (PRE_PORTA_COREOGRAFIA_RE.test(trimmed)) {
+      activeKey = 'coreografia';
+      continue;
+    }
+    buckets[activeKey].push(cleanDoubleNumberingLine(line));
+  }
+
+  const resumo30s = buckets.resumo30s.join('\n').trim();
+  const mnemonico = buckets.mnemonico.join('\n').trim();
+  const coreografia = buckets.coreografia.join('\n').trim();
+  const fallback = buckets.fallback.join('\n').trim();
+
+  return { resumo30s, mnemonico, coreografia, fallback };
+}
+
+/**
+ * Remove emojis iniciais e corrige siglas/capitalização nos títulos dos cartões Pré-Porta.
+ */
+export function formatPrePortaTitle(rawTitle: string): string {
+  return String(rawTitle || '')
+    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '')
+    .replace(/\bAcog\b/g, 'ACOG')
+    .replace(/\boms\b/g, 'OMS')
+    .replace(/\bPl\b/g, 'PL')
+    .replace(/\bparacentese\b/g, 'Paracentese')
+    .replace(/\bNurse\b/g, 'NURSE')
+    .replace(/\bTEACH-BACK\b/g, 'Teach-Back')
+    .replace(/\btep\b/g, 'TEP')
+    .replace(/\bortopedia\b/g, 'Ortopedia')
+    .replace(/\bone-minute\b/gi, 'One-Minute')
+    .trim();
+}
+

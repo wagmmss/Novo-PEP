@@ -7,12 +7,16 @@ import {
   Minus,
   Pencil,
   Plus,
+  RotateCcw,
   Trash2,
   X,
 } from 'lucide-react';
 import {
   CURRICULUM_BANKS_CONFIG,
   CURRICULUM_CATEGORIES_META,
+  FERIAS_SEMANAS,
+  RITUAL_DOMINGO_DATA,
+  RODIZIOS_6ANO,
   UNIFIED_CURRICULUM_CATALOG,
   computeMilestoneCountdown,
   computeUnifiedCurriculumScores,
@@ -24,10 +28,75 @@ import {
 } from '../engine/central6ano.ts';
 import { cockpitStore } from '../state/store.ts';
 
+type PlanoR1SubTab = 'plano' | 'r1';
+
 interface R1CurriculoViewProps {
   central6Ano: Central6AnoState;
   onNotify: (message: string) => void;
 }
+
+const PLANO_R1_SUB_TABS: Array<{ id: PlanoR1SubTab; label: string }> = [
+  { id: 'plano', label: 'Plano 6º Ano' },
+  { id: 'r1', label: 'R1 & Currículo' },
+];
+
+const ARQUETIPOS_DIA: Array<{
+  id: Central6AnoState['arquetipoId'];
+  titulo: string;
+  ritmo: string;
+  foco: string;
+  postura: string;
+}> = [
+  {
+    id: 'ferias_4h',
+    titulo: 'Férias 4h',
+    ritmo: '4h líquidas/dia',
+    foco: 'Base prática + Exames + OSCE',
+    postura: '2h conteúdo âncora (Cirurgia/CTI/GO) + 1h leitura sistemática de exames + 1h prática de habilidades ou anamnese.',
+  },
+  {
+    id: 'dia_cheio',
+    titulo: 'Dia Cheio',
+    ritmo: 'Turnos + bloco enxuto',
+    foco: 'Hospital + manutenção 70/30',
+    postura: 'Foco 100% no paciente durante o hospital; à noite, 1 bloco objetivo de questões do rodízio + Anki nas micro-janelas.',
+  },
+  {
+    id: 'pe_vespera',
+    titulo: 'Véspera',
+    ritmo: 'Revisão de alta retenção',
+    foco: 'Pontos Cegos + checklists',
+    postura: 'Zero matéria pesada nova. Revisar Pontos Cegos abertos, checklists Pré-Porta e dormir cedo.',
+  },
+  {
+    id: 'plantao_12h',
+    titulo: 'Plantão 12h',
+    ritmo: 'Energia preservada',
+    foco: 'Execução clínica + micro-revisão',
+    postura: 'Cochilo profilático antes do plantão noturno; no plantão, capturar Pontos Cegos e registrar procedimentos no Logbook.',
+  },
+  {
+    id: 'pos_plantao',
+    titulo: 'Pós-Plantão = Descanso',
+    ritmo: 'Sono protegido',
+    foco: 'Recuperação cognitiva',
+    postura: 'Zero meta pesada de teoria ou questões. Priorize sono de recuperação; no máximo Anki leve (≤ 15 min) sem culpa.',
+  },
+  {
+    id: 'fds',
+    titulo: 'Fim de Semana',
+    ritmo: 'Blocos longos + Ritual',
+    foco: 'Tração 70/30 + Trilha paralela',
+    postura: 'Janela principal para fechar a trilha paralela 30%, fazer simulado/imagens puras e executar o Ritual de Domingo.',
+  },
+];
+
+const RITUAL_CLEAN_COPY: Record<string, string> = {
+  'rit-escala': 'Revisar a escala real da semana (turnos, plantões noturnos e folgas) e alinhar o Arquétipo de Dia.',
+  'rit-7030': 'Definir os subtemas prioritários da semana: 70% Rodízio-Âncora + 30% Trilha Paralela R1.',
+  'rit-habito': 'Revisar os Pontos Cegos pendentes em Prática e atualizar o Logbook 3x.',
+  'rit-curriculo': 'Conferir 1 pendência de comprovante PDF na matriz R1 & Currículo.',
+};
 
 const MILESTONE_CATEGORIES: Array<{ value: R1Milestone['categoria']; label: string }> = [
   { value: 'curriculo', label: 'Currículo' },
@@ -74,6 +143,8 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps) {
+  const [subTab, setSubTab] = useState<PlanoR1SubTab>('plano');
+
   // ---- Estado Bloco 1: Prazos R1 ----
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -204,11 +275,42 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
 
   return (
     <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
-      <div className="mx-auto max-w-5xl space-y-10 px-4 py-6 sm:px-8 sm:py-8">
-        {/* ================================================================
-            BLOCO 1 — PRAZOS & CICLOS R1
-           ================================================================ */}
-        <section aria-labelledby="r1-prazos-heading" className="space-y-4">
+      {/* Barra de sub-abas limpa: Plano 6º Ano | R1 & Currículo */}
+      <div className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#FAFAFA]/95 backdrop-blur-sm dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+        <div className="mx-auto flex max-w-5xl items-center gap-1 px-4 sm:px-8">
+          {PLANO_R1_SUB_TABS.map((tab) => {
+            const active = subTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSubTab(tab.id)}
+                className={`relative shrink-0 whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${
+                  active
+                    ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                    : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+                }`}
+              >
+                {tab.label}
+                {active && (
+                  <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {subTab === 'plano' ? (
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-8">
+          <Plano6AnoTool central6Ano={central6Ano} onNotify={onNotify} />
+        </div>
+      ) : (
+        <div className="mx-auto max-w-5xl space-y-10 px-4 py-6 sm:px-8 sm:py-8">
+          {/* ================================================================
+              BLOCO 1 — PRAZOS & CICLOS R1
+             ================================================================ */}
+          <section aria-labelledby="r1-prazos-heading" className="space-y-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div>
               <h1
@@ -774,6 +876,407 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
           </div>
         </section>
       </div>
+      )}
     </main>
+  );
+}
+
+// ============================================================================
+// SUB-ABA: PLANO 6º ANO (RODÍZIOS & FÉRIAS · ARQUÉTIPOS DE DIA · RITUAL DE DOMINGO)
+// ============================================================================
+
+function Plano6AnoTool({
+  central6Ano,
+  onNotify,
+}: {
+  central6Ano: Central6AnoState;
+  onNotify: (msg: string) => void;
+}) {
+  const activeRodizio = useMemo(
+    () => RODIZIOS_6ANO.find((r) => r.id === central6Ano.rodizioId) || RODIZIOS_6ANO[0],
+    [central6Ano.rodizioId]
+  );
+  const [feriasOpen, setFeriasOpen] = useState<boolean>(activeRodizio.id === 'ferias');
+
+  const ritualDoneMap = central6Ano.ritualDomingoDoneIds || {};
+  const ritualDoneCount = RITUAL_DOMINGO_DATA.filter((item) => Boolean(ritualDoneMap[item.id])).length;
+
+  const handleSelectRodizio = (rodId: string) => {
+    const target = RODIZIOS_6ANO.find((r) => r.id === rodId);
+    if (!target) return;
+    cockpitStore.updateCentralContext({
+      rodizioId: target.id,
+      focoSemanalAncora70: target.ancora70,
+      microHabitoSemanal: target.microHabitoSugerido,
+    });
+    if (target.id === 'ferias') {
+      setFeriasOpen(true);
+    }
+    onNotify(`Bloco ativo alterado para ${target.nome}.`);
+  };
+
+  return (
+    <div className="space-y-10">
+      {/* 1. BLOCOS / RODÍZIOS DO 6º ANO & ESTUDOS NAS FÉRIAS */}
+      <section aria-labelledby="plano-rodizios-heading" className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1
+              id="plano-rodizios-heading"
+              className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+            >
+              Blocos &amp; Rodízios do 6º Ano
+            </h1>
+            <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
+              Consulte o mapa anual de rodízios (70% âncora / 30% trilha) e ajuste o bloco atual.
+            </p>
+          </div>
+
+          <div className="sm:w-72">
+            <label
+              htmlFor="plano-rodizio-select"
+              className="mb-1 block text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
+            >
+              Bloco / rodízio ativo
+            </label>
+            <select
+              id="plano-rodizio-select"
+              value={activeRodizio.id}
+              onChange={(e) => handleSelectRodizio(e.target.value)}
+              className="w-full rounded-lg border border-zinc-200/90 bg-white px-3 py-2 text-xs font-medium text-zinc-900 shadow-[0_1px_2px_rgba(0,0,0,0.03)] outline-none focus:border-[#0F766E] dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+            >
+              {RODIZIOS_6ANO.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Cartão detalhado do rodízio selecionado */}
+        <div className="rounded-xl border border-zinc-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-3.5 dark:border-white/[0.06]">
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-[#F3F4F6]">
+              {activeRodizio.nome}
+            </h2>
+            <span className="font-mono text-xs tabular-nums text-[#0F766E] dark:text-[#2DD4BF]">
+              {activeRodizio.periodo}
+            </span>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.05em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                Foco Âncora (70%)
+              </div>
+              <p className="mt-1 text-sm leading-relaxed text-zinc-800 dark:text-[#D1D5DB]">
+                {activeRodizio.ancora70}
+              </p>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.05em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                Trilha Paralela (30%)
+              </div>
+              <p className="mt-1 text-sm leading-relaxed text-zinc-800 dark:text-[#D1D5DB]">
+                {activeRodizio.trilha30}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 border-t border-zinc-100 pt-4 md:grid-cols-2 dark:border-white/[0.06]">
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.05em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                Procedimentos-alvo do bloco
+              </div>
+              <ul className="mt-1.5 space-y-1 text-sm text-zinc-700 dark:text-[#D1D5DB]">
+                {activeRodizio.procedimentosAlvo.map((proc) => (
+                  <li key={proc} className="flex items-baseline gap-2">
+                    <span className="text-zinc-400 dark:text-[#6B7280]" aria-hidden="true">
+                      •
+                    </span>
+                    <span>{proc}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.05em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                Micro-hábito sugerido
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed text-zinc-700 dark:text-[#D1D5DB]">
+                {activeRodizio.microHabitoSugerido}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista panorâmica rápida dos 10 blocos */}
+        <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
+          {RODIZIOS_6ANO.map((r) => {
+            const isActive = r.id === activeRodizio.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => handleSelectRodizio(r.id)}
+                className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors sm:flex-row sm:items-center sm:justify-between ${
+                  isActive
+                    ? 'bg-[#0F766E]/[0.06] dark:bg-[#2DD4BF]/[0.08]'
+                    : 'hover:bg-zinc-50 dark:hover:bg-[#1C2029]/70'
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={`text-sm ${
+                      isActive
+                        ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]'
+                        : 'font-medium text-zinc-900 dark:text-[#F3F4F6]'
+                    }`}
+                  >
+                    {r.nome}
+                  </div>
+                  <div className="mt-0.5 line-clamp-1 text-xs text-zinc-500 dark:text-[#9CA3AF]">
+                    70%: {r.ancora70}
+                  </div>
+                </div>
+                <span className="shrink-0 font-mono text-[11px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
+                  {r.periodo}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Cronograma de Estudos nas Férias (8 semanas) */}
+        <div className="rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
+          <button
+            type="button"
+            onClick={() => setFeriasOpen((v) => !v)}
+            aria-expanded={feriasOpen}
+            className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-[#1C2029]"
+          >
+            <div>
+              <div className="text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                Estudos nas Férias — Cronograma de 8 Semanas
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
+                30/11/2026 a 24/01/2027 · Clique em uma semana para marcar a semana ativa
+              </div>
+            </div>
+            {feriasOpen ? (
+              <ChevronDown className="h-4 w-4 shrink-0 text-zinc-400 dark:text-[#6B7280]" />
+            ) : (
+              <ChevronRight className="h-4 w-4 shrink-0 text-zinc-400 dark:text-[#6B7280]" />
+            )}
+          </button>
+
+          {feriasOpen && (
+            <div className="divide-y divide-zinc-200/70 border-t border-zinc-200/80 dark:divide-white/[0.06] dark:border-white/[0.07]">
+              {FERIAS_SEMANAS.map((sem) => {
+                const isSelected = central6Ano.feriasSemana === sem.id;
+                const cleanLabel = sem.label.replace(/🏖️\s*/g, '');
+                return (
+                  <button
+                    key={sem.id}
+                    type="button"
+                    onClick={() => {
+                      cockpitStore.updateCentralContext({ feriasSemana: sem.id });
+                      onNotify(`Semana de férias marcada: ${sem.id.toUpperCase()}.`);
+                    }}
+                    className={`block w-full px-4 py-3 text-left transition-colors ${
+                      isSelected
+                        ? 'bg-[#0F766E]/[0.06] dark:bg-[#2DD4BF]/[0.08]'
+                        : 'hover:bg-zinc-50 dark:hover:bg-[#1C2029]/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`text-xs font-semibold ${
+                          isSelected
+                            ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                            : 'text-zinc-900 dark:text-[#F3F4F6]'
+                        }`}
+                      >
+                        {cleanLabel}
+                      </span>
+                      {isSelected && (
+                        <span className="shrink-0 font-mono text-[11px] font-medium text-[#0F766E] dark:text-[#2DD4BF]">
+                          Ativa
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 space-y-0.5 text-xs text-zinc-600 dark:text-[#9CA3AF]">
+                      <div>
+                        <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                          Conteúdo:
+                        </span>{' '}
+                        {sem.focoConteudo}
+                      </div>
+                      {!sem.isFreeWeek && (
+                        <div>
+                          <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                            Exames:
+                          </span>{' '}
+                          {sem.focoExames}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                          Prática:
+                        </span>{' '}
+                        {sem.focoHabilidade}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 2. ARQUÉTIPOS DE DIA */}
+      <section
+        aria-labelledby="plano-arquetipos-heading"
+        className="space-y-4 border-t border-zinc-200/80 pt-8 dark:border-white/[0.07]"
+      >
+        <div>
+          <h2
+            id="plano-arquetipos-heading"
+            className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+          >
+            Arquétipos de Dia
+          </h2>
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
+            Escolha a postura operacional conforme a carga real de turnos e plantões — sem culpa em dia pesado.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {ARQUETIPOS_DIA.map((arq) => {
+            const active = central6Ano.arquetipoId === arq.id;
+            return (
+              <button
+                key={arq.id}
+                type="button"
+                onClick={() => {
+                  cockpitStore.updateCentralContext({ arquetipoId: arq.id });
+                  onNotify(`Arquétipo ativo: ${arq.titulo}.`);
+                }}
+                aria-pressed={active}
+                className={`flex flex-col rounded-xl border p-4 text-left transition-colors ${
+                  active
+                    ? 'border-[#0F766E] bg-[#0F766E]/[0.06] dark:border-[#2DD4BF] dark:bg-[#2DD4BF]/[0.08]'
+                    : 'border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:bg-zinc-50 dark:border-white/[0.07] dark:bg-[#15181F] dark:hover:bg-[#1C2029]'
+                }`}
+              >
+                <div className="flex items-baseline justify-between gap-2">
+                  <span
+                    className={`text-sm font-semibold ${
+                      active
+                        ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                        : 'text-zinc-900 dark:text-[#F3F4F6]'
+                    }`}
+                  >
+                    {arq.titulo}
+                  </span>
+                  <span className="shrink-0 font-mono text-[11px] text-zinc-400 dark:text-[#6B7280]">
+                    {arq.ritmo}
+                  </span>
+                </div>
+                <div className="mt-1 text-xs font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                  {arq.foco}
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-zinc-500 dark:text-[#9CA3AF]">
+                  {arq.postura}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 3. RITUAL DE DOMINGO */}
+      <section
+        aria-labelledby="plano-ritual-heading"
+        className="space-y-4 border-t border-zinc-200/80 pt-8 dark:border-white/[0.07]"
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h2
+                id="plano-ritual-heading"
+                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+              >
+                Ritual de Domingo
+              </h2>
+              <span className="font-mono text-xs font-semibold tabular-nums text-[#0F766E] dark:text-[#2DD4BF]">
+                {ritualDoneCount}/{RITUAL_DOMINGO_DATA.length}
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
+              Checklist semanal de 15 minutos para alinhar rodízio, pontos cegos e currículo.
+            </p>
+          </div>
+
+          {ritualDoneCount > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                cockpitStore.resetRitualDomingo();
+                onNotify('Ritual de Domingo reiniciado para a nova semana.');
+              }}
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reiniciar semana
+            </button>
+          )}
+        </div>
+
+        <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
+          {RITUAL_DOMINGO_DATA.map((item, idx) => {
+            const checked = Boolean(ritualDoneMap[item.id]);
+            const displayText = RITUAL_CLEAN_COPY[item.id] || item.text.replace(/^\d+\.\s*/, '');
+            return (
+              <label
+                key={item.id}
+                className="flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-zinc-50/70 dark:hover:bg-[#1C2029]/60"
+              >
+                <span
+                  className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${
+                    checked
+                      ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                      : 'border-zinc-300 bg-white dark:border-white/[0.18] dark:bg-[#0F1115]'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => cockpitStore.toggleRitualDomingoItem(item.id)}
+                    className="sr-only"
+                  />
+                  {checked && <Check className="h-3 w-3 stroke-[2.75]" />}
+                </span>
+                <span
+                  className={`flex-1 text-sm leading-snug ${
+                    checked
+                      ? 'text-zinc-400 line-through dark:text-[#6B7280]'
+                      : 'text-zinc-800 dark:text-[#F3F4F6]'
+                  }`}
+                >
+                  <span className="mr-1.5 font-mono text-xs tabular-nums text-zinc-400 dark:text-[#6B7280]">
+                    {idx + 1}.
+                  </span>
+                  {displayText}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 }

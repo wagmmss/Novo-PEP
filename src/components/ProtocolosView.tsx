@@ -34,7 +34,11 @@ import {
 } from '../data/protocolsRepo.ts';
 import type { AstSelectionState, ChoiceGroupNode, InlineInputNode } from '../engine/pepAst.ts';
 import { searchClinicalProtocols } from '../engine/search.ts';
-import { classifyGuiaSectionTheme, renderGuiaSectionBodyHtml } from '../engine/diretrizes.ts';
+import {
+  classifyGuiaSectionTheme,
+  formatPrePortaTitle,
+  renderGuiaSectionBodyHtml,
+} from '../engine/diretrizes.ts';
 import { cockpitStore } from '../state/store.ts';
 import { copyToClipboard } from '../utils/clipboard.ts';
 import { PepBlockRenderer } from './PepBlockRenderer.tsx';
@@ -127,6 +131,7 @@ export function ProtocolosView({
   // Estado interativo da AST real + modo de edição livre opcional por bloco
   const [editingBlockIds, setEditingBlockIds] = useState<Record<string, boolean>>({});
   const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
+  const [editedBaseTexts, setEditedBaseTexts] = useState<Record<string, string>>({});
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
@@ -148,15 +153,19 @@ export function ProtocolosView({
   const prevProtocolIdRef = useRef<string>(activeProtocol.id);
   const mainRef = useRef<HTMLElement | null>(null);
 
-  // Reinicia AST limpa ao trocar de protocolo; ao mudar apenas dados do paciente, sincroniza sem sobrescrever edições manuais
+  // Reinicia AST limpa ao trocar de protocolo sem ocultar paciente ativo; ao mudar dados do paciente, sincroniza AST
   useEffect(() => {
     if (prevProtocolIdRef.current !== activeProtocol.id) {
       prevProtocolIdRef.current = activeProtocol.id;
       const requiresWeight = protocolRequiresWeightCalculation(activeProtocol);
-      setPersonalizeOpen(requiresWeight);
+      const hasActivePatient = Boolean(
+        patient.idade.trim() || patient.pesoKg.trim() || patient.gestante || patient.igSemanas.trim()
+      );
+      setPersonalizeOpen(requiresWeight || hasActivePatient);
       setGuiaOpen(false);
       setEditingBlockIds({});
       setEditedTexts({});
+      setEditedBaseTexts({});
       setCopiedKey(null);
       setAstState(compiled.initialAstState);
       mainRef.current?.scrollTo({ top: 0 });
@@ -165,7 +174,7 @@ export function ProtocolosView({
         applyPatientContextToAstState(compiled.ast, prev, compiled.clinicalContext)
       );
     }
-  }, [activeProtocol, compiled]);
+  }, [activeProtocol, compiled, patient]);
 
   const filteredProtocols = useMemo(() => {
     let base =
@@ -219,6 +228,18 @@ export function ProtocolosView({
   const hasPatientValues = Boolean(
     patient.idade.trim() || patient.pesoKg.trim() || patient.gestante || patient.igSemanas.trim()
   );
+
+  const activePatientSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (patient.idade.trim()) parts.push(patient.idade.trim());
+    if (patient.pesoKg.trim()) parts.push(`${patient.pesoKg.trim()} kg`);
+    if (patient.gestante) {
+      parts.push(patient.igSemanas.trim() ? `Gestante · IG ${patient.igSemanas.trim()} sem` : 'Gestante');
+    } else if (patient.igSemanas.trim()) {
+      parts.push(`IG ${patient.igSemanas.trim()} sem`);
+    }
+    return parts.join(' · ');
+  }, [patient]);
 
   const isFavorite = favoriteSet.has(activeProtocol.id);
 
@@ -344,6 +365,8 @@ export function ProtocolosView({
   const handleClearPatient = () => {
     setPatient(EMPTY_PATIENT_CONTEXT);
     setEditedTexts({});
+    setEditedBaseTexts({});
+    setEditingBlockIds({});
     const fresh = compileProtocolForDisplay(activeProtocol, EMPTY_PATIENT_CONTEXT);
     setAstState(fresh.initialAstState);
   };
@@ -607,12 +630,12 @@ export function ProtocolosView({
                 <button
                   type="button"
                   onClick={() => onOpenPrePorta(linkedPrePorta.id)}
-                  title={`Pré-Porta: ${linkedPrePorta.title.replace(/^[^\wÀ-ÿ]+/, '')}`}
+                  title={`Pré-Porta: ${formatPrePortaTitle(linkedPrePorta.title)}`}
                   className="inline-flex max-w-[260px] items-center gap-1.5 rounded-lg border border-zinc-200/90 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
                 >
                   <Stethoscope className="h-3.5 w-3.5 shrink-0 text-[#0F766E] dark:text-[#2DD4BF]" />
                   <span className="truncate">
-                    Pré-Porta: {linkedPrePorta.title.replace(/^[^\wÀ-ÿ]+/, '')}
+                    Pré-Porta: {formatPrePortaTitle(linkedPrePorta.title)}
                   </span>
                 </button>
               )}
@@ -648,6 +671,42 @@ export function ProtocolosView({
                 </button>
               </div>
             </div>
+
+            {/* Banner de segurança clínica: paciente ativo nunca fica oculto quando a faixa está recolhida */}
+            {!personalizeOpen && hasPatientValues && (
+              <div
+                role="status"
+                className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200/90 bg-amber-50/70 px-3 py-2 text-xs text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-400" />
+                  <span>
+                    <strong className="font-semibold">Paciente ativo:</strong>{' '}
+                    <span className="font-mono">{activePatientSummary}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPersonalizeOpen(true)}
+                    className="font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-200"
+                  >
+                    Editar dados
+                  </button>
+                  <span aria-hidden="true" className="opacity-40">
+                    ·
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleClearPatient}
+                    className="inline-flex items-center gap-1 font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+                  >
+                    <X className="h-3 w-3" />
+                    Limpar / Novo paciente
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Faixa horizontal compacta: Personalização Dinâmica do Paciente */}
             {personalizeOpen && (
@@ -734,10 +793,10 @@ export function ProtocolosView({
                     <button
                       type="button"
                       onClick={handleClearPatient}
-                      className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-md px-2.5 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
+                      className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-md px-2.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                     >
                       <X className="h-3.5 w-3.5" />
-                      Limpar
+                      Limpar / Novo paciente
                     </button>
                   )}
                 </div>
@@ -809,8 +868,29 @@ export function ProtocolosView({
               const serializedText = getSectionSerializedText(section);
               const isEdited =
                 editedTexts[section.id] !== undefined && editedTexts[section.id] !== serializedText;
+              const isStaleManualEdit =
+                isEdited &&
+                editedBaseTexts[section.id] !== undefined &&
+                editedBaseTexts[section.id] !== serializedText;
               const currentText = getBlockText(section);
               const isCopied = copiedKey === section.id;
+
+              const restoreAutomatic = () => {
+                setEditedTexts((prev) => {
+                  const next = { ...prev };
+                  delete next[section.id];
+                  return next;
+                });
+                setEditedBaseTexts((prev) => {
+                  const next = { ...prev };
+                  delete next[section.id];
+                  return next;
+                });
+                setEditingBlockIds((prev) => ({
+                  ...prev,
+                  [section.id]: false,
+                }));
+              };
 
               return (
                 <section
@@ -818,34 +898,41 @@ export function ProtocolosView({
                   aria-label={section.title}
                   className="rounded-lg border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-zinc-200/70 px-4 py-2.5 dark:border-white/[0.06]">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/70 px-4 py-2.5 dark:border-white/[0.06]">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <h2 className="text-xs font-semibold tracking-wide text-zinc-700 uppercase dark:text-[#D1D5DB]">
                         {section.title}
                       </h2>
-                      {isEdited && (
+                      {isStaleManualEdit ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                          <AlertTriangle className="h-3 w-3 shrink-0" />
+                          <span>Edição manual ativa</span>
+                          <span aria-hidden="true">·</span>
+                          <button
+                            type="button"
+                            onClick={restoreAutomatic}
+                            className="underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-200"
+                          >
+                            Restaurar automático
+                          </button>
+                        </span>
+                      ) : isEdited ? (
                         <span className="text-[11px] text-[#0F766E] dark:text-[#2DD4BF]">
                           · Editado livremente
                         </span>
-                      )}
+                      ) : null}
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      {isEdited && (
+                      {isEdited && !isStaleManualEdit && (
                         <button
                           type="button"
-                          onClick={() =>
-                            setEditedTexts((prev) => {
-                              const next = { ...prev };
-                              delete next[section.id];
-                              return next;
-                            })
-                          }
+                          onClick={restoreAutomatic}
                           title="Restaurar sincronização automática do protocolo"
                           className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                         >
                           <RotateCcw className="h-3 w-3" />
-                          Restaurar
+                          Restaurar automático
                         </button>
                       )}
 
@@ -854,6 +941,10 @@ export function ProtocolosView({
                         onClick={() => {
                           if (!isEditing && editedTexts[section.id] === undefined) {
                             setEditedTexts((prev) => ({
+                              ...prev,
+                              [section.id]: serializedText,
+                            }));
+                            setEditedBaseTexts((prev) => ({
                               ...prev,
                               [section.id]: serializedText,
                             }));
@@ -901,12 +992,18 @@ export function ProtocolosView({
                     <div className="p-4">
                       <textarea
                         value={currentText}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          if (editedBaseTexts[section.id] === undefined) {
+                            setEditedBaseTexts((prev) => ({
+                              ...prev,
+                              [section.id]: serializedText,
+                            }));
+                          }
                           setEditedTexts((prev) => ({
                             ...prev,
                             [section.id]: e.target.value,
-                          }))
-                        }
+                          }));
+                        }}
                         rows={Math.min(24, Math.max(5, currentText.split('\n').length + 1))}
                         aria-label={`Editar ${section.title}`}
                         className="w-full resize-y rounded-md border border-[#0F766E]/40 bg-[#FAFAFA] p-3 font-sans text-[14px] leading-relaxed text-zinc-900 outline-none focus:border-[#0F766E] dark:border-[#2DD4BF]/40 dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"

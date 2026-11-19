@@ -287,3 +287,38 @@
 .dark .editorial-prose hr {
   border-top-color: rgba(255, 255, 255, 0.07);
 }
+
+.editorial-prose > :first-child {
+  margin-top: 0;
+}
+
+.editorial-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.editorial-prose .preporta-subhead {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+  margin-top: 1.25rem;
+  margin-bottom: 0.45rem;
+}
+
+.dark .editorial-prose .preporta-subhead {
+  color: #2dd4bf;
+}
+
+.editorial-prose .preporta-subhead:first-child {
+  margin-top: 0;
+}
+
+/* Inputs inline do PEP com ajuste preciso ao conteúdo */
+.pep-inline-input {
+  field-sizing: content;
+  min-width: 1.8ch;
+  max-width: 26ch;
+}
+

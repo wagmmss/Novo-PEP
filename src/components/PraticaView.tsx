@@ -1,20 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   AlertTriangle,
+  ArrowRight,
   Check,
   ChevronDown,
   ChevronRight,
   Copy,
-  Pause,
-  Play,
-  RotateCcw,
   Search,
   Sparkles,
   Trash2,
 } from 'lucide-react';
 import {
-  ENSAIO_MENTAL_3MIN_PASSOS,
-  ENSAIO_MENTAL_PROCS_DATA,
   LOGBOOK_PROCEDIMENTOS_MATRIX,
   RODIZIOS_6ANO,
   buildContextualAiPrompt,
@@ -24,10 +20,11 @@ import {
 import { cockpitStore, type LogbookRole } from '../state/store.ts';
 import { detectPiiIssues, sanitizePiiText } from '../utils/piiGuard.ts';
 
-type PraticaSubTab = 'logbook' | 'pontos-cegos' | 'prompts' | 'ensaio';
+type PraticaSubTab = 'logbook' | 'pontos-cegos' | 'prompts';
 
 interface PraticaViewProps {
   central6Ano: Central6AnoState;
+  onOpenPrePorta: (habId: string) => void;
   onNotify: (message: string) => void;
 }
 
@@ -35,8 +32,37 @@ const SUB_TABS: Array<{ id: PraticaSubTab; label: string }> = [
   { id: 'logbook', label: 'Logbook 3x' },
   { id: 'pontos-cegos', label: 'Pontos Cegos' },
   { id: 'prompts', label: 'Prompts IA' },
-  { id: 'ensaio', label: 'Ensaio Mental' },
 ];
+
+const PROC_TO_HAB_ID: Record<string, string> = {
+  'proc-ecg-10': 'hab-12',
+  'proc-gaso-5': 'hab-14',
+  'proc-sutura': 'hab-21',
+  'proc-svd': 'hab-19',
+  'proc-sng': 'hab-19',
+  'proc-curativo': 'hab-21',
+  'proc-bvm': 'hab-22',
+  'proc-iot': 'hab-22',
+  'proc-gaso-art': 'hab-14',
+  'proc-cvc': 'hab-19',
+  'proc-especular': 'hab-3',
+  'proc-toque-obs': 'hab-3',
+  'proc-parto-sut': 'hab-15',
+  'proc-otoscopia': 'hab-20',
+  'proc-fluoresceina': 'hab-20',
+  'proc-tamponamento': 'hab-20',
+  'proc-mfc-ice': 'hab-1',
+  'proc-mfc-rastreio': 'hab-17',
+  'proc-paracentese': 'hab-19',
+  'proc-toracocentese': 'hab-19',
+  'proc-pl': 'hab-19',
+  'proc-ped-oto': 'hab-10',
+  'proc-ped-sala-parto': 'hab-10',
+  'proc-ped-diluicao': 'hab-17',
+  'proc-efast': 'hab-18',
+  'proc-sri': 'hab-22',
+  'proc-dreno-torax': 'hab-18',
+};
 
 const ROLE_BUTTONS: Array<{ role: LogbookRole; label: string; shortLabel: string; title: string }> = [
   {
@@ -94,7 +120,7 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-export function PraticaView({ central6Ano, onNotify }: PraticaViewProps) {
+export function PraticaView({ central6Ano, onOpenPrePorta, onNotify }: PraticaViewProps) {
   const [subTab, setSubTab] = useState<PraticaSubTab>('logbook');
 
   const pendingBlindCount = useMemo(
@@ -140,7 +166,11 @@ export function PraticaView({ central6Ano, onNotify }: PraticaViewProps) {
 
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8 sm:py-8">
         {subTab === 'logbook' && (
-          <LogbookTool central6Ano={central6Ano} onNotify={onNotify} />
+          <LogbookTool
+            central6Ano={central6Ano}
+            onOpenPrePorta={onOpenPrePorta}
+            onNotify={onNotify}
+          />
         )}
         {subTab === 'pontos-cegos' && (
           <PontosCegosTool central6Ano={central6Ano} onNotify={onNotify} />
@@ -148,7 +178,6 @@ export function PraticaView({ central6Ano, onNotify }: PraticaViewProps) {
         {subTab === 'prompts' && (
           <PromptsIaTool central6Ano={central6Ano} onNotify={onNotify} />
         )}
-        {subTab === 'ensaio' && <EnsaioMentalTool />}
       </div>
     </main>
   );
@@ -160,9 +189,11 @@ export function PraticaView({ central6Ano, onNotify }: PraticaViewProps) {
 
 function LogbookTool({
   central6Ano,
+  onOpenPrePorta,
   onNotify,
 }: {
   central6Ano: Central6AnoState;
+  onOpenPrePorta: (habId: string) => void;
   onNotify: (msg: string) => void;
 }) {
   const [query, setQuery] = useState('');
@@ -321,14 +352,26 @@ function LogbookTool({
             const filledSegments = Math.min(3, count);
             const isExpanded = Boolean(expandedProcIds[proc.id]);
 
+            const linkedHabId = PROC_TO_HAB_ID[proc.id];
+
             return (
               <div key={proc.id} className="px-4 py-3.5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2.5">
-                      <span className="truncate text-sm font-medium text-zinc-900 dark:text-[#F3F4F6]">
-                        {proc.nome}
-                      </span>
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                      {linkedHabId ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenPrePorta(linkedHabId)}
+                          className="min-w-0 truncate text-left text-sm font-medium text-zinc-900 transition-colors hover:text-[#0F766E] dark:text-[#F3F4F6] dark:hover:text-[#2DD4BF]"
+                        >
+                          {proc.nome}
+                        </button>
+                      ) : (
+                        <span className="truncate text-sm font-medium text-zinc-900 dark:text-[#F3F4F6]">
+                          {proc.nome}
+                        </span>
+                      )}
                       <span
                         className={`shrink-0 font-mono text-xs font-semibold tabular-nums ${
                           rule3xDone
@@ -339,6 +382,16 @@ function LogbookTool({
                         {Math.min(count, 3)}/3{rule3xDone ? ' ✓' : ''}
                         {count > 3 ? ` (+${count - 3})` : ''}
                       </span>
+                      {linkedHabId && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenPrePorta(linkedHabId)}
+                          className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[#0F766E] transition-colors hover:underline dark:text-[#2DD4BF]"
+                        >
+                          Ver técnica
+                          <ArrowRight className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
 
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-[#9CA3AF]">
@@ -1019,188 +1072,6 @@ function PromptsIaTool({
           {generatedPrompt}
         </pre>
       </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// 4. ENSAIO MENTAL (3 MINUTOS)
-// ============================================================================
-
-const ENSAIO_DURATION_SEC = 180;
-
-function formatMmSs(totalSec: number): string {
-  const safe = Math.max(0, totalSec);
-  const mins = Math.floor(safe / 60);
-  const secs = safe % 60;
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-}
-
-function EnsaioMentalTool() {
-  const [selectedId, setSelectedId] = useState<string>(ENSAIO_MENTAL_PROCS_DATA[0]?.id || 'proc-sutura');
-  const [secondsLeft, setSecondsLeft] = useState<number>(ENSAIO_DURATION_SEC);
-  const [running, setRunning] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!running) return;
-    const id = window.setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          setRunning(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [running]);
-
-  const proc = useMemo(
-    () =>
-      ENSAIO_MENTAL_PROCS_DATA.find((p) => p.id === selectedId) || ENSAIO_MENTAL_PROCS_DATA[0],
-    [selectedId]
-  );
-
-  const stepValues = [proc.indicacao, proc.material, proc.anatomia, proc.armadilha];
-  const elapsedPct = Math.round(((ENSAIO_DURATION_SEC - secondsLeft) / ENSAIO_DURATION_SEC) * 100);
-
-  const handleReset = () => {
-    setRunning(false);
-    setSecondsLeft(ENSAIO_DURATION_SEC);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
-          Ensaio Mental Pré-Procedimento (3 min)
-        </h1>
-        <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
-          Visualize cada etapa crítica em silêncio antes de calçar a luva estéril.
-        </p>
-      </div>
-
-      {/* Seletor + Cronômetro de 3 min */}
-      <div className="flex flex-col gap-4 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:flex-row sm:items-end sm:justify-between dark:border-white/[0.07] dark:bg-[#15181F]">
-        <div className="min-w-0 flex-1">
-          <label
-            htmlFor="ensaio-proc-select"
-            className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]"
-          >
-            Procedimento
-          </label>
-          <select
-            id="ensaio-proc-select"
-            value={selectedId}
-            onChange={(e) => {
-              setSelectedId(e.target.value);
-              handleReset();
-            }}
-            className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm font-medium text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
-          >
-            {ENSAIO_MENTAL_PROCS_DATA.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-3 sm:shrink-0">
-          <div className="text-right">
-            <div
-              className={`font-mono text-2xl font-semibold tracking-tight tabular-nums ${
-                secondsLeft === 0
-                  ? 'text-[#0F766E] dark:text-[#2DD4BF]'
-                  : 'text-zinc-900 dark:text-[#F3F4F6]'
-              }`}
-              aria-live="off"
-            >
-              {formatMmSs(secondsLeft)}
-            </div>
-            <div className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-              {secondsLeft === 0 ? 'Ensaio concluído' : running ? 'Em andamento' : 'Cronômetro 3 min'}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                if (secondsLeft === 0) setSecondsLeft(ENSAIO_DURATION_SEC);
-                setRunning((prev) => !prev);
-              }}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#0F766E] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0D655E] dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-[#5EEAD4]"
-            >
-              {running ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-              {running ? 'Pausar' : 'Iniciar'}
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              aria-label="Resetar cronômetro"
-              className="inline-flex items-center justify-center rounded-lg border border-zinc-200/90 bg-white p-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Barra sutil de progresso do timer */}
-      <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/[0.08]">
-        <div
-          className="h-full bg-[#0F766E] transition-all duration-500 dark:bg-[#2DD4BF]"
-          style={{ width: `${elapsedPct}%` }}
-        />
-      </div>
-
-      {/* 4 passos estruturados */}
-      <ol className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
-        {ENSAIO_MENTAL_3MIN_PASSOS.map((passo, index) => {
-          const isArmadilha = index === 3;
-          return (
-            <li
-              key={passo.step}
-              className={`px-5 py-4 ${
-                isArmadilha
-                  ? 'bg-amber-50/45 dark:bg-amber-950/20'
-                  : 'bg-white dark:bg-[#15181F]'
-              }`}
-            >
-              <div className="flex items-start gap-3.5">
-                <span
-                  className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-xs font-semibold tabular-nums ${
-                    isArmadilha
-                      ? 'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/50 dark:text-amber-200'
-                      : 'border-zinc-200/90 bg-[#FAFAFA] text-zinc-700 dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB]'
-                  }`}
-                >
-                  {passo.step}
-                </span>
-
-                <div className="min-w-0 flex-1">
-                  <h2
-                    className={`text-sm font-semibold ${
-                      isArmadilha
-                        ? 'text-amber-950 dark:text-amber-200'
-                        : 'text-zinc-900 dark:text-[#F3F4F6]'
-                    }`}
-                  >
-                    {passo.title}
-                  </h2>
-                  <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
-                    {passo.prompt}
-                  </p>
-                  <p className="mt-2.5 text-sm leading-relaxed text-zinc-800 dark:text-[#D1D5DB]">
-                    {stepValues[index]}
-                  </p>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
     </div>
   );
 }

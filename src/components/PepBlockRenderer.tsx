@@ -13,6 +13,10 @@ import {
   type PepInlineNode,
 } from '../engine/pepAst.ts';
 import type { ClinicalContext } from '../engine/clinicalContext.ts';
+import {
+  resolveInlinePlaceholder,
+  resolveMultiChoiceSelection,
+} from '../engine/pepInlineHelpers.ts';
 import type { PepAstSection } from '../data/protocolsRepo.ts';
 
 interface PepBlockRendererProps {
@@ -69,7 +73,7 @@ function getChoiceOptionSummary(opt: ChoiceOptionAst, state: AstSelectionState):
       out += stripMarkdownTokens(ch.value);
     } else {
       const val = (state.inputValues[ch.id] || '').trim();
-      out += val || `[${ch.placeholder}]`;
+      out += val || ch.placeholder || '...';
     }
   }
   return out.trim();
@@ -85,6 +89,10 @@ function getChoiceOptionStaticPrefix(opt: ChoiceOptionAst): string {
     }
   }
   return out.trim();
+}
+
+function optionHasEmbeddedInput(opt: ChoiceOptionAst): boolean {
+  return opt.children.some((c) => c.kind === 'inline-input');
 }
 
 export function PepBlockRenderer({
@@ -146,7 +154,8 @@ export function PepBlockRenderer({
 
   const renderInlineInput = (node: InlineInputNode) => {
     const val = state.inputValues[node.id] || '';
-    const displayPlaceholder = node.placeholder || '...';
+    const rawPlaceholder = (node.placeholder || '').trim();
+    const displayPlaceholder = resolveInlinePlaceholder(rawPlaceholder, node.beforeText);
     const isNumericLike = Boolean(
       node.maskType ||
         node.anthroRole ||
@@ -154,9 +163,8 @@ export function PepBlockRenderer({
         node.obstetricRole ||
         node.mirrorRole === 'idade' ||
         node.mirrorRole === 'peso' ||
-        /^(?:kg|cm|mm|bpm|irpm|%|°C|g|mL|mg|sem|d|dias|G|P|A|PN|PC|PAS|PAD)$/i.test(displayPlaceholder)
+        /^(?:kg|cm|mm|bpm|irpm|%|°C|g|mL|mg|sem|d|dias|G|P|A|PN|PC|PAS|PAD)$/i.test(rawPlaceholder)
     );
-    const charLen = Math.min(30, Math.max(displayPlaceholder.length, val.length, 2) + 1);
 
     return (
       <input
@@ -165,12 +173,11 @@ export function PepBlockRenderer({
         data-pep-gap="true"
         data-gap-id={node.id}
         value={val}
-        size={charLen}
         onChange={(e) => onInputChange(node, e.target.value)}
         onKeyDown={handleGapKeyDown}
         placeholder={displayPlaceholder}
-        aria-label={displayPlaceholder !== '...' ? `Preencher ${displayPlaceholder}` : 'Preencher lacuna'}
-        className={`mx-[1px] inline max-w-full border-0 border-b border-dotted border-zinc-400/90 bg-transparent px-0.5 py-0 leading-snug text-zinc-950 outline-none transition-colors placeholder:font-normal placeholder:text-zinc-400 hover:border-zinc-600 focus:border-solid focus:border-[#0F766E] focus:bg-teal-50/50 dark:border-zinc-500/80 dark:text-[#F3F4F6] dark:placeholder:text-zinc-500 dark:hover:border-zinc-300 dark:focus:border-[#2DD4BF] dark:focus:bg-teal-500/10 ${
+        aria-label={rawPlaceholder && rawPlaceholder !== '...' ? `Preencher ${rawPlaceholder}` : 'Preencher lacuna'}
+        className={`pep-inline-input mx-[1px] inline w-auto border-0 border-b border-dotted border-zinc-400/90 bg-transparent px-0.5 py-0 leading-snug text-zinc-950 outline-none transition-colors placeholder:font-normal placeholder:text-zinc-400 hover:border-zinc-600 focus:border-solid focus:border-[#0F766E] focus:bg-teal-50/50 dark:border-zinc-500/80 dark:text-[#F3F4F6] dark:placeholder:text-zinc-500 dark:hover:border-zinc-300 dark:focus:border-[#2DD4BF] dark:focus:bg-teal-500/10 ${
           isNumericLike ? 'font-mono text-[13px] font-medium tabular-nums' : 'font-sans text-[14px] font-medium'
         }`}
       />
@@ -212,17 +219,7 @@ export function PepBlockRenderer({
       .map((i) => group.options[i])
       .filter((o): o is ChoiceOptionAst => Boolean(o));
 
-    const hasEmbeddedInputsInSelection =
-      selectedOptions.length === 1 && selectedOptions[0].children.some((c) => c.kind === 'inline-input');
-
-    const triggerLabel =
-      selectedOptions.length === 0
-        ? group.options[0]?.rawText
-          ? `Selecionar (${group.options[0].rawText}…)`
-          : 'Selecionar'
-        : hasEmbeddedInputsInSelection
-          ? getChoiceOptionStaticPrefix(selectedOptions[0]) || 'Selecionar'
-          : selectedOptions.map((o) => getChoiceOptionSummary(o, state)).join(', ');
+    const hasEmbeddedInputsInSelection = selectedOptions.some((opt) => optionHasEmbeddedInput(opt));
 
     const nextBinaryLabel = isSimpleBinary
       ? group.options[selectedIndices[0] === 0 ? 1 : 0]?.rawText
@@ -240,10 +237,7 @@ export function PepBlockRenderer({
 
     const handleOptionClick = (optIdx: number) => {
       if (isMulti) {
-        const exists = selectedIndices.includes(optIdx);
-        const next = exists
-          ? selectedIndices.filter((i) => i !== optIdx)
-          : [...selectedIndices, optIdx].sort((a, b) => a - b);
+        const next = resolveMultiChoiceSelection(group.options, selectedIndices, optIdx);
         onChoiceSelect(group, next);
       } else {
         onChoiceSelect(group, [optIdx]);
@@ -251,50 +245,113 @@ export function PepBlockRenderer({
       }
     };
 
+    const triggerClass = `inline cursor-pointer border-0 border-b border-dotted pb-[1px] text-left font-medium transition-colors focus:outline-none focus-visible:border-solid focus-visible:border-[#0F766E] dark:focus-visible:border-[#2DD4BF] ${
+      selectedOptions.length === 0
+        ? 'border-zinc-400 text-zinc-400 hover:text-zinc-700 dark:border-zinc-500 dark:text-zinc-500 dark:hover:text-zinc-300'
+        : 'border-[#0F766E]/55 text-zinc-900 hover:border-[#0F766E] hover:text-[#0F766E] dark:border-[#2DD4BF]/45 dark:text-[#F3F4F6] dark:hover:border-[#2DD4BF] dark:hover:text-[#2DD4BF]'
+    }`;
+
     return (
       <span
         key={group.id}
         data-choice-popover={group.id}
         className="relative inline"
       >
-        <button
-          type="button"
-          onClick={handleTriggerClick}
-          aria-expanded={!isSimpleBinary ? isOpen : undefined}
-          aria-haspopup={!isSimpleBinary ? 'listbox' : undefined}
-          title={
-            isSimpleBinary && nextBinaryLabel
-              ? `Clique para alternar para: ${nextBinaryLabel}`
-              : 'Clique para alterar opção clínica'
-          }
-          className={`inline cursor-pointer border-0 border-b border-dotted pb-[1px] text-left font-medium transition-colors focus:outline-none focus-visible:border-solid focus-visible:border-[#0F766E] dark:focus-visible:border-[#2DD4BF] ${
-            selectedOptions.length === 0
-              ? 'border-zinc-400 text-zinc-400 hover:text-zinc-700 dark:border-zinc-500 dark:text-zinc-500 dark:hover:text-zinc-300'
-              : 'border-[#0F766E]/55 text-zinc-900 hover:border-[#0F766E] hover:text-[#0F766E] dark:border-[#2DD4BF]/45 dark:text-[#F3F4F6] dark:hover:border-[#2DD4BF] dark:hover:text-[#2DD4BF]'
-          }`}
-        >
-          <span>{triggerLabel}</span>
-          <span aria-hidden="true" className="ml-0.5 text-[10px] opacity-55">
-            ▾
-          </span>
-        </button>
-
-        {/* Se a opção escolhida contém sub-lacunas inline (ex: "Cesárea por indicação de [ ]"), renderiza direto no fluxo */}
-        {hasEmbeddedInputsInSelection && (
+        {selectedOptions.length === 0 ? (
+          <button
+            type="button"
+            onClick={handleTriggerClick}
+            aria-expanded={!isSimpleBinary ? isOpen : undefined}
+            aria-haspopup={!isSimpleBinary ? 'listbox' : undefined}
+            title="Clique para selecionar opção clínica"
+            className={triggerClass}
+          >
+            <span>
+              {group.options[0]?.rawText ? `Selecionar (${group.options[0].rawText}…)` : 'Selecionar'}
+            </span>
+            <span aria-hidden="true" className="ml-0.5 text-[10px] opacity-55">
+              ▾
+            </span>
+          </button>
+        ) : hasEmbeddedInputsInSelection ? (
           <span className="inline">
-            {selectedOptions[0].children.map((ch, idx) => {
-              if (idx === 0 && ch.kind === 'text') return null;
-              if (ch.kind === 'text') {
-                return <Fragment key={ch.id}>{stripMarkdownTokens(ch.value)}</Fragment>;
-              }
+            {selectedOptions.map((opt, optPos) => {
+              const hasInput = optionHasEmbeddedInput(opt);
+              const staticPrefix = hasInput ? getChoiceOptionStaticPrefix(opt) : '';
+
               return (
-                <Fragment key={ch.id}>
-                  {' '}
-                  {renderInlineInput(ch)}
+                <Fragment key={opt.id}>
+                  {optPos > 0 && ', '}
+                  {!hasInput ? (
+                    <button
+                      type="button"
+                      onClick={handleTriggerClick}
+                      title="Clique para alterar opções"
+                      className={triggerClass}
+                    >
+                      {getChoiceOptionSummary(opt, state)}
+                    </button>
+                  ) : (
+                    <span className="inline">
+                      {staticPrefix && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={handleTriggerClick}
+                            title="Clique para alterar opção clínica"
+                            className={triggerClass}
+                          >
+                            {staticPrefix}
+                          </button>{' '}
+                        </>
+                      )}
+                      {opt.children.map((ch, idx) => {
+                        if (idx === 0 && ch.kind === 'text' && staticPrefix) return null;
+                        if (ch.kind === 'text') {
+                          return <Fragment key={ch.id}>{stripMarkdownTokens(ch.value)}</Fragment>;
+                        }
+                        return (
+                          <Fragment key={ch.id}>
+                            {idx > 0 && opt.children[idx - 1]?.kind === 'inline-input' ? ' ' : ''}
+                            {renderInlineInput(ch)}
+                          </Fragment>
+                        );
+                      })}
+                    </span>
+                  )}
                 </Fragment>
               );
             })}
+            <button
+              type="button"
+              onClick={handleTriggerClick}
+              aria-expanded={isOpen}
+              aria-haspopup="listbox"
+              aria-label="Alterar opção clínica"
+              title="Alterar opção clínica"
+              className="ml-0.5 inline-flex cursor-pointer items-center rounded px-0.5 text-[11px] leading-none text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-[#0F766E] focus:outline-none focus-visible:text-[#0F766E] dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"
+            >
+              ▾
+            </button>
           </span>
+        ) : (
+          <button
+            type="button"
+            onClick={handleTriggerClick}
+            aria-expanded={!isSimpleBinary ? isOpen : undefined}
+            aria-haspopup={!isSimpleBinary ? 'listbox' : undefined}
+            title={
+              isSimpleBinary && nextBinaryLabel
+                ? `Clique para alternar para: ${nextBinaryLabel}`
+                : 'Clique para alterar opção clínica'
+            }
+            className={triggerClass}
+          >
+            <span>{selectedOptions.map((o) => getChoiceOptionSummary(o, state)).join(', ')}</span>
+            <span aria-hidden="true" className="ml-0.5 text-[10px] opacity-55">
+              ▾
+            </span>
+          </button>
         )}
 
         {/* Mini-popover neutro (3+ opções ou multi-escolha) */}

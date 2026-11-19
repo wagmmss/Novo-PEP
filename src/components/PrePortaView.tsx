@@ -14,7 +14,11 @@ import {
 import type { ClinicalProtocolItem } from '../data/clinical_data.ts';
 import { GLOBAL_SEARCH_INDEX, HAB_PROTOCOLS, PROTOCOL_BY_ID } from '../data/protocolsRepo.ts';
 import { searchClinicalProtocols } from '../engine/search.ts';
-import { renderTeoriaMarkdownToHtml } from '../engine/diretrizes.ts';
+import {
+  formatPrePortaTitle,
+  parsePrePortaContent,
+  renderTeoriaMarkdownToHtml,
+} from '../engine/diretrizes.ts';
 import { cockpitStore } from '../state/store.ts';
 import type { QuickCaptureRequest } from './QuickCaptureModal.tsx';
 
@@ -113,6 +117,16 @@ export function PrePortaView({
     0
   );
 
+  const parsedPrePorta = useMemo(
+    () => parsePrePortaContent(activeHab.pre_porta || ''),
+    [activeHab.pre_porta]
+  );
+
+  const activeHabDisplayTitle = useMemo(
+    () => formatPrePortaTitle(activeHab.title),
+    [activeHab.title]
+  );
+
   const handleToggleTechnique = async () => {
     const nextOpen = !techniqueOpen;
     setTechniqueOpen(nextOpen);
@@ -198,7 +212,7 @@ export function PrePortaView({
                       isSelected ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]' : 'font-medium'
                     }`}
                   >
-                    {stripLeadingEmoji(item.title)}
+                    {formatPrePortaTitle(item.title)}
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                     <span className="truncate">{item.hab_category || item.category}</span>
@@ -262,7 +276,7 @@ export function PrePortaView({
 
             <div className="mt-1.5 flex flex-wrap items-start justify-between gap-3">
               <h1 className="text-xl font-bold tracking-tight text-zinc-950 sm:text-2xl dark:text-[#F3F4F6]">
-                {stripLeadingEmoji(activeHab.title)}
+                {activeHabDisplayTitle}
               </h1>
 
               <button
@@ -270,7 +284,7 @@ export function PrePortaView({
                 onClick={() =>
                   onOpenQuickCapture({
                     kind: 'logbook',
-                    defaultTitle: stripLeadingEmoji(activeHab.title),
+                    defaultTitle: activeHabDisplayTitle,
                   })
                 }
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200/80 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40 dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"
@@ -281,16 +295,50 @@ export function PrePortaView({
             </div>
           </header>
 
-          {/* 1. RESUMO 30s */}
-          {activeHab.pre_porta && (
+          {/* 1. RESUMO 30s (O que não esquecer) */}
+          {(parsedPrePorta.resumo30s || parsedPrePorta.fallback) && (
             <section className="mt-6" aria-label="Resumo 30 segundos">
               <h2 className="mb-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-[#9CA3AF]">
-                Resumo 30s
+                Resumo 30s · O que não esquecer
               </h2>
               <div
-                className="editorial-prose rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                className="editorial-prose rounded-xl border border-zinc-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
                 dangerouslySetInnerHTML={{
-                  __html: renderTeoriaMarkdownToHtml(activeHab.pre_porta),
+                  __html: renderTeoriaMarkdownToHtml(
+                    parsedPrePorta.resumo30s || parsedPrePorta.fallback
+                  ),
+                }}
+              />
+            </section>
+          )}
+
+          {/* 2. MNEMÔNICO / REGRA DE OURO (faixa discreta com borda esquerda Teal) */}
+          {parsedPrePorta.mnemonico && (
+            <section className="mt-6" aria-label="Mnemônico e Regra de Ouro">
+              <div className="rounded-xl border border-zinc-200/80 border-l-2 border-l-[#0F766E] bg-teal-50/40 p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:border-white/[0.07] dark:border-l-[#2DD4BF] dark:bg-[#171B24]">
+                <h2 className="mb-2.5 text-[11px] font-semibold tracking-[0.06em] text-[#0F766E] uppercase dark:text-[#2DD4BF]">
+                  Mnemônico · Regra de Ouro
+                </h2>
+                <div
+                  className="editorial-prose"
+                  dangerouslySetInnerHTML={{
+                    __html: renderTeoriaMarkdownToHtml(parsedPrePorta.mnemonico),
+                  }}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* 3. COREOGRAFIA / PASSO A PASSO TÉCNICO */}
+          {parsedPrePorta.coreografia && (
+            <section className="mt-6" aria-label="Coreografia e passo a passo técnico">
+              <h2 className="mb-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                Coreografia · Passo a Passo
+              </h2>
+              <div
+                className="editorial-prose rounded-xl border border-zinc-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                dangerouslySetInnerHTML={{
+                  __html: renderTeoriaMarkdownToHtml(parsedPrePorta.coreografia),
                 }}
               />
             </section>

@@ -332,11 +332,36 @@ class ClinicalCockpitStore {
   }
 
   public updateCentralContext(
-    patch: Partial<Pick<Central6AnoState, 'rodizioId' | 'focoSemanalAncora70' | 'microHabitoSemanal'>>
+    patch: Partial<
+      Pick<
+        Central6AnoState,
+        'rodizioId' | 'feriasSemana' | 'arquetipoId' | 'focoSemanalAncora70' | 'microHabitoSemanal'
+      >
+    >
   ): void {
     this.setCentral6AnoState({
       ...this.state.central6Ano,
       ...patch,
+    });
+  }
+
+  public toggleRitualDomingoItem(itemId: string): void {
+    const current = this.state.central6Ano;
+    const prev = current.ritualDomingoDoneIds || {};
+    this.setCentral6AnoState({
+      ...current,
+      ritualDomingoDoneIds: {
+        ...prev,
+        [itemId]: !prev[itemId],
+      },
+    });
+  }
+
+  public resetRitualDomingo(): void {
+    const current = this.state.central6Ano;
+    this.setCentral6AnoState({
+      ...current,
+      ritualDomingoDoneIds: {},
     });
   }
 

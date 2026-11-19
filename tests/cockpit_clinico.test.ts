@@ -40,7 +40,14 @@ import {
   classifyGuiaSectionTheme,
   renderGuiaSectionBodyHtml,
   renderTeoriaMarkdownToHtml,
+  parsePrePortaContent,
+  formatPrePortaTitle,
 } from '../src/engine/diretrizes.ts';
+import {
+  isExcludingChoiceOption,
+  resolveMultiChoiceSelection,
+  resolveInlinePlaceholder,
+} from '../src/engine/pepInlineHelpers.ts';
 import {
   RODIZIOS_6ANO,
   LOGBOOK_PROCEDIMENTOS_MATRIX,
@@ -621,4 +628,138 @@ test('AST Editorial & Condicionais: zero órfãos "2.:" nos 88 PEPs, renumeraç�
     'Valor editado manualmente pelo usuário não pode ser sobrescrito pelo espelhamento automático'
   );
 });
+
+test('Personalização Inline PEP: exclusão mútua em multi-escolha (Hígida/Nega) e placeholders não redundantes (G/P/A)', () => {
+  assert.equal(isExcludingChoiceOption('Hígida'), true);
+  assert.equal(isExcludingChoiceOption('Nega alergias'), true);
+  assert.equal(isExcludingChoiceOption('Sem comorbidades'), true);
+  assert.equal(isExcludingChoiceOption('HAS'), false);
+  assert.equal(isExcludingChoiceOption('[Outra...]'), false);
+
+  const options = [
+    { index: 0, rawText: 'Hígida' },
+    { index: 1, rawText: 'HAS' },
+    { index: 2, rawText: 'DM' },
+    { index: 3, rawText: '[Outra...]' },
+  ];
+
+  // Partindo de Hígida (0), marcar HAS (1) desmarca Hígida automaticamente
+  const afterHas = resolveMultiChoiceSelection(options, [0], 1);
+  assert.deepEqual(afterHas, [1]);
+
+  // Adicionar [Outra...] (3) mantém HAS + [Outra...]
+  const afterOutra = resolveMultiChoiceSelection(options, afterHas, 3);
+  assert.deepEqual(afterOutra, [1, 3]);
+
+  // Marcar Hígida (0) desmarca todas as demais
+  const backToHigida = resolveMultiChoiceSelection(options, afterOutra, 0);
+  assert.deepEqual(backToHigida, [0]);
+
+  // Placeholders redundantes ("G G", "P P", "A A") viram "_"
+  assert.equal(resolveInlinePlaceholder('G', 'ID: G'), '_');
+  assert.equal(resolveInlinePlaceholder('P', 'G2 P'), '_');
+  assert.equal(resolveInlinePlaceholder('A', 'G2 P1 A'), '_');
+  assert.equal(resolveInlinePlaceholder('Alérgica a...', 'Alergias: '), 'Alérgica a...');
+  assert.equal(resolveInlinePlaceholder('Outra...', 'Comorbidades: '), 'Outra...');
+});
+
+test('Pré-Porta: parser estruturado, subtítulos sem numeração quebrada e capitalização limpa dos títulos', () => {
+  assert.equal(
+    formatPrePortaTitle('Leitura de Cardiotocografia (CTG / Acog) & Partograma (oms)'),
+    'Leitura de Cardiotocografia (CTG / ACOG) & Partograma (OMS)'
+  );
+  assert.equal(
+    formatPrePortaTitle('Procedimentos Invasivos Essenciais do Interno (paracentese, Toracocentese, Pl & Sondagens)'),
+    'Procedimentos Invasivos Essenciais do Interno (Paracentese, Toracocentese, PL & Sondagens)'
+  );
+  assert.equal(
+    formatPrePortaTitle('Comunicação de Más Notícias (SPIKES / Nurse) & TEACH-BACK'),
+    'Comunicação de Más Notícias (SPIKES / NURSE) & Teach-Back'
+  );
+  assert.equal(
+    formatPrePortaTitle('Exame Físico Pediátrico & Triângulo de Avaliação Pediátrica (tep)'),
+    'Exame Físico Pediátrico & Triângulo de Avaliação Pediátrica (TEP)'
+  );
+
+  // Parse estruturado de um cartão completo (hab-21 tem Resumo 30s + Mnemônico + Coreografia)
+  const hab21 = HAB_PROTOCOLS.find((h) => h.id === 'hab-21');
+  assert.ok(hab21?.pre_porta);
+  const parsed21 = parsePrePortaContent(hab21.pre_porta);
+  assert.ok(parsed21.resumo30s.includes('Exame Neurovascular'));
+  assert.ok(parsed21.mnemonico.includes('Lidocaína'));
+  assert.ok(parsed21.coreografia.includes('AVALIAÇÃO INICIAL'));
+
+  // Subtítulos numerados seguidos de bullets não podem virar <ol> quebrados que reiniciam em 1.
+  const coreoHtml21 = renderTeoriaMarkdownToHtml(parsed21.coreografia);
+  assert.ok(
+    coreoHtml21.includes('<h4 class="preporta-subhead">AVALIAÇÃO INICIAL, HEMOSTASIA E EXPLORAÇÃO</h4>'),
+    `Subtítulo editorial esperado em hab-21:\n${coreoHtml21}`
+  );
+  assert.ok(
+    coreoHtml21.includes('<h4 class="preporta-subhead">ANTISSEPSIA E TÉCNICA DE INFILTRAÇÃO ANESTÉSICA (MENOS DOR)</h4>')
+  );
+
+  // Numeração dupla "2. 1. CALIBRAÇÃO" (hab-12) deve ser limpa
+  const hab12 = HAB_PROTOCOLS.find((h) => h.id === 'hab-12');
+  assert.ok(hab12?.pre_porta);
+  const parsed12 = parsePrePortaContent(hab12.pre_porta);
+  assert.ok(!/^\s*2\.\s+1\./m.test(parsed12.resumo30s), 'Não deve manter prefixo duplicado "2. 1."');
+});
+
+test('Plano 6º Ano: persistência de rodízio, semana de férias, arquétipo de dia e Ritual de Domingo + Backup', () => {
+  const originalWindow = (globalThis as Record<string, unknown>).window;
+  const mem = new Map<string, string>();
+  const mockLocalStorage = {
+    get length() {
+      return mem.size;
+    },
+    key(i: number) {
+      return Array.from(mem.keys())[i] ?? null;
+    },
+    getItem(k: string) {
+      return mem.has(k) ? mem.get(k)! : null;
+    },
+    setItem(k: string, v: string) {
+      mem.set(k, String(v));
+    },
+    removeItem(k: string) {
+      mem.delete(k);
+    },
+    clear() {
+      mem.clear();
+    },
+  };
+  (globalThis as Record<string, unknown>).window = { localStorage: mockLocalStorage };
+
+  try {
+    cockpitStore.reload();
+    cockpitStore.updateCentralContext({
+      rodizioId: 'ferias',
+      feriasSemana: 'sem4',
+      arquetipoId: 'pos_plantao',
+    });
+    cockpitStore.toggleRitualDomingoItem('rit-escala');
+    cockpitStore.toggleRitualDomingoItem('rit-7030');
+
+    const snap = cockpitStore.getSnapshot().central6Ano;
+    assert.equal(snap.rodizioId, 'ferias');
+    assert.equal(snap.feriasSemana, 'sem4');
+    assert.equal(snap.arquetipoId, 'pos_plantao');
+    assert.equal(snap.ritualDomingoDoneIds['rit-escala'], true);
+    assert.equal(snap.ritualDomingoDoneIds['rit-7030'], true);
+
+    const exported = cockpitStore.exportBackupJson();
+    cockpitStore.resetRitualDomingo();
+    assert.deepEqual(cockpitStore.getSnapshot().central6Ano.ritualDomingoDoneIds, {});
+
+    cockpitStore.importBackupJson(JSON.stringify(exported));
+    const restored = cockpitStore.getSnapshot().central6Ano;
+    assert.equal(restored.feriasSemana, 'sem4');
+    assert.equal(restored.arquetipoId, 'pos_plantao');
+    assert.equal(restored.ritualDomingoDoneIds['rit-escala'], true);
+  } finally {
+    (globalThis as Record<string, unknown>).window = originalWindow;
+  }
+});
+
 

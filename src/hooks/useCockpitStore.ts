@@ -19,7 +19,7 @@ export function useThemeSync(theme: 'light' | 'dark'): void {
     }
     const meta = document.getElementById('metaThemeColor');
     if (meta) {
-      meta.setAttribute('content', theme === 'dark' ? '#0b1117' : '#ffffff');
+      meta.setAttribute('content', theme === 'dark' ? '#0f1115' : '#ffffff');
     }
   }, [theme]);
 }

@@ -26,7 +26,7 @@ const BEIRA_LEITO_TABS: Array<{ id: BeiraLeitoTab; label: string }> = [
 const SEXTO_ANO_TABS: Array<{ id: SextoAnoTab; label: string }> = [
   { id: 'pratica', label: 'Prática' },
   { id: 'teoria', label: 'Teoria' },
-  { id: 'r1-curriculo', label: 'R1 & Currículo' },
+  { id: 'r1-curriculo', label: 'Plano & R1' },
 ];
 
 export function TopBar({
