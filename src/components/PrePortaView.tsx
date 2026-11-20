@@ -6,10 +6,12 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  ClipboardCheck,
   Plus,
   RotateCcw,
   Search,
   X,
+  Zap,
 } from 'lucide-react';
 import type { ClinicalProtocolItem } from '../data/clinical_data.ts';
 import { GLOBAL_SEARCH_INDEX, HAB_PROTOCOLS, PROTOCOL_BY_ID } from '../data/protocolsRepo.ts';
@@ -149,7 +151,7 @@ export function PrePortaView({
   }, [techniquePayload, activeHab.id]);
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-3.25rem)] w-full overflow-hidden">
+    <div className="mx-auto flex min-h-0 flex-1 w-full overflow-hidden">
       {/* COLUNA ESQUERDA: Lista dos 22 Cartões Pré-Porta */}
       <aside
         aria-label="Lista de cartões Pré-Porta"
@@ -275,7 +277,7 @@ export function PrePortaView({
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-start justify-between gap-3">
-              <h1 className="text-xl font-bold tracking-tight text-zinc-950 sm:text-2xl dark:text-[#F3F4F6]">
+              <h1 className="text-xl font-bold tracking-tight text-zinc-950 sm:text-2xl dark:text-white">
                 {activeHabDisplayTitle}
               </h1>
 
@@ -287,7 +289,7 @@ export function PrePortaView({
                     defaultTitle: activeHabDisplayTitle,
                   })
                 }
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200/80 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40 dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.10] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40 dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"
               >
                 <Plus className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
                 Registrar no Logbook
@@ -295,14 +297,20 @@ export function PrePortaView({
             </div>
           </header>
 
-          {/* 1. RESUMO 30s (O que não esquecer) */}
+          {/* 1. RESUMO 30s (O que não esquecer — cabeçalho tonalizado Teal) */}
           {(parsedPrePorta.resumo30s || parsedPrePorta.fallback) && (
-            <section className="mt-6" aria-label="Resumo 30 segundos">
-              <h2 className="mb-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-[#9CA3AF]">
-                Resumo 30s · O que não esquecer
-              </h2>
+            <section
+              className="mt-6 rounded-xl border border-zinc-200 border-l-[3px] border-l-teal-500 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:border-l-teal-400 dark:bg-[#15181F]"
+              aria-label="Resumo 30 segundos"
+            >
+              <div className="flex items-center gap-2 rounded-tr-[11px] border-b border-zinc-200/80 bg-teal-500/[0.07] px-4 py-2.5 dark:border-white/[0.08]">
+                <Zap className="h-3.5 w-3.5 shrink-0 text-teal-700 dark:text-teal-400" />
+                <h2 className="text-xs font-semibold tracking-wide text-teal-700 uppercase dark:text-teal-400">
+                  Resumo 30s · O que não esquecer
+                </h2>
+              </div>
               <div
-                className="editorial-prose rounded-xl border border-zinc-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                className="editorial-prose p-5"
                 dangerouslySetInnerHTML={{
                   __html: renderTeoriaMarkdownToHtml(
                     parsedPrePorta.resumo30s || parsedPrePorta.fallback
@@ -315,7 +323,7 @@ export function PrePortaView({
           {/* 2. MNEMÔNICO / REGRA DE OURO (faixa discreta com borda esquerda Teal) */}
           {parsedPrePorta.mnemonico && (
             <section className="mt-6" aria-label="Mnemônico e Regra de Ouro">
-              <div className="rounded-xl border border-zinc-200/80 border-l-2 border-l-[#0F766E] bg-teal-50/40 p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:border-white/[0.07] dark:border-l-[#2DD4BF] dark:bg-[#171B24]">
+              <div className="rounded-xl border border-zinc-200 border-l-[3px] border-l-[#0F766E] bg-teal-50/40 p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:border-white/[0.10] dark:border-l-[#2DD4BF] dark:bg-[#171B24]">
                 <h2 className="mb-2.5 text-[11px] font-semibold tracking-[0.06em] text-[#0F766E] uppercase dark:text-[#2DD4BF]">
                   Mnemônico · Regra de Ouro
                 </h2>
@@ -332,11 +340,11 @@ export function PrePortaView({
           {/* 3. COREOGRAFIA / PASSO A PASSO TÉCNICO */}
           {parsedPrePorta.coreografia && (
             <section className="mt-6" aria-label="Coreografia e passo a passo técnico">
-              <h2 className="mb-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-[#9CA3AF]">
+              <h2 className="mb-2.5 text-xs font-semibold tracking-wide text-zinc-950 uppercase dark:text-white">
                 Coreografia · Passo a Passo
               </h2>
               <div
-                className="editorial-prose rounded-xl border border-zinc-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                className="editorial-prose rounded-xl border border-zinc-200 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]"
                 dangerouslySetInnerHTML={{
                   __html: renderTeoriaMarkdownToHtml(parsedPrePorta.coreografia),
                 }}
@@ -344,15 +352,25 @@ export function PrePortaView({
             </section>
           )}
 
-          {/* 2. CHECKLIST MARCÁVEL (persistido em localStorage) */}
+          {/* 4. CHECKLIST MARCÁVEL (cabeçalho tonalizado Azul — persistido em localStorage) */}
           {checklistSections.length > 0 && (
-            <section className="mt-7" aria-label="Checklist de execução">
-              <div className="mb-3 flex items-center justify-between gap-2">
+            <section
+              className="mt-7 rounded-xl border border-zinc-200 border-l-[3px] border-l-sky-500 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:border-l-sky-400 dark:bg-[#15181F]"
+              aria-label="Checklist de execução"
+            >
+              <div className="flex items-center justify-between gap-2 rounded-tr-[11px] border-b border-zinc-200/80 bg-sky-500/[0.06] px-4 py-2.5 dark:border-white/[0.08]">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                  <ClipboardCheck className="h-3.5 w-3.5 shrink-0 text-sky-700 dark:text-sky-400" />
+                  <h2 className="text-xs font-semibold tracking-wide text-sky-700 uppercase dark:text-sky-400">
                     Checklist
                   </h2>
-                  <span className="font-mono text-xs tabular-nums text-[#0F766E] dark:text-[#2DD4BF]">
+                  <span
+                    className={`rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums ${
+                      checkedCount === totalCheckItems && totalCheckItems > 0
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300'
+                        : 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300'
+                    }`}
+                  >
                     {checkedCount}/{totalCheckItems}
                   </span>
                 </div>
@@ -360,7 +378,7 @@ export function PrePortaView({
                   <button
                     type="button"
                     onClick={() => cockpitStore.resetHabChecklist(activeHab.id)}
-                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-800 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-600 transition-colors hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-white"
                   >
                     <RotateCcw className="h-3 w-3" />
                     Limpar marcações
@@ -368,14 +386,11 @@ export function PrePortaView({
                 )}
               </div>
 
-              <div className="space-y-4">
+              <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.07]">
                 {checklistSections.map((sec) => (
-                  <div
-                    key={sec.title}
-                    className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
-                  >
+                  <div key={sec.title} className="p-4">
                     {sec.title && (
-                      <h3 className="mb-2.5 text-xs font-semibold text-zinc-700 dark:text-[#D1D5DB]">
+                      <h3 className="mb-2.5 text-xs font-semibold text-zinc-950 dark:text-white">
                         {stripLeadingEmoji(sec.title)}
                       </h3>
                     )}
@@ -427,19 +442,22 @@ export function PrePortaView({
             </section>
           )}
 
-          {/* 3. ARMADILHAS CRÍTICAS (destaque sutil exclusivo para segurança clínica) */}
+          {/* 5. ARMADILHAS CRÍTICAS (cabeçalho tonalizado Âmbar/Vermelho suave com ícone) */}
           {activeHab.pitfalls && activeHab.pitfalls.length > 0 && (
-            <section className="mt-7" aria-label="Armadilhas críticas">
-              <div className="mb-2.5 flex items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
-                <h2 className="text-xs font-semibold tracking-wide text-amber-800 uppercase dark:text-amber-400">
+            <section
+              className="mt-7 rounded-xl border border-amber-300/80 border-l-[3px] border-l-amber-500 bg-amber-50/35 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-amber-500/30 dark:border-l-amber-400 dark:bg-amber-950/15"
+              aria-label="Armadilhas críticas"
+            >
+              <div className="flex items-center gap-2 rounded-tr-[11px] border-b border-amber-200/80 bg-amber-500/[0.10] px-4 py-2.5 dark:border-amber-500/20 dark:bg-amber-500/[0.12]">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300" />
+                <h2 className="text-xs font-semibold tracking-wide text-amber-800 uppercase dark:text-amber-300">
                   Armadilhas críticas
                 </h2>
               </div>
-              <div className="divide-y divide-amber-200/70 rounded-xl border border-amber-200/90 bg-amber-50/45 dark:divide-amber-900/40 dark:border-amber-900/50 dark:bg-amber-950/20">
+              <div className="divide-y divide-amber-200/70 dark:divide-amber-500/20">
                 {activeHab.pitfalls.map((pitfall, idx) => (
                   <div key={`${idx}-${pitfall.title}`} className="px-4 py-3 text-sm">
-                    <div className="font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                    <div className="font-semibold text-zinc-950 dark:text-white">
                       {cleanInlineCode(stripLeadingEmoji(pitfall.title))}
                     </div>
                     {pitfall.detail && (
@@ -453,17 +471,21 @@ export function PrePortaView({
             </section>
           )}
 
-          {/* 4. TÉCNICA COMPLETA (Carregada sob demanda em disclosure fechado por padrão) */}
-          <section className="mt-8 border-t border-zinc-200/80 pt-5 pb-8 dark:border-white/[0.07]">
+          {/* 6. TÉCNICA COMPLETA (card neutro elevado, carregado sob demanda) */}
+          <section className="mt-7 mb-8 rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]">
             <button
               type="button"
               onClick={handleToggleTechnique}
               aria-expanded={techniqueOpen}
-              className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left transition-colors hover:bg-zinc-100/80 dark:hover:bg-[#1C2029]"
+              className={`flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-zinc-100/90 dark:hover:bg-white/[0.06] ${
+                techniqueOpen
+                  ? 'rounded-t-[11px] border-b border-zinc-200/80 bg-zinc-100/75 dark:border-white/[0.08] dark:bg-white/[0.04]'
+                  : 'rounded-[11px] bg-zinc-100/60 dark:bg-white/[0.03]'
+              }`}
             >
               <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-[#0F766E] dark:text-[#2DD4BF]" />
-                <span className="font-display text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                <BookOpen className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
+                <span className="font-display text-sm font-semibold text-zinc-950 dark:text-white">
                   Técnica completa
                 </span>
                 <span className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
@@ -471,14 +493,14 @@ export function PrePortaView({
                 </span>
               </div>
               {techniqueOpen ? (
-                <ChevronDown className="h-4 w-4 text-zinc-400 dark:text-[#6B7280]" />
+                <ChevronDown className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-[#6B7280]" />
+                <ChevronRight className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
               )}
             </button>
 
             {techniqueOpen && (
-              <div className="mt-4 px-2">
+              <div className="p-5">
                 {techniqueLoading ? (
                   <div className="py-6 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                     Carregando guia de técnica completa...
@@ -491,8 +513,8 @@ export function PrePortaView({
                   <div className="space-y-8">
                     {matchedGuides.map((guide) => (
                       <article key={guide.id} className="space-y-4">
-                        <div className="border-b border-zinc-200/80 pb-2 dark:border-white/[0.07]">
-                          <h3 className="text-base font-bold text-zinc-950 dark:text-[#F3F4F6]">
+                        <div className="border-b border-zinc-200 pb-2 dark:border-white/[0.10]">
+                          <h3 className="text-base font-bold text-zinc-950 dark:text-white">
                             {stripLeadingEmoji(guide.title)}
                           </h3>
                           <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
@@ -505,7 +527,7 @@ export function PrePortaView({
                           if (!cleanBody) return null;
                           return (
                             <div key={`${guide.id}-${idx}`} className="space-y-1.5">
-                              <h4 className="text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                              <h4 className="text-sm font-semibold text-zinc-950 dark:text-white">
                                 {stripLeadingEmoji(sec.title)}
                               </h4>
                               <div

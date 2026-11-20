@@ -6,11 +6,15 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
   Copy,
   Edit3,
+  FileText,
+  Pill,
   Plus,
   RotateCcw,
   Search,
+  ShieldAlert,
   Star,
   Stethoscope,
   X,
@@ -29,6 +33,7 @@ import {
   walkInlineNodes,
   type PatientContextInput,
   type PepAstSection,
+  type PepSectionId,
 } from '../data/protocolsRepo.ts';
 import type { AstSelectionState, ChoiceGroupNode, InlineInputNode } from '../engine/pepAst.ts';
 import { searchClinicalProtocols } from '../engine/search.ts';
@@ -51,6 +56,73 @@ const AREA_FILTERS: Array<{ id: AreaFilter; label: string }> = [
   { id: 'enf', label: 'Enfermaria' },
   { id: 'ped', label: 'Pediatria' },
 ];
+
+const AREA_DOT_CLASS: Partial<Record<ClinicalProtocolItem['mod_id'], string>> = {
+  go: 'bg-rose-500 dark:bg-rose-400',
+  upa: 'bg-amber-500 dark:bg-amber-400',
+  enf: 'bg-sky-500 dark:bg-sky-400',
+  ped: 'bg-emerald-500 dark:bg-emerald-400',
+};
+
+const AREA_ACTIVE_BORDER_CLASS: Partial<Record<ClinicalProtocolItem['mod_id'], string>> = {
+  go: 'border-l-rose-500 dark:border-l-rose-400',
+  upa: 'border-l-amber-500 dark:border-l-amber-400',
+  enf: 'border-l-sky-500 dark:border-l-sky-400',
+  ped: 'border-l-emerald-500 dark:border-l-emerald-400',
+};
+
+const SECTION_VISUAL_STYLE: Record<
+  PepSectionId,
+  {
+    borderClass: string;
+    headerBgClass: string;
+    titleClass: string;
+    dotClass: string;
+    shortLabel: string;
+    Icon: typeof FileText;
+  }
+> = {
+  evolucao: {
+    borderClass: 'border-l-[3px] border-l-sky-500',
+    headerBgClass: 'bg-sky-500/[0.06]',
+    titleClass: 'text-sky-700 dark:text-sky-400',
+    dotClass: 'bg-sky-500 dark:bg-sky-400',
+    shortLabel: 'Evolução',
+    Icon: FileText,
+  },
+  conduta: {
+    borderClass: 'border-l-[3px] border-l-indigo-500',
+    headerBgClass: 'bg-indigo-500/[0.06]',
+    titleClass: 'text-indigo-700 dark:text-indigo-400',
+    dotClass: 'bg-indigo-500 dark:bg-indigo-400',
+    shortLabel: 'Conduta',
+    Icon: ClipboardList,
+  },
+  receita: {
+    borderClass: 'border-l-[3px] border-l-teal-500',
+    headerBgClass: 'bg-teal-500/[0.07]',
+    titleClass: 'text-teal-700 dark:text-teal-400',
+    dotClass: 'bg-teal-500 dark:bg-teal-400',
+    shortLabel: 'Prescrição',
+    Icon: Pill,
+  },
+  orientacoes: {
+    borderClass: 'border-l-[3px] border-l-amber-500',
+    headerBgClass: 'bg-amber-500/[0.07]',
+    titleClass: 'text-amber-700 dark:text-amber-400',
+    dotClass: 'bg-amber-500 dark:bg-amber-400',
+    shortLabel: 'Orientações',
+    Icon: ShieldAlert,
+  },
+  geral: {
+    borderClass: 'border-l-[3px] border-l-zinc-400 dark:border-l-zinc-500',
+    headerBgClass: 'bg-zinc-500/[0.04]',
+    titleClass: 'text-zinc-700 dark:text-zinc-300',
+    dotClass: 'bg-zinc-400 dark:bg-zinc-500',
+    shortLabel: 'Geral',
+    Icon: FileText,
+  },
+};
 
 const MOD_LABELS: Record<ClinicalProtocolItem['mod_id'], string> = {
   go: 'GO',
@@ -188,15 +260,28 @@ export function ProtocolosView({
 
   // Agrupamento por subcategoria preservando a ordem natural / de relevância
   const groupedProtocols = useMemo(() => {
-    const groups: Array<{ key: string; label: string; items: ClinicalProtocolItem[] }> = [];
-    const byKey = new Map<string, { key: string; label: string; items: ClinicalProtocolItem[] }>();
+    const groups: Array<{
+      key: string;
+      modId: ClinicalProtocolItem['mod_id'];
+      label: string;
+      items: ClinicalProtocolItem[];
+    }> = [];
+    const byKey = new Map<
+      string,
+      {
+        key: string;
+        modId: ClinicalProtocolItem['mod_id'];
+        label: string;
+        items: ClinicalProtocolItem[];
+      }
+    >();
 
     for (const item of filteredProtocols) {
       const label = getSubcategoryLabel(item);
       const key = `${item.mod_id}::${label}`;
       let grp = byKey.get(key);
       if (!grp) {
-        grp = { key, label, items: [] };
+        grp = { key, modId: item.mod_id, label, items: [] };
         byKey.set(key, grp);
         groups.push(grp);
       }
@@ -352,8 +437,24 @@ export function ProtocolosView({
     setAstState(fresh.initialAstState);
   };
 
+  const scrollToElementById = (elementId: string) => {
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleJumpToDiretrizes = () => {
+    setGuiaOpen(true);
+    window.requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        scrollToElementById('pep-section-diretrizes');
+      }, 30);
+    });
+  };
+
   return (
-    <div className="mx-auto flex h-[calc(100vh-3.25rem)] w-full overflow-hidden">
+    <div className="mx-auto flex min-h-0 flex-1 w-full overflow-hidden">
       {/* COLUNA ESQUERDA: Lista de Protocolos agrupada por subcategoria (320px em >=1024px) */}
       <aside
         aria-label="Lista de protocolos clínicos"
@@ -410,19 +511,28 @@ export function ProtocolosView({
           >
             {AREA_FILTERS.map((f) => {
               const active = areaFilter === f.id;
+              const dotClass = f.id !== 'todos' ? AREA_DOT_CLASS[f.id] : undefined;
               return (
                 <button
                   key={f.id}
                   type="button"
                   onClick={() => setAreaFilter(f.id)}
                   aria-pressed={active}
-                  className={`flex-1 whitespace-nowrap rounded-md px-1.5 py-1 text-center text-[11px] font-medium transition-colors ${
+                  className={`inline-flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-md px-1.5 py-1 text-center text-[11px] font-medium transition-colors ${
                     active
                       ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
                       : 'text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]'
                   }`}
                 >
-                  {f.label}
+                  {dotClass && (
+                    <span
+                      aria-hidden="true"
+                      className={`h-2 w-2 shrink-0 rounded-full ${dotClass} ${
+                        active ? 'ring-1 ring-white/70 dark:ring-[#0F1115]/50' : ''
+                      }`}
+                    />
+                  )}
+                  <span>{f.label}</span>
                 </button>
               );
             })}
@@ -459,50 +569,58 @@ export function ProtocolosView({
                 : 'Nenhum protocolo encontrado.'}
             </div>
           ) : (
-            groupedProtocols.map((group) => (
-              <div key={group.key}>
-                <div className="sticky top-0 z-10 border-b border-zinc-200/60 bg-[#FAFAFA]/95 px-3 py-1.5 text-[10px] font-semibold tracking-[0.06em] text-zinc-500 uppercase backdrop-blur-xs dark:border-white/[0.05] dark:bg-[#0F1115]/95 dark:text-[#9CA3AF]">
-                  {group.label}
-                </div>
-                {group.items.map((item) => {
-                  const isSelected = item.id === activeProtocol.id;
-                  const isFav = favoriteSet.has(item.id);
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => onSelectProtocol(item.id)}
-                      className={`group flex w-full items-start justify-between gap-2.5 border-b border-zinc-200/40 px-3 py-2.5 text-left transition-colors dark:border-white/[0.04] ${
-                        isSelected
-                          ? 'bg-teal-50/75 text-zinc-950 dark:bg-teal-500/12 dark:text-[#F3F4F6]'
-                          : 'text-zinc-700 hover:bg-zinc-100/80 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]/70'
-                      }`}
-                    >
-                      <span
-                        className={`line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug ${
+            groupedProtocols.map((group) => {
+              const groupDot = AREA_DOT_CLASS[group.modId];
+              return (
+                <div key={group.key}>
+                  <div className="sticky top-0 z-10 flex items-center gap-1.5 border-b border-zinc-200/60 bg-[#FAFAFA]/95 px-3 py-1.5 text-[10px] font-semibold tracking-[0.06em] text-zinc-500 uppercase backdrop-blur-xs dark:border-white/[0.06] dark:bg-[#0F1115]/95 dark:text-[#9CA3AF]">
+                    {groupDot && (
+                      <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${groupDot}`} />
+                    )}
+                    <span className="truncate">{group.label}</span>
+                  </div>
+                  {group.items.map((item) => {
+                    const isSelected = item.id === activeProtocol.id;
+                    const isFav = favoriteSet.has(item.id);
+                    const activeAreaBorder =
+                      AREA_ACTIVE_BORDER_CLASS[item.mod_id] || 'border-l-[#0F766E] dark:border-l-[#2DD4BF]';
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => onSelectProtocol(item.id)}
+                        className={`group flex w-full items-start justify-between gap-2.5 border-b border-l-2 border-b-zinc-200/40 px-3 py-2.5 text-left transition-colors dark:border-b-white/[0.05] ${
                           isSelected
-                            ? 'font-semibold text-[#0F766E] dark:text-[#2DD4BF]'
-                            : 'font-medium'
+                            ? `${activeAreaBorder} bg-white text-zinc-950 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)] dark:bg-[#1A1F2B] dark:text-white`
+                            : 'border-l-transparent text-zinc-700 hover:bg-zinc-100/80 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]/70'
                         }`}
                       >
-                        {item.title}
-                      </span>
+                        <span
+                          className={`line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug ${
+                            isSelected
+                              ? 'font-semibold text-zinc-950 dark:text-white'
+                              : 'font-medium'
+                          }`}
+                        >
+                          {item.title}
+                        </span>
 
-                      <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
-                        {item.cid10 && (
-                          <span className="font-mono text-[10px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
-                            {item.cid10}
-                          </span>
-                        )}
-                        {isFav && (
-                          <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />
-                        )}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ))
+                        <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
+                          {item.cid10 && (
+                            <span className="font-mono text-[10px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
+                              {item.cid10}
+                            </span>
+                          )}
+                          {isFav && (
+                            <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })
           )}
         </div>
       </aside>
@@ -638,6 +756,45 @@ export function ProtocolosView({
                 </button>
               </div>
             </div>
+
+            {/* Quick Jump (Índice de salto rápido por bloco do protocolo) */}
+            {(compiled.sections.length > 1 || guiaSections.length > 0) && (
+              <nav
+                aria-label="Ir para seção do protocolo"
+                className="mt-3 flex flex-wrap items-center gap-1.5"
+              >
+                {compiled.sections.map((sec) => {
+                  const secStyle = SECTION_VISUAL_STYLE[sec.id] || SECTION_VISUAL_STYLE.geral;
+                  return (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => scrollToElementById(`pep-section-${sec.id}`)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950 dark:border-white/[0.10] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-white/[0.18] dark:hover:bg-[#1C2029] dark:hover:text-white"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${secStyle.dotClass}`}
+                      />
+                      <span>{secStyle.shortLabel}</span>
+                    </button>
+                  );
+                })}
+                {guiaSections.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleJumpToDiretrizes}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950 dark:border-white/[0.10] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-white/[0.18] dark:hover:bg-[#1C2029] dark:hover:text-white"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400 dark:bg-zinc-500"
+                    />
+                    <span>Diretrizes</span>
+                  </button>
+                )}
+              </nav>
+            )}
 
             {/* Faixa contextual: exibida exclusivamente em protocolos com cálculo de dose por peso */}
             {compiled.needsWeightPersonalization && (
@@ -785,15 +942,24 @@ export function ProtocolosView({
                 }));
               };
 
+              const secStyle = SECTION_VISUAL_STYLE[section.id] || SECTION_VISUAL_STYLE.geral;
+              const SectionIcon = secStyle.Icon;
+
               return (
                 <section
                   key={section.id}
+                  id={`pep-section-${section.id}`}
                   aria-label={section.title}
-                  className="rounded-lg border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                  className={`scroll-mt-4 rounded-lg border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F] ${secStyle.borderClass}`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/70 px-4 py-2.5 dark:border-white/[0.06]">
+                  <div
+                    className={`flex flex-wrap items-center justify-between gap-2 rounded-tr-[7px] border-b border-zinc-200/80 px-4 py-2.5 dark:border-white/[0.08] ${secStyle.headerBgClass}`}
+                  >
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <h2 className="text-xs font-semibold tracking-wide text-zinc-700 uppercase dark:text-[#D1D5DB]">
+                      <SectionIcon className={`h-3.5 w-3.5 shrink-0 ${secStyle.titleClass}`} />
+                      <h2
+                        className={`text-xs font-semibold tracking-wide uppercase ${secStyle.titleClass}`}
+                      >
                         {section.title}
                       </h2>
                       {isStaleManualEdit ? (
@@ -926,7 +1092,10 @@ export function ProtocolosView({
 
           {/* DIRETRIZES & FUNDAMENTAÇÃO CLÍNICA (Colapsável fechada por padrão) */}
           {guiaSections.length > 0 && (
-            <section className="mt-8 border-t border-zinc-200/80 pt-5 dark:border-white/[0.07]">
+            <section
+              id="pep-section-diretrizes"
+              className="mt-8 scroll-mt-4 border-t border-zinc-200 pt-5 dark:border-white/[0.10]"
+            >
               <button
                 type="button"
                 onClick={() => setGuiaOpen((v) => !v)}

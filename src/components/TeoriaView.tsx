@@ -102,7 +102,7 @@ export function TeoriaView({ central6Ano, onOpenPrePorta }: TeoriaViewProps) {
   const activeStatus: TeoriaModuleStatus = activeMod ? getStatus(activeMod.id) : 'nao_iniciado';
 
   return (
-    <div className="flex h-[calc(100vh-3.25rem)] overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
+    <div className="flex min-h-0 flex-1 overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Coluna Esquerda — Lista enxuta de módulos */}
       <aside
         aria-label="Módulos de formação teórica"
@@ -232,14 +232,14 @@ export function TeoriaView({ central6Ano, onOpenPrePorta }: TeoriaViewProps) {
               Módulos
             </button>
 
-            <header className="border-b border-zinc-200/80 pb-5 dark:border-white/[0.07]">
+            <header className="border-b border-zinc-200 pb-5 dark:border-white/[0.10]">
               <div className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
                 <span className="font-mono font-medium">Módulo {activeMod.num}</span>
                 <span className="mx-1.5" aria-hidden="true">·</span>
                 <span>{activeMod.pilar}</span>
               </div>
 
-              <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl dark:text-[#F3F4F6]">
+              <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl dark:text-white">
                 {activeMod.title}
               </h1>
 
@@ -248,7 +248,7 @@ export function TeoriaView({ central6Ano, onOpenPrePorta }: TeoriaViewProps) {
                 <div
                   role="group"
                   aria-label="Status do módulo"
-                  className="inline-flex rounded-lg border border-zinc-200/80 bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                  className="inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]"
                 >
                   {STATUS_OPTIONS.map((opt) => {
                     const active = activeStatus === opt.value;

@@ -42,7 +42,7 @@ export function TopBar({
   onOpenSettings,
 }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-30 h-13 w-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+    <header className="sticky top-0 z-30 h-13 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs dark:border-white/[0.07] dark:bg-[#0F1115]/95">
       <div className="mx-auto flex h-full w-full items-center justify-between gap-2 px-3 sm:px-5">
         {/* Esquerda: Switch de contexto + Abas do contexto ativo */}
         <div className="flex h-full min-w-0 items-center gap-3 sm:gap-5">

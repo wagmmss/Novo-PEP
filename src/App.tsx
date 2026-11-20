@@ -84,7 +84,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-zinc-900 dark:bg-[#0F1115] dark:text-[#F3F4F6]">
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-[#FAFAFA] text-zinc-900 dark:bg-[#0F1115] dark:text-[#F3F4F6]">
       <TopBar
         world={world}
         beiraLeitoTab={beiraLeitoTab}

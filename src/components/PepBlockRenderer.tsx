@@ -108,6 +108,7 @@ export function PepBlockRenderer({
 }: PepBlockRendererProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+  const [popoverAlignRight, setPopoverAlignRight] = useState<boolean>(false);
 
   const layout = useMemo(
     () => computeAstDisplayLayout(ast, state, section.blockIndexSet),
@@ -166,6 +167,8 @@ export function PepBlockRenderer({
         /^(?:kg|cm|mm|bpm|irpm|%|°C|g|mL|mg|sem|d|dias|G|P|A|PN|PC|PAS|PAD)$/i.test(rawPlaceholder)
     );
 
+    const isFilled = val.trim().length > 0;
+
     return (
       <input
         key={node.id}
@@ -177,7 +180,11 @@ export function PepBlockRenderer({
         onKeyDown={handleGapKeyDown}
         placeholder={displayPlaceholder}
         aria-label={rawPlaceholder && rawPlaceholder !== '...' ? `Preencher ${rawPlaceholder}` : 'Preencher lacuna'}
-        className={`pep-inline-input mx-[1px] inline w-auto border-0 border-b border-dotted border-zinc-400/90 bg-transparent px-0.5 py-0 leading-snug text-zinc-950 outline-none transition-colors placeholder:font-normal placeholder:text-zinc-400 hover:border-zinc-600 focus:border-solid focus:border-[#0F766E] focus:bg-teal-50/50 dark:border-zinc-500/80 dark:text-[#F3F4F6] dark:placeholder:text-zinc-500 dark:hover:border-zinc-300 dark:focus:border-[#2DD4BF] dark:focus:bg-teal-500/10 ${
+        className={`pep-inline-input mx-[1px] inline w-auto rounded border-0 border-b px-1.5 py-[1px] leading-snug outline-none transition-colors focus:border-solid focus:border-[#0F766E] focus:bg-teal-500/12 dark:focus:border-[#2DD4BF] dark:focus:bg-teal-400/15 ${
+          isFilled
+            ? 'border-teal-500/50 bg-teal-500/[0.07] text-zinc-950 hover:border-teal-600/70 dark:border-teal-400/45 dark:bg-teal-400/[0.10] dark:text-[#F3F4F6] dark:hover:border-teal-300/70'
+            : 'border-amber-500/60 bg-amber-500/[0.10] text-zinc-950 placeholder:font-normal placeholder:text-amber-800/70 hover:border-amber-600/80 dark:border-amber-400/50 dark:bg-amber-400/[0.12] dark:text-[#F3F4F6] dark:placeholder:text-amber-300/70 dark:hover:border-amber-300/80'
+        } ${
           isNumericLike ? 'font-mono text-[13px] font-medium tabular-nums' : 'font-sans text-[14px] font-medium'
         }`}
       />
@@ -225,14 +232,26 @@ export function PepBlockRenderer({
       ? group.options[selectedIndices[0] === 0 ? 1 : 0]?.rawText
       : undefined;
 
-    const handleTriggerClick = () => {
+    const handleTriggerClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isSimpleBinary) {
         const current = selectedIndices[0] ?? 0;
         const next = current === 0 ? 1 : 0;
         onChoiceSelect(group, [next]);
         return;
       }
-      setOpenPopoverId((prev) => (prev === group.id ? null : group.id));
+      if (openPopoverId === group.id) {
+        setOpenPopoverId(null);
+        return;
+      }
+      const triggerRect = e.currentTarget.getBoundingClientRect();
+      const containerRight = containerRef.current?.getBoundingClientRect().right;
+      const boundaryRight = Math.min(
+        window.innerWidth,
+        typeof containerRight === 'number' ? containerRight : window.innerWidth
+      );
+      const spaceToRight = boundaryRight - triggerRect.left;
+      setPopoverAlignRight(spaceToRight < 320 && triggerRect.right > 220);
+      setOpenPopoverId(group.id);
     };
 
     const handleOptionClick = (optIdx: number) => {
@@ -245,10 +264,10 @@ export function PepBlockRenderer({
       }
     };
 
-    const triggerClass = `inline cursor-pointer border-0 border-b border-dotted pb-[1px] text-left font-medium transition-colors focus:outline-none focus-visible:border-solid focus-visible:border-[#0F766E] dark:focus-visible:border-[#2DD4BF] ${
+    const triggerClass = `inline cursor-pointer rounded border-0 px-1.5 py-[1px] text-left font-medium transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[#0F766E] dark:focus-visible:ring-[#2DD4BF] ${
       selectedOptions.length === 0
-        ? 'border-zinc-400 text-zinc-400 hover:text-zinc-700 dark:border-zinc-500 dark:text-zinc-500 dark:hover:text-zinc-300'
-        : 'border-[#0F766E]/55 text-zinc-900 hover:border-[#0F766E] hover:text-[#0F766E] dark:border-[#2DD4BF]/45 dark:text-[#F3F4F6] dark:hover:border-[#2DD4BF] dark:hover:text-[#2DD4BF]'
+        ? 'bg-amber-500/[0.10] text-amber-900 hover:bg-amber-500/20 dark:bg-amber-400/[0.12] dark:text-amber-300 dark:hover:bg-amber-400/20'
+        : 'bg-zinc-200/65 text-zinc-900 hover:bg-teal-500/15 hover:text-[#0F766E] dark:bg-white/[0.08] dark:text-[#F3F4F6] dark:hover:bg-teal-400/15 dark:hover:text-[#2DD4BF]'
     }`;
 
     return (
@@ -269,7 +288,7 @@ export function PepBlockRenderer({
             <span>
               {group.options[0]?.rawText ? `Selecionar (${group.options[0].rawText}…)` : 'Selecionar'}
             </span>
-            <span aria-hidden="true" className="ml-0.5 text-[10px] opacity-55">
+            <span aria-hidden="true" className="ml-1 text-[10px] text-amber-700 opacity-85 dark:text-amber-300">
               ▾
             </span>
           </button>
@@ -348,18 +367,20 @@ export function PepBlockRenderer({
             className={triggerClass}
           >
             <span>{selectedOptions.map((o) => getChoiceOptionSummary(o, state)).join(', ')}</span>
-            <span aria-hidden="true" className="ml-0.5 text-[10px] opacity-55">
+            <span aria-hidden="true" className="ml-1 text-[10px] text-zinc-600 opacity-85 dark:text-zinc-300">
               ▾
             </span>
           </button>
         )}
 
-        {/* Mini-popover neutro (3+ opções ou multi-escolha) */}
+        {/* Mini-popover neutro (3+ opções ou multi-escolha) com alinhamento anti-clipping */}
         {isOpen && !isSimpleBinary && (
           <div
             role="listbox"
             aria-multiselectable={isMulti || undefined}
-            className="absolute top-full left-0 z-40 mt-1.5 max-h-64 min-w-[210px] max-w-[340px] overflow-y-auto rounded-lg border border-zinc-200/90 bg-white py-1 shadow-lg dark:border-white/[0.1] dark:bg-[#1C2029]"
+            className={`absolute top-full z-40 mt-1.5 max-h-64 min-w-[210px] max-w-[min(320px,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-white/[0.12] dark:bg-[#1C2029] ${
+              popoverAlignRight ? 'right-0' : 'left-0'
+            }`}
           >
             {isMulti && (
               <div className="border-b border-zinc-100 px-3 py-1 text-[10px] font-medium tracking-wide text-zinc-400 uppercase dark:border-white/[0.06] dark:text-[#9CA3AF]">

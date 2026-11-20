@@ -274,9 +274,9 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
   };
 
   return (
-    <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
+    <main className="min-h-0 flex-1 overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Barra de sub-abas limpa: Plano 6º Ano | R1 & Currículo */}
-      <div className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#FAFAFA]/95 backdrop-blur-sm dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+      <div className="sticky top-0 z-20 border-b border-zinc-200 bg-[#FAFAFA]/95 backdrop-blur-sm dark:border-white/[0.10] dark:bg-[#0F1115]/95">
         <div className="mx-auto flex max-w-5xl items-center gap-1 px-4 sm:px-8">
           {PLANO_R1_SUB_TABS.map((tab) => {
             const active = subTab === tab.id;
@@ -315,7 +315,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             <div>
               <h1
                 id="r1-prazos-heading"
-                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+                className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white"
               >
                 Prazos & Ciclos R1
               </h1>
@@ -460,7 +460,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             </form>
           )}
 
-          <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
+          <div className="divide-y divide-zinc-200/80 rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.07] dark:border-white/[0.10] dark:bg-[#15181F]">
             {milestones.length === 0 ? (
               <div className="px-4 py-6 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
                 Nenhum prazo cadastrado. Clique em &ldquo;Novo prazo&rdquo; para adicionar.
@@ -547,7 +547,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             <div>
               <h2
                 id="matriz-curriculo-heading"
-                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+                className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white"
               >
                 Matriz Unificada de Currículo
               </h2>
@@ -605,33 +605,50 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
             {BANK_ORDER.map((bankId) => {
               const summary = curriculumEval.banks[bankId];
               const cfg = CURRICULUM_BANKS_CONFIG[bankId];
+              const pctRounded = Math.round(summary.pct);
+              const isHighScore = pctRounded >= 80;
               return (
                 <div
                   key={bankId}
-                  className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+                  className="rounded-xl border border-zinc-200 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]"
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-[#D1D5DB]">
+                    <span className="text-xs font-semibold tracking-wide text-zinc-950 dark:text-white">
                       {summary.sigla}
                     </span>
-                    <span className="text-[11px] text-zinc-400 dark:text-[#6B7280]">
+                    <span className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                       {cfg.pesoNotaFinal}
                     </span>
                   </div>
 
-                  <div className="mt-2 flex items-baseline gap-1.5">
-                    <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums text-zinc-900 dark:text-[#F3F4F6]">
-                      {formatScore(summary.finalScore, summary.escalaMax)}
-                    </span>
-                    <span className="font-mono text-xs tabular-nums text-zinc-400 dark:text-[#6B7280]">
-                      / {summary.escalaMax}
+                  <div className="mt-2 flex items-baseline justify-between gap-2">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums text-zinc-950 dark:text-white">
+                        {formatScore(summary.finalScore, summary.escalaMax)}
+                      </span>
+                      <span className="font-mono text-xs tabular-nums text-zinc-500 dark:text-[#9CA3AF]">
+                        / {summary.escalaMax}
+                      </span>
+                    </div>
+                    <span
+                      className={`rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums ${
+                        isHighScore
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300'
+                          : 'bg-teal-500/12 text-[#0F766E] dark:bg-teal-400/15 dark:text-[#2DD4BF]'
+                      }`}
+                    >
+                      {pctRounded}%
                     </span>
                   </div>
 
-                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-white/[0.08]">
+                  <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-zinc-200/80 dark:bg-white/[0.12]">
                     <div
-                      className="h-full rounded-full bg-[#0F766E] transition-all duration-300 dark:bg-[#2DD4BF]"
-                      style={{ width: `${summary.pct}%` }}
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isHighScore
+                          ? 'bg-emerald-600 dark:bg-emerald-400'
+                          : 'bg-[#0F766E] dark:bg-[#2DD4BF]'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(0, summary.pct))}%` }}
                     />
                   </div>
 
@@ -747,7 +764,7 @@ export function R1CurriculoView({ central6Ano, onNotify }: R1CurriculoViewProps)
           </div>
 
           {/* Tabela / Lista limpa dos 20 itens */}
-          <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
+          <div className="divide-y divide-zinc-200/80 rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.07] dark:border-white/[0.10] dark:bg-[#15181F]">
             {filteredCatalog.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
                 Nenhum item de currículo corresponde aos filtros selecionados.
@@ -923,7 +940,7 @@ function Plano6AnoTool({
           <div>
             <h1
               id="plano-rodizios-heading"
-              className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+              className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white"
             >
               Blocos &amp; Rodízios do 6º Ano
             </h1>
@@ -955,9 +972,9 @@ function Plano6AnoTool({
         </div>
 
         {/* Cartão detalhado do rodízio selecionado */}
-        <div className="rounded-xl border border-zinc-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
-          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-3.5 dark:border-white/[0.06]">
-            <h2 className="text-base font-semibold text-zinc-950 dark:text-[#F3F4F6]">
+        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-200/70 pb-3.5 dark:border-white/[0.08]">
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
               {activeRodizio.nome}
             </h2>
             <span className="font-mono text-xs tabular-nums text-[#0F766E] dark:text-[#2DD4BF]">
@@ -1145,7 +1162,7 @@ function Plano6AnoTool({
         <div>
           <h2
             id="plano-arquetipos-heading"
-            className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+            className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white"
           >
             Arquétipos de Dia
           </h2>
@@ -1208,7 +1225,7 @@ function Plano6AnoTool({
             <div className="flex items-center gap-2.5">
               <h2
                 id="plano-ritual-heading"
-                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]"
+                className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white"
               >
                 Ritual de Domingo
               </h2>

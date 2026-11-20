@@ -34,7 +34,7 @@ const SUB_TABS: Array<{ id: PraticaSubTab; label: string }> = [
   { id: 'prompts', label: 'Prompts IA' },
 ];
 
-const PROC_TO_HAB_ID: Record<string, string> = {
+export const PROC_TO_HAB_ID: Record<string, string> = {
   'proc-ecg-10': 'hab-12',
   'proc-gaso-5': 'hab-14',
   'proc-sutura': 'hab-21',
@@ -132,9 +132,9 @@ export function PraticaView({ central6Ano, onOpenPrePorta, onNotify }: PraticaVi
   );
 
   return (
-    <main className="h-[calc(100vh-3.25rem)] overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
+    <main className="min-h-0 flex-1 overflow-y-auto bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Barra de sub-abas limpa — 1 ferramenta focada por vez */}
-      <div className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#FAFAFA]/95 backdrop-blur-sm dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+      <div className="sticky top-0 z-20 border-b border-zinc-200 bg-[#FAFAFA]/95 backdrop-blur-sm dark:border-white/[0.10] dark:bg-[#0F1115]/95">
         <div className="mx-auto flex max-w-4xl items-center gap-1 overflow-x-auto px-4 sm:px-8">
           {SUB_TABS.map((tab) => {
             const active = subTab === tab.id;
@@ -151,7 +151,7 @@ export function PraticaView({ central6Ano, onOpenPrePorta, onNotify }: PraticaVi
               >
                 <span>{tab.label}</span>
                 {tab.id === 'pontos-cegos' && pendingBlindCount > 0 && (
-                  <span className="ml-1.5 font-mono text-xs tabular-nums text-zinc-400 dark:text-[#6B7280]">
+                  <span className="ml-1.5 rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-amber-800 dark:bg-amber-400/15 dark:text-amber-300">
                     {pendingBlindCount}
                   </span>
                 )}
@@ -277,15 +277,18 @@ function LogbookTool({
       {/* Cabeçalho editorial */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">
             Logbook de Procedimentos — Regra 3x
           </h1>
           <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
             Auxiliou, Supervisionado e Autônomo avançam a Regra 3x; Observou registra no histórico.
           </p>
         </div>
-        <div className="font-mono text-xs tabular-nums text-zinc-500 dark:text-[#9CA3AF]">
-          {summary.completed3x}/{summary.totalProcedures} em 3x · {summary.totalExecutions} execuções
+        <div className="font-mono text-xs tabular-nums text-zinc-600 dark:text-[#9CA3AF]">
+          <span className={summary.completed3x > 0 ? 'font-semibold text-emerald-700 dark:text-emerald-400' : ''}>
+            {summary.completed3x}/{summary.totalProcedures} em 3x
+          </span>{' '}
+          · {summary.totalExecutions} execuções
         </div>
       </div>
 
@@ -333,7 +336,7 @@ function LogbookTool({
       </div>
 
       {/* Lista de procedimentos */}
-      <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
+      <div className="divide-y divide-zinc-200/80 rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.07] dark:border-white/[0.10] dark:bg-[#15181F]">
         {filteredProcedures.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
             Nenhum procedimento encontrado para este filtro.
@@ -373,10 +376,10 @@ function LogbookTool({
                         </span>
                       )}
                       <span
-                        className={`shrink-0 font-mono text-xs font-semibold tabular-nums ${
+                        className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-xs font-semibold tabular-nums ${
                           rule3xDone
-                            ? 'text-[#0F766E] dark:text-[#2DD4BF]'
-                            : 'text-zinc-500 dark:text-[#9CA3AF]'
+                            ? 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300'
+                            : 'bg-zinc-100 text-zinc-600 dark:bg-white/[0.06] dark:text-[#9CA3AF]'
                         }`}
                       >
                         {Math.min(count, 3)}/3{rule3xDone ? ' ✓' : ''}
@@ -420,10 +423,12 @@ function LogbookTool({
                       {[1, 2, 3].map((step) => (
                         <div
                           key={step}
-                          className={`h-1 flex-1 rounded-full transition-colors ${
+                          className={`h-1.5 flex-1 rounded-full transition-colors ${
                             filledSegments >= step
-                              ? 'bg-[#0F766E] dark:bg-[#2DD4BF]'
-                              : 'bg-zinc-200 dark:bg-white/[0.08]'
+                              ? rule3xDone
+                                ? 'bg-emerald-500 dark:bg-emerald-400'
+                                : 'bg-[#0F766E] dark:bg-[#2DD4BF]'
+                              : 'bg-zinc-200 dark:bg-white/[0.10]'
                           }`}
                         />
                       ))}
@@ -665,7 +670,7 @@ function PontosCegosTool({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">
           Pontos Cegos (60s)
         </h1>
         <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
@@ -676,7 +681,7 @@ function PontosCegosTool({
       {/* Formulário rápido */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-3.5 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]"
+        className="space-y-3.5 rounded-xl border border-zinc-200 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]"
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="sm:col-span-2">
@@ -826,7 +831,7 @@ function PontosCegosTool({
       </div>
 
       {/* Lista de pontos cegos */}
-      <div className="divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.06] dark:border-white/[0.07] dark:bg-[#15181F]">
+      <div className="divide-y divide-zinc-200/80 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:divide-white/[0.07] dark:border-white/[0.10] dark:bg-[#15181F]">
         {filteredSpots.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-[#9CA3AF]">
             {filter === 'pendentes'
@@ -837,7 +842,14 @@ function PontosCegosTool({
           filteredSpots.map((item) => {
             const isResolved = item.status === 'resolvido';
             return (
-              <div key={item.id} className="flex items-start gap-3 px-4 py-3.5">
+              <div
+                key={item.id}
+                className={`flex items-start gap-3 border-l-[3px] px-4 py-3.5 ${
+                  isResolved
+                    ? 'border-l-emerald-500/60 dark:border-l-emerald-400/50'
+                    : 'border-l-amber-500 bg-amber-500/[0.03] dark:border-l-amber-400 dark:bg-amber-400/[0.04]'
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -847,22 +859,29 @@ function PontosCegosTool({
                   aria-label={isResolved ? `Reabrir ${item.titulo}` : `Marcar ${item.titulo} como resolvido`}
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
                     isResolved
-                      ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
-                      : 'border-zinc-300 bg-white hover:border-[#0F766E] dark:border-white/[0.18] dark:bg-[#0F1115] dark:hover:border-[#2DD4BF]'
+                      ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-400 dark:bg-emerald-400 dark:text-[#0F1115]'
+                      : 'border-amber-500/70 bg-white hover:border-amber-600 dark:border-amber-400/60 dark:bg-[#0F1115] dark:hover:border-amber-300'
                   }`}
                 >
                   {isResolved && <Check className="h-3.5 w-3.5" />}
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <div
-                    className={`text-sm font-medium ${
-                      isResolved
-                        ? 'text-zinc-400 line-through dark:text-[#6B7280]'
-                        : 'text-zinc-900 dark:text-[#F3F4F6]'
-                    }`}
-                  >
-                    {item.titulo}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`text-sm font-medium ${
+                        isResolved
+                          ? 'text-zinc-400 line-through dark:text-[#6B7280]'
+                          : 'text-zinc-950 dark:text-white'
+                      }`}
+                    >
+                      {item.titulo}
+                    </span>
+                    {!isResolved && (
+                      <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-amber-800 uppercase dark:bg-amber-400/15 dark:text-amber-300">
+                        Pendente
+                      </span>
+                    )}
                   </div>
                   <div className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                     <span className="font-mono tabular-nums">{formatIsoShort(item.dateIso)}</span>
@@ -945,7 +964,7 @@ function PromptsIaTool({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-[#F3F4F6]">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">
           Prompts IA Contextuais
         </h1>
         <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#9CA3AF]">
@@ -978,7 +997,7 @@ function PromptsIaTool({
       </div>
 
       {/* Contexto mínimo */}
-      <div className="grid grid-cols-1 gap-3 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:grid-cols-3 dark:border-white/[0.07] dark:bg-[#15181F]">
+      <div className="grid grid-cols-1 gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:grid-cols-3 dark:border-white/[0.10] dark:bg-[#15181F]">
         <div>
           <label
             htmlFor="prompt-rodizio"
@@ -1047,7 +1066,7 @@ function PromptsIaTool({
       </div>
 
       {/* Prompt gerado */}
-      <div className="rounded-xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
+      <div className="rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.10] dark:bg-[#15181F]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/80 px-4 py-2.5 dark:border-white/[0.07]">
           <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
             <Sparkles className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
