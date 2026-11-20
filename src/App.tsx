@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopBar, type AppWorld, type BeiraLeitoTab, type SextoAnoTab } from './components/TopBar.tsx';
 import { ProtocolosView } from './components/ProtocolosView.tsx';
 import { PrePortaView } from './components/PrePortaView.tsx';
@@ -8,12 +8,27 @@ import { R1CurriculoView } from './components/R1CurriculoView.tsx';
 import { CommandPalette } from './components/CommandPalette.tsx';
 import { BackupModal } from './components/BackupModal.tsx';
 import { QuickCaptureModal, type QuickCaptureRequest } from './components/QuickCaptureModal.tsx';
+import { ShortcutsHelp } from './components/ShortcutsHelp.tsx';
 import {
   ALL_PROTOCOLS,
   GLOBAL_SEARCH_INDEX,
   HAB_PROTOCOLS,
   PEP_PROTOCOLS,
+  PROTOCOL_BY_ID,
 } from './data/protocolsRepo.ts';
+import { formatHashRoute, parseHashRoute, type AppRoute } from './state/hashRoute.ts';
+import { subscribeAppHealth } from './state/appHealth.ts';
+
+function isKnownRouteId(tab: 'protocolos' | 'pre-porta', id: string): boolean {
+  const item = PROTOCOL_BY_ID.get(id);
+  if (!item) return false;
+  return tab === 'pre-porta' ? item.mod_id === 'hab' : item.mod_id !== 'hab';
+}
+
+function readInitialRoute(): AppRoute | null {
+  if (typeof window === 'undefined') return null;
+  return parseHashRoute(window.location.hash, isKnownRouteId);
+}
 import type { ClinicalProtocolItem } from './data/clinical_data.ts';
 import { useCockpitStore, useThemeSync } from './hooks/useCockpitStore.ts';
 import { cockpitStore } from './state/store.ts';
@@ -22,28 +37,114 @@ export function App() {
   const storeState = useCockpitStore();
   useThemeSync(storeState.theme);
 
-  const [world, setWorld] = useState<AppWorld>('beira-leito');
-  const [beiraLeitoTab, setBeiraLeitoTab] = useState<BeiraLeitoTab>('protocolos');
-  const [sextoAnoTab, setSextoAnoTab] = useState<SextoAnoTab>('pratica');
+  // Estado inicial lido da URL (#/p/<id>, #/hab/<id>, #/6ano/<aba>)
+  const [initialRoute] = useState<AppRoute | null>(readInitialRoute);
+  const [world, setWorld] = useState<AppWorld>(initialRoute?.world ?? 'beira-leito');
+  const [beiraLeitoTab, setBeiraLeitoTab] = useState<BeiraLeitoTab>(
+    initialRoute?.world === 'beira-leito' ? initialRoute.tab : 'protocolos'
+  );
+  const [sextoAnoTab, setSextoAnoTab] = useState<SextoAnoTab>(
+    initialRoute?.world === 'sexto-ano' ? initialRoute.tab : 'pratica'
+  );
 
   const [selectedProtocolId, setSelectedProtocolId] = useState<string | null>(
-    PEP_PROTOCOLS[0]?.id ?? null
+    initialRoute?.world === 'beira-leito' && initialRoute.tab === 'protocolos' && initialRoute.id
+      ? initialRoute.id
+      : PEP_PROTOCOLS[0]?.id ?? null
   );
-  const [mobileProtocolDetail, setMobileProtocolDetail] = useState(false);
+  const [mobileProtocolDetail, setMobileProtocolDetail] = useState(
+    initialRoute?.world === 'beira-leito' && initialRoute.tab === 'protocolos' && initialRoute.detail
+  );
 
   const [selectedHabId, setSelectedHabId] = useState<string | null>(
-    HAB_PROTOCOLS[0]?.id ?? null
+    initialRoute?.world === 'beira-leito' && initialRoute.tab === 'pre-porta' && initialRoute.id
+      ? initialRoute.id
+      : HAB_PROTOCOLS[0]?.id ?? null
   );
-  const [mobileHabDetail, setMobileHabDetail] = useState(false);
+  const [mobileHabDetail, setMobileHabDetail] = useState(
+    initialRoute?.world === 'beira-leito' && initialRoute.tab === 'pre-porta' && initialRoute.detail
+  );
+
+  // ---- Sincronização estado ⇄ URL --------------------------------------------
+  const currentHash = formatHashRoute(
+    world === 'sexto-ano'
+      ? { world, tab: sextoAnoTab }
+      : beiraLeitoTab === 'protocolos'
+        ? { world, tab: 'protocolos', id: selectedProtocolId, detail: mobileProtocolDetail }
+        : { world, tab: 'pre-porta', id: selectedHabId, detail: mobileHabDetail }
+  );
+  const lastPushAtRef = useRef(0);
+
+  useEffect(() => {
+    if (window.location.hash === currentHash) return;
+    const now = Date.now();
+    const sameShape =
+      window.location.hash.split('/').slice(0, 2).join('/') === currentHash.split('/').slice(0, 2).join('/') &&
+      window.location.hash.split('/').length === currentHash.split('/').length;
+    // Trocas rápidas no mesmo tipo de tela (↑/↓ na lista) substituem a entrada em vez de empilhar
+    const coalesce = sameShape && now - lastPushAtRef.current < 800;
+    const url = `${window.location.pathname}${window.location.search}${currentHash}`;
+    if (!window.location.hash || coalesce) {
+      window.history.replaceState(null, '', url);
+    } else {
+      window.history.pushState(null, '', url);
+    }
+    lastPushAtRef.current = now;
+  }, [currentHash]);
+
+  useEffect(() => {
+    const applyFromLocation = () => {
+      const route = parseHashRoute(window.location.hash, isKnownRouteId);
+      if (!route) return;
+      setWorld(route.world);
+      if (route.world === 'sexto-ano') {
+        setSextoAnoTab(route.tab);
+        return;
+      }
+      setBeiraLeitoTab(route.tab);
+      if (route.tab === 'protocolos') {
+        if (route.id) setSelectedProtocolId(route.id);
+        setMobileProtocolDetail(route.detail);
+      } else {
+        if (route.id) setSelectedHabId(route.id);
+        setMobileHabDetail(route.detail);
+      }
+    };
+    window.addEventListener('popstate', applyFromLocation);
+    window.addEventListener('hashchange', applyFromLocation);
+    return () => {
+      window.removeEventListener('popstate', applyFromLocation);
+      window.removeEventListener('hashchange', applyFromLocation);
+    };
+  }, []);
 
   const [cmdOpen, setCmdOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [quickCapture, setQuickCapture] = useState<QuickCaptureRequest | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  // Shift+Enter na Command Palette: pede "Copiar tudo" ao abrir o protocolo
+  const [copyRequest, setCopyRequest] = useState<{ protocolId: string; nonce: number } | null>(null);
+
+  const anyModalOpen = cmdOpen || settingsOpen || helpOpen || quickCapture !== null;
+  const anyModalOpenRef = useRef(anyModalOpen);
+  anyModalOpenRef.current = anyModalOpen;
 
   const notify = useCallback((message: string) => {
     setToastMsg(message);
   }, []);
+
+  // Nova versão do app / falha ao gravar no navegador
+  const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
+  const [persistWarning, setPersistWarning] = useState(false);
+  useEffect(
+    () =>
+      subscribeAppHealth((event) => {
+        if (event.kind === 'update-available') setApplyUpdate(() => event.apply);
+        else if (event.kind === 'persist-failed') setPersistWarning(true);
+      }),
+    []
+  );
 
   useEffect(() => {
     if (!toastMsg) return;
@@ -57,24 +158,41 @@ export function App() {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setCmdOpen((prev) => !prev);
+        return;
+      }
+      // "?" abre a ajuda de atalhos (fora de campos de texto e sem outro modal aberto)
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const el = e.target as HTMLElement | null;
+        const editable =
+          !!el && (el.isContentEditable || /^(?:INPUT|TEXTAREA|SELECT)$/.test(el.tagName ?? ''));
+        if (!editable && !anyModalOpenRef.current) {
+          e.preventDefault();
+          setHelpOpen(true);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSelectFromPalette = useCallback((item: ClinicalProtocolItem) => {
-    setWorld('beira-leito');
-    if (item.mod_id === 'hab') {
-      setBeiraLeitoTab('pre-porta');
-      setSelectedHabId(item.id);
-      setMobileHabDetail(true);
-    } else {
-      setBeiraLeitoTab('protocolos');
-      setSelectedProtocolId(item.id);
-      setMobileProtocolDetail(true);
-    }
-  }, []);
+  const handleSelectFromPalette = useCallback(
+    (item: ClinicalProtocolItem, options?: { copyAll?: boolean }) => {
+      setWorld('beira-leito');
+      if (item.mod_id === 'hab') {
+        setBeiraLeitoTab('pre-porta');
+        setSelectedHabId(item.id);
+        setMobileHabDetail(true);
+      } else {
+        setBeiraLeitoTab('protocolos');
+        setSelectedProtocolId(item.id);
+        setMobileProtocolDetail(true);
+        if (options?.copyAll) {
+          setCopyRequest({ protocolId: item.id, nonce: Date.now() });
+        }
+      }
+    },
+    []
+  );
 
   const handleOpenPrePortaFromProtocol = useCallback((habId: string) => {
     setWorld('beira-leito');
@@ -111,6 +229,9 @@ export function App() {
           onOpenPrePorta={handleOpenPrePortaFromProtocol}
           onOpenQuickCapture={setQuickCapture}
           onNotify={notify}
+          shortcutsEnabled={!anyModalOpen}
+          copyRequest={copyRequest}
+          onCopyRequestHandled={() => setCopyRequest(null)}
         />
       )}
 
@@ -157,12 +278,55 @@ export function App() {
 
       <BackupModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
+      <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+
       <QuickCaptureModal
         request={quickCapture}
         activeRodizioId={storeState.central6Ano.rodizioId}
         onClose={() => setQuickCapture(null)}
         onSaved={notify}
       />
+
+      {(applyUpdate || persistWarning) && (
+        <div className="fixed bottom-4 left-4 z-50 flex max-w-sm flex-col gap-2">
+          {applyUpdate && (
+            <div
+              role="status"
+              className="flex items-center gap-3 rounded-lg border border-teal-200 bg-white px-3.5 py-2.5 text-xs text-zinc-800 shadow-lg dark:border-teal-500/30 dark:bg-[#15181F] dark:text-[#F3F4F6]"
+            >
+              <span className="flex-1">Nova versão dos protocolos disponível.</span>
+              <button
+                type="button"
+                onClick={() => applyUpdate()}
+                className="rounded-md bg-[#0F766E] px-2.5 py-1 font-semibold text-white hover:bg-teal-800 dark:bg-[#2DD4BF] dark:text-[#0F1115]"
+              >
+                Atualizar
+              </button>
+            </div>
+          )}
+          {persistWarning && (
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-900 shadow-lg dark:border-red-500/30 dark:bg-[#2A1515] dark:text-red-200"
+            >
+              <span className="flex-1">
+                O navegador recusou salvar seus dados (armazenamento cheio ou bloqueado). Exporte um backup em
+                Configurações antes de fechar a aba.
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setPersistWarning(false);
+                  setSettingsOpen(true);
+                }}
+                className="shrink-0 font-semibold underline underline-offset-2"
+              >
+                Backup
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Toast discreto */}
       {toastMsg && (

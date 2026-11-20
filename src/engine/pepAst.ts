@@ -189,6 +189,34 @@ export interface SerializeAstOptions {
   keepEmptyBrackets?: boolean;
   includeDoseFormulaCalc?: boolean;
   blockSubsetIndices?: Set<number>;
+  /**
+   * Marcadores de auditoria (uso interno da trava de cópia): quando definidos,
+   * campos inline vazios e escolhas sem seleção são emitidos com estes tokens
+   * para contagem exata de lacunas. Nunca usar no texto copiado.
+   */
+  gapMarkers?: { emptyInput: string; emptyIdentification: string; unselectedChoice: string };
+}
+
+/**
+ * Campo com valor sugerido já legível no texto copiado (ex.: "[3 a 5] mL", "[1 a 2]", "[1.000 mg]")
+ * ou rótulo em caixa alta.
+ * Na trava de cópia é tratado como preenchido.
+ */
+export function isSuggestedValueInput(node: InlineInputNode): boolean {
+  const ph = (node.placeholder || '').trim();
+  // Rótulos em CAIXA ALTA entre colchetes ("[MEDICAÇÃO SINTOMÁTICA E SUPORTE]") são cabeçalhos, não lacunas
+  if (ph.length >= 6 && /[A-ZÀ-Ý]/.test(ph) && !/[a-zà-ÿ]/.test(ph)) return true;
+  return /^\d[\d.,]*(?:\s*(?:a|-|–|ou)\s*\d[\d.,]*)?(?:\s*(?:mg|mcg|g|ml|gotas?|cp|comprimidos?|ui|h|dias?))?$/i.test(ph);
+}
+
+/**
+ * Campos de identificação (Nome, Idade, Data) que o PEP institucional costuma preencher sozinho.
+ * Na trava de cópia geram apenas aviso, nunca bloqueio.
+ */
+export function isIdentificationInput(node: InlineInputNode): boolean {
+  if (node.mirrorRole === 'nome' || node.mirrorRole === 'idade') return true;
+  if (node.maskType === 'date-full' || node.maskType === 'date-short' || node.maskType === 'time') return true;
+  return /^(?:nome|leito|registro|prontu[aá]rio|dd\/mm)/i.test((node.placeholder || '').trim());
 }
 
 // ----------------------------------------------------------------------------
@@ -1391,11 +1419,16 @@ export function serializeAstToClinicalText(
   const keepEmpty = options?.keepEmptyBrackets !== undefined ? options.keepEmptyBrackets : true;
   const includeDoseCalc = options?.includeDoseFormulaCalc !== undefined ? options.includeDoseFormulaCalc : true;
   const subset = options?.blockSubsetIndices;
+  const gapMarkers = options?.gapMarkers;
   const layout = computeAstDisplayLayout(ast, state, subset);
 
   const serializeInput = (node: InlineInputNode): string => {
     const val = (state.inputValues[node.id] || '').trim();
     if (val) return val;
+    if (gapMarkers) {
+      if (isIdentificationInput(node)) return gapMarkers.emptyIdentification;
+      if (!isSuggestedValueInput(node)) return gapMarkers.emptyInput;
+    }
     if (!keepEmpty) return '___';
     if (node.origBracket && !/^\[(?: |_+)\]$/.test(node.origBracket)) {
       return node.origBracket;
@@ -1462,6 +1495,8 @@ export function serializeAstToClinicalText(
             .filter(Boolean)
             .map((opt) => serializeChoiceOption(opt));
           out += formatMultiChoices(texts);
+        } else if (gapMarkers) {
+          out += gapMarkers.unselectedChoice;
         }
         continue;
       }

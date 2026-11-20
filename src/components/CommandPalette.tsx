@@ -9,7 +9,8 @@ interface CommandPaletteProps {
   items: readonly ClinicalProtocolItem[];
   searchIndex: MiniSearch;
   onClose: () => void;
-  onSelectItem: (item: ClinicalProtocolItem) => void;
+  /** `copyAll` = Shift+Enter: abre o protocolo e já dispara "Copiar tudo" (com a trava de lacunas). */
+  onSelectItem: (item: ClinicalProtocolItem, options?: { copyAll?: boolean }) => void;
 }
 
 const MOD_SHORT_LABEL: Record<ClinicalProtocolItem['mod_id'], string> = {
@@ -77,7 +78,8 @@ export function CommandPalette({
       setActiveIndex((prev) => (results.length > 0 ? (prev - 1 + results.length) % results.length : 0));
     } else if (e.key === 'Enter' && results[activeIndex]) {
       e.preventDefault();
-      onSelectItem(results[activeIndex].item);
+      const picked = results[activeIndex].item;
+      onSelectItem(picked, { copyAll: e.shiftKey && picked.mod_id !== 'hab' });
       onClose();
     }
   };
@@ -178,7 +180,7 @@ export function CommandPalette({
         </div>
 
         <div className="flex items-center justify-between border-t border-zinc-200/80 px-4 py-2 text-[11px] text-zinc-500 dark:border-white/[0.07] dark:text-[#9CA3AF]">
-          <span>↑↓ navegar · Enter abrir · Esc fechar</span>
+          <span>↑↓ navegar · Enter abrir · Shift+Enter abrir e copiar tudo · Esc fechar</span>
           <span className="font-mono">{items.length} itens indexados</span>
         </div>
       </div>

@@ -514,7 +514,7 @@ export function createClinicalSearchIndex<T extends ClinicalSearchItem>(
   items: readonly T[]
 ): MiniSearch {
   const miniSearch = new MiniSearch({
-    fields: ['title', 'tags', 'triggers', 'cid10', 'anchor', 'category', 'body'],
+    fields: ['title', 'tags', 'triggers', 'cid10', 'anchor', 'category', 'drugs', 'body'],
     tokenize: tokenizeClinicalText,
     processTerm: (term: string) => {
       const norm = normalizeSearchText(term);
@@ -528,6 +528,7 @@ export function createClinicalSearchIndex<T extends ClinicalSearchItem>(
         triggers: 3,
         anchor: 2.5,
         category: 2,
+        drugs: 2,
         body: 1
       },
       prefix: true,
@@ -554,12 +555,39 @@ export function createClinicalSearchIndex<T extends ClinicalSearchItem>(
       cid10: item.cid10 || '',
       anchor: item.anchor || '',
       category: `${item.category || ''} ${item.module_name || ''}`,
-      body: typeof bodyRaw === 'string' ? bodyRaw.slice(0, 1800) : ''
+      body: typeof bodyRaw === 'string' ? bodyRaw.slice(0, 1800) : '',
+      // Nomes de fármacos do protocolo INTEIRO (a receita costuma vir depois dos 1.800 caracteres do body)
+      drugs: typeof bodyRaw === 'string' ? extractDrugNamesForIndex(bodyRaw) : ''
     };
   });
 
   miniSearch.addAll(docs);
   return miniSearch;
+}
+
+const DOSE_TOKEN_RE = /\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|g|ml|mL|UI|U|gotas?|%|mEq)\b/i;
+
+/**
+ * Extrai nomes de fármacos das linhas que contêm dose ("1. Ceftriaxona 1 g IV..." -> "Ceftriaxona").
+ * Exportado para testes.
+ */
+export function extractDrugNamesForIndex(body: string): string {
+  const names = new Set<string>();
+  for (const rawLine of String(body || '').split('\n')) {
+    const m = rawLine.match(DOSE_TOKEN_RE);
+    if (!m || m.index === undefined) continue;
+    const before = rawLine
+      .slice(0, m.index)
+      .replace(/^[\s>*#\-–•]*(?:\d+[.)]\s*)?/, '')
+      .replace(/[*_`\[\]]/g, ' ')
+      .trim();
+    // Até 4 palavras alfabéticas iniciais (ex.: "Dipirona Monoidratada", "Sulfato Ferroso")
+    const words = before.match(/[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ-]{2,}/g);
+    if (!words) continue;
+    const name = words.slice(0, 4).join(' ');
+    if (name.length >= 4) names.add(name);
+  }
+  return Array.from(names).join(' ');
 }
 
 /**

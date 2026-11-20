@@ -3,6 +3,8 @@ import { Check } from 'lucide-react';
 import {
   computeAstDisplayLayout,
   evaluateDoseFormula,
+  isIdentificationInput,
+  isSuggestedValueInput,
   type AstSelectionState,
   type ChoiceGroupNode,
   type ChoiceOptionAst,
@@ -118,7 +120,7 @@ export function PepBlockRenderer({
   // Fechar popover ao clicar fora ou apertar Escape
   useEffect(() => {
     if (!openPopoverId) return;
-    const handlePointerDown = (e: MouseEvent) => {
+    const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest(`[data-choice-popover="${openPopoverId}"]`)) return;
       setOpenPopoverId(null);
@@ -126,10 +128,10 @@ export function PepBlockRenderer({
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpenPopoverId(null);
     };
-    window.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('keydown', handleKey);
     return () => {
-      window.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKey);
     };
   }, [openPopoverId]);
@@ -139,8 +141,10 @@ export function PepBlockRenderer({
     if (e.key !== 'Tab') return;
     const container = containerRef.current;
     if (!container) return;
+    // Navega entre lacunas de TODAS as seções do protocolo (não para no fim do bloco)
+    const scope: ParentNode = container.closest('[data-pep-document]') ?? container;
     const gaps = Array.from(
-      container.querySelectorAll<HTMLInputElement>('input[data-pep-gap="true"]:not(:disabled)')
+      scope.querySelectorAll<HTMLInputElement>('input[data-pep-gap="true"]:not(:disabled)')
     );
     const idx = gaps.indexOf(e.currentTarget);
     if (idx === -1) return;
@@ -174,6 +178,9 @@ export function PepBlockRenderer({
         key={node.id}
         type="text"
         data-pep-gap="true"
+        data-pep-gap-kind={
+          isIdentificationInput(node) ? 'ident' : isSuggestedValueInput(node) ? 'suggested' : 'clinical'
+        }
         data-gap-id={node.id}
         value={val}
         onChange={(e) => onInputChange(node, e.target.value)}
@@ -234,8 +241,9 @@ export function PepBlockRenderer({
 
     const handleTriggerClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isSimpleBinary) {
-        const current = selectedIndices[0] ?? 0;
-        const next = current === 0 ? 1 : 0;
+        // Sem seleção ainda: o rótulo mostra a 1ª opção, então o 1º toque escolhe a 1ª
+        const current = selectedIndices[0];
+        const next = current === undefined ? 0 : current === 0 ? 1 : 0;
         onChoiceSelect(group, [next]);
         return;
       }
@@ -280,6 +288,7 @@ export function PepBlockRenderer({
           <button
             type="button"
             onClick={handleTriggerClick}
+            data-pep-unselected="true"
             aria-expanded={!isSimpleBinary ? isOpen : undefined}
             aria-haspopup={!isSimpleBinary ? 'listbox' : undefined}
             title="Clique para selecionar opção clínica"

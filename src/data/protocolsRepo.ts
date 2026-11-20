@@ -2,6 +2,12 @@ import protocolsPayload from './protocols.generated.json' with { type: 'json' };
 import type { ClinicalProtocolItem } from './clinical_data.ts';
 import { createClinicalSearchIndex } from '../engine/search.ts';
 import {
+  auditPrescription,
+  extractPrescriptionItemsFromText,
+  type PrescriptionAuditReport,
+} from '../engine/prescriptionGuard.ts';
+import { resolveProtocolPharmaHints } from './clinical_links.ts';
+import {
   buildClinicalContext,
   validateAgeWeightPlausibility,
   type AgeWeightPlausibilityAlert,
@@ -27,6 +33,10 @@ export interface PatientContextInput {
   pesoKg: string;
   gestante: boolean;
   igSemanas: string;
+  /** Texto livre: "dipirona, penicilina" — alimenta o auditor de prescrição. */
+  alergias?: string;
+  /** TFG / ClCr informado manualmente (mL/min). */
+  clCr?: string;
 }
 
 export const EMPTY_PATIENT_CONTEXT: PatientContextInput = {
@@ -34,7 +44,20 @@ export const EMPTY_PATIENT_CONTEXT: PatientContextInput = {
   pesoKg: '',
   gestante: false,
   igSemanas: '',
+  alergias: '',
+  clCr: '',
 };
+
+export function patientContextHasValues(p: PatientContextInput): boolean {
+  return Boolean(
+    p.idade.trim() ||
+      p.pesoKg.trim() ||
+      p.gestante ||
+      p.igSemanas.trim() ||
+      (p.alergias ?? '').trim() ||
+      (p.clCr ?? '').trim()
+  );
+}
 
 export type PepSectionId = 'evolucao' | 'conduta' | 'receita' | 'orientacoes' | 'geral';
 
@@ -409,6 +432,129 @@ export function serializeProtocolSection(
   }).replace(/\*(\([^*\n]+\)\.?)\*/g, '$1');
 }
 
+// ----------------------------------------------------------------------------
+// TRAVA DE CÓPIA: auditoria de lacunas antes de copiar Prescrição / Copiar tudo
+// ----------------------------------------------------------------------------
+
+const GAP_MARK_INPUT = '⟪GAP_INPUT⟫';
+const GAP_MARK_CHOICE = '⟪GAP_CHOICE⟫';
+const GAP_MARK_IDENT = '⟪GAP_IDENT⟫';
+
+export interface SectionGapReport {
+  /** Campos clínicos inline ([ ], [dose], [...] gotas) ainda vazios nos blocos visíveis da seção. */
+  openFields: number;
+  /** Campos de identificação vazios (Nome, Idade, Data): só aviso, não bloqueiam. */
+  identificationFields: number;
+  /** Escolhas [A / B] sem nenhuma opção selecionada (somem do texto copiado). */
+  unselectedChoices: number;
+  /** Há doses por kg na seção, mas o peso não foi informado (dose não calculada). */
+  missingWeightForDoses: boolean;
+  /** Total de lacunas que bloqueiam a cópia (exclui identificação). */
+  total: number;
+}
+
+export const EMPTY_GAP_REPORT: SectionGapReport = {
+  openFields: 0,
+  identificationFields: 0,
+  unselectedChoices: 0,
+  missingWeightForDoses: false,
+  total: 0,
+};
+
+function countOccurrences(text: string, token: string): number {
+  if (!token) return 0;
+  return text.split(token).length - 1;
+}
+
+/**
+ * Conta lacunas reais de uma seção a partir do mesmo serializador do texto copiado
+ * (respeita opcionais fechados, travas e checkboxes; checkboxes "[ ]" não contam).
+ */
+export function analyzeSectionGaps(
+  ast: PepDocumentAst,
+  state: AstSelectionState,
+  clinicalContext: ClinicalContext,
+  section: PepAstSection
+): SectionGapReport {
+  const audited = serializeAstToClinicalText(ast, state, clinicalContext, {
+    keepEmptyBrackets: true,
+    includeDoseFormulaCalc: true,
+    blockSubsetIndices: section.blockIndexSet,
+    gapMarkers: {
+      emptyInput: GAP_MARK_INPUT,
+      emptyIdentification: GAP_MARK_IDENT,
+      unselectedChoice: GAP_MARK_CHOICE,
+    },
+  });
+
+  const openFields = countOccurrences(audited, GAP_MARK_INPUT);
+  const identificationFields = countOccurrences(audited, GAP_MARK_IDENT);
+  const unselectedChoices = countOccurrences(audited, GAP_MARK_CHOICE);
+
+  let hasDoseFormula = false;
+  for (const idx of section.blockIndices) {
+    const block = ast.blocks[idx];
+    if (!block) continue;
+    walkInlineNodes(block.children, (n) => {
+      if (n.kind === 'dose-formula') hasDoseFormula = true;
+    });
+    if (hasDoseFormula) break;
+  }
+  const missingWeightForDoses = hasDoseFormula && !(clinicalContext.weightKg && clinicalContext.weightKg > 0);
+
+  return {
+    openFields,
+    identificationFields,
+    unselectedChoices,
+    missingWeightForDoses,
+    total: openFields + unselectedChoices + (missingWeightForDoses ? 1 : 0),
+  };
+}
+
+// ----------------------------------------------------------------------------
+// AUDITOR DE PRESCRIÇÃO (alergia, função renal, gestação, teto, contraindicação do protocolo)
+// ----------------------------------------------------------------------------
+
+export interface ProtocolPrescriptionAudit {
+  /** Itens da Prescrição/Receita: alertas "block" daqui travam a cópia. */
+  receita: PrescriptionAuditReport | null;
+  /** Itens da Conduta (planos condicionais): exibidos só como aviso. */
+  conduta: PrescriptionAuditReport | null;
+}
+
+export function auditProtocolPrescription(
+  item: ClinicalProtocolItem,
+  sectionTexts: Partial<Record<PepSectionId, string>>,
+  clinicalContext: ClinicalContext
+): ProtocolPrescriptionAudit {
+  const hints = resolveProtocolPharmaHints(item);
+  const run = (zone: 'receita' | 'conduta'): PrescriptionAuditReport | null => {
+    const text = sectionTexts[zone];
+    if (!text || !text.trim()) return null;
+    const items = extractPrescriptionItemsFromText(text, { defaultZone: zone }).map((it) => ({
+      ...it,
+      scope: zone,
+    }));
+    if (items.length === 0) return null;
+    return auditPrescription(items, clinicalContext, hints);
+  };
+  return { receita: run('receita'), conduta: run('conduta') };
+}
+
+/**
+ * Para texto editado livremente (textarea): conta colchetes vazios "[ ]" / "[___]"
+ * que não são checkbox de início de linha.
+ */
+export function countOpenBracketsInFreeText(text: string): number {
+  let count = 0;
+  for (const line of String(text || '').split('\n')) {
+    const withoutCheckbox = line.replace(/^\s*(?:[-*]\s+)?\[(?: |x|X)\]\s/, '');
+    const matches = withoutCheckbox.match(/\[(?:\s*|_+)\]/g);
+    if (matches) count += matches.length;
+  }
+  return count;
+}
+
 /**
  * Compila o protocolo completo em AST particionada + estado inicial + blocos copiáveis sincronizados.
  */
@@ -427,6 +573,8 @@ export function compileProtocolForDisplay(
       pesoKg: patient.pesoKg,
       gestante: patient.gestante,
       igSemanas: patient.igSemanas,
+      alergias: patient.alergias ?? '',
+      clCr: patient.clCr ?? '',
     },
     {
       modId: item.mod_id,

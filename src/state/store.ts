@@ -14,6 +14,7 @@ import {
   type R1Milestone,
 } from '../engine/central6ano.ts';
 import { sanitizePiiText } from '../utils/piiGuard.ts';
+import { reportPersistFailure } from './appHealth.ts';
 
 export type ClinicalTheme = 'light' | 'dark';
 export type LogbookRole = 'observou' | ProcedureAutonomy;
@@ -124,6 +125,8 @@ function safeSetItem(storage: StorageLike, key: string, value: string): boolean 
     storage.setItem(key, value);
     return true;
   } catch {
+    // Antes era silencioso: o registro sumia sem aviso. Agora o App mostra um alerta.
+    reportPersistFailure(key);
     return false;
   }
 }

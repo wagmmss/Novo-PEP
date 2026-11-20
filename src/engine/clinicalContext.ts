@@ -7,7 +7,13 @@
 import type { SharedPatientIdentity } from '../state/store.ts';
 import { computeWeightBasedDoses, type WeightDoseSummary } from './personalizar.ts';
 
-export type SexoBiologico = 'M' | 'F';
+import {
+  calcCkdEpi2021,
+  calcCockcroftGault,
+  type SexoBiologico,
+} from './calculadoras.ts';
+
+export type { SexoBiologico };
 
 export interface ClinicalContext {
   nome: string;
@@ -138,10 +144,36 @@ export function buildClinicalContext(
   const manualClCr =
     manualClCrRaw !== null && manualClCrRaw >= 1 && manualClCrRaw <= 250 ? manualClCrRaw : null;
 
-  const tfgCkdEpi: number | null = null;
-  const clCrCockcroftGault: number | null = null;
-  const renalStageLabel: string | null = null;
-  const effectiveGfrMlMin = manualClCr;
+  let tfgCkdEpi: number | null = null;
+  let clCrCockcroftGault: number | null = null;
+  let renalStageLabel: string | null = null;
+
+  if (creatinineMgDl !== null && ageYears !== null && ageYears >= 1 && sex) {
+    try {
+      const ckd = calcCkdEpi2021({ creatinina: creatinineMgDl, idade: Math.max(1, Math.round(ageYears)), sexo: sex });
+      tfgCkdEpi = extractLeadingFloat(ckd.valueText);
+      renalStageLabel = ckd.classification;
+    } catch {
+      tfgCkdEpi = null;
+    }
+
+    if (weightKg !== null) {
+      try {
+        const cg = calcCockcroftGault({
+          creatinina: creatinineMgDl,
+          idade: Math.max(1, Math.round(ageYears)),
+          pesoKg: weightKg,
+          sexo: sex,
+        });
+        clCrCockcroftGault = extractLeadingFloat(cg.valueText);
+      } catch {
+        clCrCockcroftGault = null;
+      }
+    }
+  }
+
+  // Prioridade para ajuste de fármacos: ClCr manual > Cockcroft-Gault > CKD-EPI
+  const effectiveGfrMlMin = manualClCr ?? clCrCockcroftGault ?? tfgCkdEpi;
 
   const isPediatric =
     (ageYears !== null && ageYears < 18) ||

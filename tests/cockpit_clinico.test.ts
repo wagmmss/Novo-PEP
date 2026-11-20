@@ -80,6 +80,8 @@ import {
   applyPatientContextToAstState,
   serializeProtocolSection,
   walkInlineNodes,
+  analyzeSectionGaps,
+  countOpenBracketsInFreeText,
 } from '../src/data/protocolsRepo.ts';
 import { cockpitStore } from '../src/state/store.ts';
 import { detectPiiIssues, sanitizePiiText } from '../src/utils/piiGuard.ts';
@@ -762,4 +764,134 @@ test('Plano 6º Ano: persistência de rodízio, semana de férias, arquétipo de
   }
 });
 
+test('Trava de cópia: lacunas clínicas travam, identificação e valores sugeridos não, peso ausente detectado', () => {
+  clearPepAstCache();
 
+  const receitaReport = (title: string, patient = EMPTY_PATIENT_CONTEXT) => {
+    const proto = PEP_PROTOCOLS.find((p) => p.title.includes(title));
+    assert.ok(proto, `Protocolo "${title}" deve existir`);
+    const compiled = compileProtocolForDisplay(proto, patient);
+    const receita = compiled.sections.find((s) => s.id === 'receita');
+    assert.ok(receita, `"${title}" deve ter seção de Prescrição`);
+    const report = analyzeSectionGaps(compiled.ast, compiled.initialAstState, compiled.clinicalContext, receita);
+    const copied = serializeProtocolSection(compiled.ast, compiled.initialAstState, compiled.clinicalContext, receita);
+    return { report, copied };
+  };
+
+  // Pediatria sem peso: trava (peso é a base da dose)
+  const semPeso = receitaReport('Bronquiolite');
+  assert.ok(semPeso.report.total > 0, 'Receita pediátrica sem peso deve travar a cópia');
+
+  // Mesmo protocolo com peso: só sobram Nome/Data (identificação), que NÃO travam
+  const comPeso = receitaReport('Bronquiolite', { ...EMPTY_PATIENT_CONTEXT, pesoKg: '8', idade: '6m' });
+  assert.equal(comPeso.report.total, 0, 'Com peso informado a receita da BVA não deve travar');
+  assert.ok(comPeso.report.identificationFields >= 1, 'Nome/Data em branco devem ser contados só como aviso');
+  assert.ok(comPeso.copied.includes('[3 a 5]'), 'Valor sugerido "[3 a 5]" continua no texto e não conta como lacuna');
+
+  // Marcadores internos de auditoria nunca vazam para o texto copiado
+  assert.ok(!/⟪GAP_/.test(semPeso.copied) && !/⟪GAP_/.test(comPeso.copied));
+
+  // Dengue (adulto) sem peso: detecta dose por kg sem peso informado
+  const dengue = receitaReport('Dengue');
+  assert.equal(dengue.report.missingWeightForDoses, true, 'Hidratação mL/kg sem peso deve ser sinalizada');
+
+  // Rótulos em CAIXA ALTA entre colchetes não são lacunas (PAC adulto não trava)
+  const pac = receitaReport('Pronto Atendimento - Pneumonia');
+  assert.equal(pac.report.total, 0, 'Cabeçalho "[MEDICAÇÃO SINTOMÁTICA E SUPORTE]" não é lacuna');
+
+  // Panorama: toda receita pediátrica sem peso trava; nenhuma receita trava só por identificação
+  let pedTravadas = 0;
+  let pedComReceita = 0;
+  for (const proto of PEP_PROTOCOLS) {
+    const compiled = compileProtocolForDisplay(proto, EMPTY_PATIENT_CONTEXT);
+    const receita = compiled.sections.find((s) => s.id === 'receita');
+    if (!receita) continue;
+    const r = analyzeSectionGaps(compiled.ast, compiled.initialAstState, compiled.clinicalContext, receita);
+    assert.equal(r.total, r.openFields + r.unselectedChoices + (r.missingWeightForDoses ? 1 : 0));
+    if (proto.mod_id === 'ped') {
+      pedComReceita++;
+      if (r.total > 0) pedTravadas++;
+    }
+  }
+  assert.ok(pedComReceita > 0 && pedTravadas === pedComReceita, 'Toda receita pediátrica sem dados deve travar');
+
+  // Texto editado livremente: "[ ]" de checkbox no início da linha não conta; lacunas inline contam
+  assert.equal(countOpenBracketsInFreeText('[ ] Retorno em 48h\nDipirona [ ] gotas 6/6h\nPeso: [___] kg'), 2);
+  assert.equal(countOpenBracketsInFreeText('- [x] Orientado\nTudo preenchido'), 0);
+});
+
+
+test('Rota na URL: ida e volta de #/p/<id>, #/hab/<id>, #/6ano/<aba> e ids desconhecidos caem na lista', async () => {
+  const { formatHashRoute, parseHashRoute } = await import('../src/state/hashRoute.ts');
+  const pep = PEP_PROTOCOLS[3];
+  const hab = HAB_PROTOCOLS[2];
+  const known = (tab: 'protocolos' | 'pre-porta', id: string) =>
+    tab === 'protocolos' ? PEP_PROTOCOLS.some((p) => p.id === id) : HAB_PROTOCOLS.some((p) => p.id === id);
+
+  const pRoute = { world: 'beira-leito' as const, tab: 'protocolos' as const, id: pep.id, detail: true };
+  assert.deepEqual(parseHashRoute(formatHashRoute(pRoute), known), pRoute);
+
+  const hRoute = { world: 'beira-leito' as const, tab: 'pre-porta' as const, id: hab.id, detail: true };
+  assert.deepEqual(parseHashRoute(formatHashRoute(hRoute), known), hRoute);
+
+  assert.equal(formatHashRoute({ world: 'beira-leito', tab: 'protocolos', id: pep.id, detail: false }), '#/p');
+  assert.deepEqual(parseHashRoute('#/6ano/teoria', known), { world: 'sexto-ano', tab: 'teoria' });
+  assert.deepEqual(parseHashRoute('#/6ano/xyz', known), { world: 'sexto-ano', tab: 'pratica' });
+  assert.deepEqual(parseHashRoute('#/p/protocolo-que-nao-existe', known), {
+    world: 'beira-leito',
+    tab: 'protocolos',
+    id: null,
+    detail: false,
+  });
+  // Um id de Pré-Porta não abre como protocolo PEP
+  assert.equal(parseHashRoute(`#/p/${hab.id}`, known)?.world, 'beira-leito');
+  assert.equal((parseHashRoute(`#/p/${hab.id}`, known) as { detail: boolean }).detail, false);
+  assert.equal(parseHashRoute('', known), null);
+  assert.equal(parseHashRoute('#/qualquer', known), null);
+});
+
+test('Busca por medicamento: nomes de fármacos de toda a receita entram no índice', async () => {
+  const { extractDrugNamesForIndex } = await import('../src/engine/search.ts');
+  const names = extractDrugNamesForIndex(
+    '1. Ceftriaxona 1 g IV 12/12h\n   - Dipirona Monoidratada 1 g VO\nOrientações: retorno em 48h'
+  );
+  assert.ok(names.includes('Ceftriaxona'));
+  assert.ok(names.includes('Dipirona Monoidratada'));
+  assert.ok(!names.includes('Orientações'));
+
+  const index = createClinicalSearchIndex(PEP_PROTOCOLS);
+  for (const drug of ['ceftriaxona', 'amoxicilina']) {
+    const containing = PEP_PROTOCOLS.filter((p) =>
+      (p.pep_body || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(drug)
+    ).length;
+    const found = searchClinicalProtocols(index, PEP_PROTOCOLS, drug, 88).length;
+    assert.ok(found >= Math.ceil(containing / 2), `"${drug}": ${found} resultados para ${containing} protocolos`);
+  }
+});
+
+test('Auditor de prescrição nos protocolos: receita padrão sem bloqueio; alergia informada bloqueia', async () => {
+  const { auditProtocolPrescription } = await import('../src/data/protocolsRepo.ts');
+  let blocksWithoutPatient = 0;
+  for (const proto of PEP_PROTOCOLS) {
+    const compiled = compileProtocolForDisplay(proto, EMPTY_PATIENT_CONTEXT);
+    const texts: Record<string, string> = {};
+    for (const sec of compiled.sections) {
+      if (sec.id === 'receita' || sec.id === 'conduta') {
+        texts[sec.id] = serializeProtocolSection(compiled.ast, compiled.initialAstState, compiled.clinicalContext, sec);
+      }
+    }
+    const audit = auditProtocolPrescription(proto, texts, compiled.clinicalContext);
+    blocksWithoutPatient += audit.receita?.blockCount ?? 0;
+  }
+  assert.equal(blocksWithoutPatient, 0, 'Nenhuma receita padrão pode travar sem dados do paciente (alarme falso)');
+
+  const pac = PEP_PROTOCOLS.find((p) => p.title.includes('Pronto Atendimento - Pneumonia'))!;
+  const compiled = compileProtocolForDisplay(pac, { ...EMPTY_PATIENT_CONTEXT, alergias: 'penicilina' });
+  const receita = compiled.sections.find((s) => s.id === 'receita')!;
+  const audit = auditProtocolPrescription(
+    pac,
+    { receita: serializeProtocolSection(compiled.ast, compiled.initialAstState, compiled.clinicalContext, receita) },
+    compiled.clinicalContext
+  );
+  assert.ok((audit.receita?.blockCount ?? 0) >= 1, 'Amoxicilina com alergia a penicilina deve bloquear');
+});
