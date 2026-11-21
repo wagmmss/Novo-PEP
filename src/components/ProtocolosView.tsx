@@ -10,6 +10,8 @@ import {
   Copy,
   Edit3,
   FileText,
+  PanelLeftClose,
+  PanelLeftOpen,
   Pill,
   Plus,
   RotateCcw,
@@ -317,6 +319,8 @@ export function ProtocolosView({
   const [searchQuery, setSearchQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<AreaFilter>('todos');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [collapsedAreas, setCollapsedAreas] = useState<Record<string, boolean>>({});
   const [patient, setPatient] = useState<PatientContextInput>(EMPTY_PATIENT_CONTEXT);
   const [ckdEpiOpen, setCkdEpiOpen] = useState(false);
   const [guiaOpen, setGuiaOpen] = useState(false);
@@ -331,6 +335,7 @@ export function ProtocolosView({
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const listPaneRef = useRef<HTMLDivElement | null>(null);
   const handledCopyNonceRef = useRef<number | null>(null);
+  const initializedCollapsedRef = useRef(false);
 
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
 
@@ -341,6 +346,23 @@ export function ProtocolosView({
     }
     return PEP_PROTOCOLS[0];
   }, [selectedId]);
+
+  // Na carga inicial, mantém expandida apenas a área do protocolo ativo; ao trocar de protocolo via Ctrl+K/link, expande sua área
+  useEffect(() => {
+    if (!initializedCollapsedRef.current) {
+      initializedCollapsedRef.current = true;
+      setCollapsedAreas({
+        go: activeProtocol.mod_id !== 'go',
+        upa: activeProtocol.mod_id !== 'upa',
+        enf: activeProtocol.mod_id !== 'enf',
+        ped: activeProtocol.mod_id !== 'ped',
+      });
+      return;
+    }
+    setCollapsedAreas((prev) =>
+      prev[activeProtocol.mod_id] ? { ...prev, [activeProtocol.mod_id]: false } : prev
+    );
+  }, [activeProtocol.mod_id]);
 
   const effectivePatient = useMemo<PatientContextInput>(() => {
     if (activeProtocol.mod_id === 'go' && !patient.sexo) {
@@ -434,6 +456,33 @@ export function ProtocolosView({
     }
     return groups;
   }, [filteredProtocols]);
+
+  // Agrupamento superior por Área (GO, UPA, Enfermaria, Pediatria) para abas retráteis na barra lateral
+  const areaGroupedProtocols = useMemo(() => {
+    const areas: Array<{
+      modId: ClinicalProtocolItem['mod_id'];
+      label: string;
+      totalCount: number;
+      groups: typeof groupedProtocols;
+    }> = [];
+    const byMod = new Map<ClinicalProtocolItem['mod_id'], (typeof areas)[number]>();
+    for (const grp of groupedProtocols) {
+      let area = byMod.get(grp.modId);
+      if (!area) {
+        area = {
+          modId: grp.modId,
+          label: MOD_LABELS[grp.modId] || grp.modId.toUpperCase(),
+          totalCount: 0,
+          groups: [],
+        };
+        byMod.set(grp.modId, area);
+        areas.push(area);
+      }
+      area.groups.push(grp);
+      area.totalCount += grp.items.length;
+    }
+    return areas;
+  }, [groupedProtocols]);
 
   const clinicalLinks = useMemo(
     () => resolveClinicalLinksForPep(activeProtocol),
@@ -835,15 +884,17 @@ export function ProtocolosView({
 
   return (
     <div className="mx-auto flex min-h-0 flex-1 w-full overflow-hidden">
-      {/* COLUNA ESQUERDA: Lista de Protocolos agrupada por subcategoria (320px em >=1024px) */}
+      {/* COLUNA ESQUERDA: Lista de Protocolos dividida por abas retráteis de área (GO, UPA, Enfermaria, Pediatria) */}
       <aside
         aria-label="Lista de protocolos clínicos"
         className={`${
-          mobileShowDetail ? 'hidden lg:flex' : 'flex'
-        } h-full w-full shrink-0 flex-col border-r border-zinc-200/80 bg-[#FAFAFA] lg:w-[320px] dark:border-white/[0.07] dark:bg-[#0F1115]`}
+          mobileShowDetail
+            ? 'hidden'
+            : 'flex'
+        } ${sidebarCollapsed ? 'lg:hidden' : 'lg:flex'} h-full w-full shrink-0 flex-col border-r border-zinc-200/80 bg-[#FAFAFA] lg:w-[320px] dark:border-white/[0.07] dark:bg-[#0F1115]`}
       >
         <div className="space-y-2.5 border-b border-zinc-200/80 p-3 dark:border-white/[0.07]">
-          {/* Busca + botão discreto de estrela (Favoritos) */}
+          {/* Busca + botão discreto de estrela (Favoritos) + recolher barra lateral */}
           <div className="flex items-center gap-1.5">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 dark:text-[#9CA3AF]" />
@@ -904,6 +955,16 @@ export function ProtocolosView({
             >
               <Star className={`h-3.5 w-3.5 ${onlyFavorites ? 'fill-current' : ''}`} />
             </button>
+
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(true)}
+              aria-label="Recolher barra lateral"
+              title="Recolher barra lateral"
+              className="hidden h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-zinc-200/90 bg-white text-zinc-400 transition-colors hover:border-zinc-300 hover:text-zinc-700 lg:inline-flex dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#9CA3AF] dark:hover:border-white/[0.15] dark:hover:text-[#F3F4F6]"
+            >
+              <PanelLeftClose className="h-3.5 w-3.5" />
+            </button>
           </div>
 
           {/* Filtros de área em 1 linha limpa sem quebrar */}
@@ -919,7 +980,12 @@ export function ProtocolosView({
                 <button
                   key={f.id}
                   type="button"
-                  onClick={() => setAreaFilter(f.id)}
+                  onClick={() => {
+                    setAreaFilter(f.id);
+                    if (f.id !== 'todos') {
+                      setCollapsedAreas((prev) => ({ ...prev, [f.id]: false }));
+                    }
+                  }}
                   aria-pressed={active}
                   className={`inline-flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-md px-1.5 py-1 text-center text-[11px] font-medium transition-colors ${
                     active
@@ -942,14 +1008,14 @@ export function ProtocolosView({
           </div>
         </div>
 
-        {/* Contador discreto */}
+        {/* Contador discreto + Expandir/Recolher todas as abas */}
         <div className="flex items-center justify-between border-b border-zinc-200/60 px-3 py-1.5 text-[11px] text-zinc-500 dark:border-white/[0.06] dark:text-[#9CA3AF]">
           <span className="tabular-nums">
             {filteredProtocols.length}{' '}
             {filteredProtocols.length === 1 ? 'protocolo' : 'protocolos'}
             {onlyFavorites ? ' · favoritos' : ''}
           </span>
-          {(areaFilter !== 'todos' || onlyFavorites) && (
+          {areaFilter !== 'todos' || onlyFavorites ? (
             <button
               type="button"
               onClick={() => {
@@ -960,10 +1026,30 @@ export function ProtocolosView({
             >
               Ver todos
             </button>
+          ) : (
+            !searchQuery.trim() &&
+            areaGroupedProtocols.length > 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const anyCollapsed = areaGroupedProtocols.some((a) => collapsedAreas[a.modId]);
+                  const nextState: Record<string, boolean> = {};
+                  for (const a of areaGroupedProtocols) {
+                    nextState[a.modId] = !anyCollapsed;
+                  }
+                  setCollapsedAreas(nextState);
+                }}
+                className="text-[#0F766E] hover:underline dark:text-[#2DD4BF]"
+              >
+                {areaGroupedProtocols.some((a) => collapsedAreas[a.modId])
+                  ? 'Expandir todas'
+                  : 'Recolher todas'}
+              </button>
+            )
           )}
         </div>
 
-        {/* Lista agrupada por subcategoria com micro-cabeçalhos sticky */}
+        {/* Lista dividida por abas retráteis de área (GO, UPA, Enfermaria, Pediatria) + subcategorias */}
         <div ref={listPaneRef} className="flex-1 overflow-y-auto">
           {filteredProtocols.length === 0 ? (
             <div className="px-4 py-10 text-center text-xs text-zinc-500 dark:text-[#9CA3AF]">
@@ -972,58 +1058,109 @@ export function ProtocolosView({
                 : 'Nenhum protocolo encontrado.'}
             </div>
           ) : (
-            groupedProtocols.map((group) => {
-              const groupDot = AREA_DOT_CLASS[group.modId];
-              return (
-                <div key={group.key}>
-                  <div className="sticky top-0 z-10 flex items-center gap-1.5 border-b border-zinc-200/60 bg-[#FAFAFA]/95 px-3 py-1.5 text-[10px] font-semibold tracking-[0.06em] text-zinc-500 uppercase backdrop-blur-xs dark:border-white/[0.06] dark:bg-[#0F1115]/95 dark:text-[#9CA3AF]">
-                    {groupDot && (
-                      <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${groupDot}`} />
-                    )}
-                    <span className="truncate">{group.label}</span>
-                  </div>
-                  {group.items.map((item) => {
-                    const isSelected = item.id === activeProtocol.id;
-                    const isFav = favoriteSet.has(item.id);
-                    const activeAreaBorder =
-                      AREA_ACTIVE_BORDER_CLASS[item.mod_id] || 'border-l-[#0F766E] dark:border-l-[#2DD4BF]';
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        data-protocol-id={item.id}
-                        aria-current={isSelected ? 'true' : undefined}
-                        onClick={() => onSelectProtocol(item.id)}
-                        className={`group flex w-full items-start justify-between gap-2.5 border-b border-l-2 border-b-zinc-200/40 px-3 py-2.5 text-left transition-colors dark:border-b-white/[0.05] ${
-                          isSelected
-                            ? `${activeAreaBorder} bg-white text-zinc-950 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)] dark:bg-[#1A1F2B] dark:text-white`
-                            : 'border-l-transparent text-zinc-700 hover:bg-zinc-100/80 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]/70'
-                        }`}
-                      >
-                        <span
-                          className={`line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug ${
-                            isSelected
-                              ? 'font-semibold text-zinc-950 dark:text-white'
-                              : 'font-medium'
-                          }`}
-                        >
-                          {item.title}
-                        </span>
+            areaGroupedProtocols.map((area) => {
+              const forceExpanded =
+                Boolean(searchQuery.trim()) || onlyFavorites || areaFilter !== 'todos';
+              const isAreaOpen = forceExpanded || !collapsedAreas[area.modId];
+              const areaDot = AREA_DOT_CLASS[area.modId];
+              const hasActiveChild = area.groups.some((g) =>
+                g.items.some((item) => item.id === activeProtocol.id)
+              );
 
-                        <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
-                          {item.cid10 && (
-                            <span className="font-mono text-[10px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
-                              {item.cid10}
-                            </span>
-                          )}
-                          {isFav && (
-                            <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />
-                          )}
+              return (
+                <section key={area.modId} className="border-b border-zinc-200/70 dark:border-white/[0.07]">
+                  <button
+                    type="button"
+                    aria-expanded={isAreaOpen}
+                    onClick={() =>
+                      setCollapsedAreas((prev) => ({
+                        ...prev,
+                        [area.modId]: !prev[area.modId],
+                      }))
+                    }
+                    className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors ${
+                      isAreaOpen
+                        ? 'bg-zinc-100/80 text-zinc-900 dark:bg-[#15181F] dark:text-[#F3F4F6]'
+                        : 'bg-[#FAFAFA] text-zinc-700 hover:bg-zinc-100/70 dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:bg-[#15181F]/80'
+                    }`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      {areaDot && (
+                        <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${areaDot}`} />
+                      )}
+                      <span className="truncate text-xs font-semibold tracking-tight">
+                        {area.label}
+                      </span>
+                      {hasActiveChild && !isAreaOpen && (
+                        <span className="rounded bg-[#0F766E]/12 px-1.5 py-0.5 text-[9px] font-semibold text-[#0F766E] dark:bg-[#2DD4BF]/15 dark:text-[#2DD4BF]">
+                          ativo
                         </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                      )}
+                    </span>
+
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <span className="rounded-full bg-zinc-200/80 px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums text-zinc-600 dark:bg-white/[0.08] dark:text-[#9CA3AF]">
+                        {area.totalCount}
+                      </span>
+                      {isAreaOpen ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
+                      )}
+                    </span>
+                  </button>
+
+                  {isAreaOpen &&
+                    area.groups.map((group) => (
+                      <div key={group.key}>
+                        <div className="sticky top-0 z-10 flex items-center gap-1.5 border-y border-zinc-200/60 bg-[#FAFAFA]/95 px-3 py-1 text-[10px] font-semibold tracking-[0.06em] text-zinc-500 uppercase backdrop-blur-xs dark:border-white/[0.06] dark:bg-[#0F1115]/95 dark:text-[#9CA3AF]">
+                          <span className="truncate">{group.label}</span>
+                        </div>
+                        {group.items.map((item) => {
+                          const isSelected = item.id === activeProtocol.id;
+                          const isFav = favoriteSet.has(item.id);
+                          const activeAreaBorder =
+                            AREA_ACTIVE_BORDER_CLASS[item.mod_id] ||
+                            'border-l-[#0F766E] dark:border-l-[#2DD4BF]';
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              data-protocol-id={item.id}
+                              aria-current={isSelected ? 'true' : undefined}
+                              onClick={() => onSelectProtocol(item.id)}
+                              className={`group flex w-full items-start justify-between gap-2.5 border-b border-l-2 border-b-zinc-200/40 px-3 py-2.5 text-left transition-colors last:border-b-0 dark:border-b-white/[0.05] ${
+                                isSelected
+                                  ? `${activeAreaBorder} bg-white text-zinc-950 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)] dark:bg-[#1A1F2B] dark:text-white`
+                                  : 'border-l-transparent text-zinc-700 hover:bg-zinc-100/80 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]/70'
+                              }`}
+                            >
+                              <span
+                                className={`line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug ${
+                                  isSelected
+                                    ? 'font-semibold text-zinc-950 dark:text-white'
+                                    : 'font-medium'
+                                }`}
+                              >
+                                {item.title}
+                              </span>
+
+                              <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
+                                {item.cid10 && (
+                                  <span className="font-mono text-[10px] tabular-nums text-zinc-400 dark:text-[#6B7280]">
+                                    {item.cid10}
+                                  </span>
+                                )}
+                                {isFav && (
+                                  <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
+                </section>
               );
             })
           )}
@@ -1139,6 +1276,18 @@ export function ProtocolosView({
           {/* Cabeçalho Editorial do Protocolo */}
           <header className="border-b border-zinc-200/80 pb-5 dark:border-white/[0.07]">
             <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-[#9CA3AF]">
+              {sidebarCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(false)}
+                  aria-label="Abrir barra lateral de protocolos"
+                  title="Abrir barra lateral de protocolos"
+                  className="mr-1 hidden items-center gap-1 rounded-md border border-zinc-200/90 bg-white px-2 py-0.5 text-[11px] font-medium text-zinc-600 transition-colors hover:border-[#0F766E]/40 hover:text-[#0F766E] lg:inline-flex dark:border-white/[0.1] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:text-[#2DD4BF]"
+                >
+                  <PanelLeftOpen className="h-3.5 w-3.5" />
+                  Protocolos
+                </button>
+              )}
               <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
                 {MOD_LABELS[activeProtocol.mod_id]}
               </span>
