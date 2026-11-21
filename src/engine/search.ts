@@ -349,6 +349,70 @@ const PROTOCOL_SYMPTOM_MAP: Record<string, { priority: number; tags: string[] }>
   ';hab-orl': { priority: 85, tags: ['otoscopia', 'oroscopia', 'olho vermelho', 'fluoresceína', 'epistaxe', 'glaucoma agudo'] },
   ';hab-sutura': { priority: 86, tags: ['sutura', 'nó cirúrgico', 'anestesia local', 'lidocaína', 'bloqueio digital', 'fios'] },
   ';hab-iot': { priority: 94, tags: ['via aérea', 'intubação', 'laringoscopia', 'lemon', 'ventilação mecânica', 'bvm'] },
+  ';upa-ficha': {
+    priority: 82,
+    tags: ['ficha mestra', 'atendimento geral', 'triagem upa', 'consulta rápida', 'pronto socorro'],
+  },
+  ';ped-ficha': {
+    priority: 82,
+    tags: ['ficha pediátrica', 'triagem pediatria', 'criança', 'pronto socorro infantil', 'tep'],
+  },
+  ';puericultura': {
+    priority: 84,
+    tags: ['puericultura', 'consulta do bebê', 'crescimento e desenvolvimento', 'marcos dnpm', 'vacinação', 'aleitamento'],
+  },
+  ';pn-1cons': {
+    priority: 86,
+    tags: ['pré-natal', 'primeira consulta gestante', 'gravidez', 'abertura de pré-natal', 'exames de 1º trimestre'],
+  },
+  ';pn-ret': {
+    priority: 85,
+    tags: ['pré-natal retorno', 'consulta subsequente gestante', 'acompanhamento gestacional', 'altura uterina', 'bcf'],
+  },
+  ';puerp-evo': {
+    priority: 83,
+    tags: ['puerpério', 'pós-parto', 'evolução puérpera', 'lóquios', 'amamentação', 'involução uterina'],
+  },
+  ';round-puerp': {
+    priority: 80,
+    tags: ['passagem de plantão go', 'round puerpério', 'resumo puérpera', 'sbar obstetrícia'],
+  },
+  ';implanon-ins': {
+    priority: 81,
+    tags: ['implanon', 'inserção de implante', 'etonogestrel', 'contracepção', 'larc'],
+  },
+  ';implanon-troca': {
+    priority: 80,
+    tags: ['retirada de implanon', 'troca de implanon', 'implante subdérmico', 'etonogestrel'],
+  },
+  ';pn-eutocico': {
+    priority: 85,
+    tags: ['parto normal', 'parto eutócico', 'descrição de parto', 'assistência ao parto', 'dequitação'],
+  },
+  ';cesarea': {
+    priority: 88,
+    tags: ['cesárea', 'cesariana', 'trabalho de parto', 'admissão obstétrica', 'descrição cirúrgica cesárea'],
+  },
+  ';enf-adm-clin': {
+    priority: 84,
+    tags: ['admissão enfermaria', 'internação clínica médica', 'história de admissão', 'lista de problemas'],
+  },
+  ';enf-evo-clin': {
+    priority: 85,
+    tags: ['evolução diária', 'soap enfermaria', 'evolução clínica médica', 'visita médica'],
+  },
+  ';enf-evo-po': {
+    priority: 84,
+    tags: ['pós-operatório', 'evolução cirúrgica', 'ferida operatória', 'dreno', 'dieta pós-op'],
+  },
+  ';sbar-round': {
+    priority: 82,
+    tags: ['passagem de plantão', 'round matinal', 'sbar enfermaria', 'transferência de cuidado'],
+  },
+  ';alta-clin': {
+    priority: 83,
+    tags: ['sumário de alta', 'alta hospitalar', 'desospitalização', 'reconciliação medicamentosa', 'contrarreferência'],
+  },
 };
 
 interface EnrichedSearchMeta {

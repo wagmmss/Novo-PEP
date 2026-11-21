@@ -318,6 +318,7 @@ export function ProtocolosView({
   const [areaFilter, setAreaFilter] = useState<AreaFilter>('todos');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [patient, setPatient] = useState<PatientContextInput>(EMPTY_PATIENT_CONTEXT);
+  const [ckdEpiOpen, setCkdEpiOpen] = useState(false);
   const [guiaOpen, setGuiaOpen] = useState(false);
 
   // Estado interativo da AST real + modo de edição livre opcional por bloco
@@ -341,9 +342,16 @@ export function ProtocolosView({
     return PEP_PROTOCOLS[0];
   }, [selectedId]);
 
+  const effectivePatient = useMemo<PatientContextInput>(() => {
+    if (activeProtocol.mod_id === 'go' && !patient.sexo) {
+      return { ...patient, sexo: 'F' };
+    }
+    return patient;
+  }, [activeProtocol.mod_id, patient]);
+
   const compiled = useMemo(
-    () => compileProtocolForDisplay(activeProtocol, patient),
-    [activeProtocol, patient]
+    () => compileProtocolForDisplay(activeProtocol, effectivePatient),
+    [activeProtocol, effectivePatient]
   );
 
   const [astState, setAstState] = useState<AstSelectionState>(() => compiled.initialAstState);
@@ -1355,9 +1363,28 @@ export function ProtocolosView({
                       inputMode="decimal"
                       value={patient.clCr ?? ''}
                       onChange={(e) => setPatient((p) => ({ ...p, clCr: e.target.value }))}
-                      placeholder="mL/min"
+                      placeholder={
+                        compiled.clinicalContext.tfgCkdEpi !== null
+                          ? String(compiled.clinicalContext.tfgCkdEpi).replace('.', ',')
+                          : 'mL/min'
+                      }
                       className="w-16 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setCkdEpiOpen((v) => !v)}
+                      aria-expanded={ckdEpiOpen}
+                      title="Calcular TFG por CKD-EPI 2021 (Creatinina + Idade + Sexo)"
+                      className={`rounded-md border px-2 py-1 font-mono text-[11px] font-medium transition-colors ${
+                        ckdEpiOpen || compiled.clinicalContext.tfgCkdEpi !== null
+                          ? 'border-[#0F766E]/50 bg-teal-50/70 text-[#0F766E] dark:border-[#2DD4BF]/40 dark:bg-teal-500/12 dark:text-[#2DD4BF]'
+                          : 'border-zinc-200/90 bg-[#FAFAFA] text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+                      }`}
+                    >
+                      {compiled.clinicalContext.tfgCkdEpi !== null
+                        ? `CKD-EPI: ${String(compiled.clinicalContext.tfgCkdEpi).replace('.', ',')}`
+                        : 'CKD-EPI'}
+                    </button>
                   </div>
 
                   {activeProtocol.mod_id !== 'ped' && (
@@ -1403,6 +1430,108 @@ export function ProtocolosView({
                     </button>
                   )}
                 </div>
+
+                {/* CKD-EPI 2021 Integrada (inline, sem modal externo) */}
+                {ckdEpiOpen && (
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-zinc-200/70 pt-2.5 text-xs dark:border-white/[0.07]">
+                    <span className="font-mono text-[11px] font-semibold text-[#0F766E] dark:text-[#2DD4BF]">
+                      CKD-EPI 2021
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <label htmlFor="pt-cr" className="text-zinc-500 dark:text-[#9CA3AF]">
+                        Cr (mg/dL)
+                      </label>
+                      <input
+                        id="pt-cr"
+                        type="text"
+                        inputMode="decimal"
+                        value={patient.creatinina ?? ''}
+                        onChange={(e) => setPatient((p) => ({ ...p, creatinina: e.target.value }))}
+                        placeholder="Ex: 1,4"
+                        className="w-16 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                      />
+                    </div>
+                    {!compiled.needsWeightPersonalization && (
+                      <div className="flex items-center gap-1.5">
+                        <label htmlFor="pt-ckd-idade" className="text-zinc-500 dark:text-[#9CA3AF]">
+                          Idade
+                        </label>
+                        <input
+                          id="pt-ckd-idade"
+                          type="text"
+                          inputMode="numeric"
+                          value={patient.idade}
+                          onChange={(e) => setPatient((p) => ({ ...p, idade: e.target.value }))}
+                          placeholder="Ex: 68"
+                          className="w-16 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                        />
+                      </div>
+                    )}
+                    <div
+                      className="inline-flex items-center rounded-md border border-zinc-200/90 bg-[#FAFAFA] p-0.5 dark:border-white/[0.1] dark:bg-[#0F1115]"
+                      role="group"
+                      aria-label="Sexo biológico para CKD-EPI"
+                    >
+                      {(['F', 'M'] as const).map((sx) => {
+                        const activeSex = (effectivePatient.sexo || '').toUpperCase() === sx;
+                        return (
+                          <button
+                            key={sx}
+                            type="button"
+                            onClick={() => setPatient((p) => ({ ...p, sexo: sx }))}
+                            className={`rounded px-2 py-0.5 font-mono text-[11px] font-semibold transition-colors ${
+                              activeSex
+                                ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                                : 'text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+                            }`}
+                          >
+                            {sx === 'F' ? 'Fem' : 'Masc'}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {compiled.clinicalContext.tfgCkdEpi !== null ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold ${
+                            compiled.clinicalContext.tfgCkdEpi < 30
+                              ? 'bg-red-500/15 text-red-800 dark:text-red-300'
+                              : compiled.clinicalContext.tfgCkdEpi < 60
+                                ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                                : 'bg-teal-500/12 text-[#0F766E] dark:text-[#2DD4BF]'
+                          }`}
+                        >
+                          TFGe: {String(compiled.clinicalContext.tfgCkdEpi).replace('.', ',')} mL/min/1,73m²
+                          {compiled.clinicalContext.renalStageLabel
+                            ? ` · ${compiled.clinicalContext.renalStageLabel}`
+                            : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const snippet = `TFGe (CKD-EPI 2021): ${String(
+                              compiled.clinicalContext.tfgCkdEpi
+                            ).replace('.', ',')} mL/min/1,73m² (${
+                              compiled.clinicalContext.renalStageLabel || 'KDIGO'
+                            }).`;
+                            void copyToClipboard(snippet).then((ok) => {
+                              if (ok) onNotify('TFGe (CKD-EPI 2021) copiada.');
+                            });
+                          }}
+                          className="inline-flex items-center gap-1 rounded border border-zinc-200 bg-white px-2 py-0.5 text-[11px] font-medium text-zinc-700 hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:text-[#2DD4BF]"
+                        >
+                          <Copy className="h-3 w-3" />
+                          Copiar TFGe
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-zinc-400 dark:text-[#6B7280]">
+                        Informe Cr, Idade (≥ 18a) e Sexo para calcular e auditar a prescrição automaticamente.
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Alerta de plausibilidade clínica Idade x Peso */}
                 {compiled.plausibilityAlert && (

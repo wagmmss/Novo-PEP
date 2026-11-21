@@ -325,6 +325,106 @@ const CLINICAL_LINKS_BY_TRIGGER: Record<string, ClinicalLinkEntry> = {
     teoriaModIds: ['mod-03', 'mod-02'],
     showInConsultaMode: true,
   },
+  ';ped-desidratacao': {
+    habIds: ['hab-10', 'hab-18', 'hab-17'],
+    prePortaTriggers: [';hab-ped', ';hab-abcde', ';hab-presc'],
+    teoriaModIds: ['mod-02', 'mod-06'],
+    showInConsultaMode: true,
+  },
+  ';ped-itu': {
+    habIds: ['hab-10', 'hab-17'],
+    prePortaTriggers: [';hab-ped', ';hab-presc'],
+    teoriaModIds: ['mod-02', 'mod-06'],
+  },
+  ';ped-resfriado': {
+    habIds: ['hab-10', 'hab-20'],
+    prePortaTriggers: [';hab-ped', ';hab-orl'],
+    teoriaModIds: ['mod-02'],
+  },
+  ';pn-1cons': {
+    habIds: ['hab-3', 'hab-1', 'hab-17'],
+    prePortaTriggers: [';hab-go', ';hab-anam', ';hab-presc'],
+    teoriaModIds: ['mod-01', 'mod-06'],
+  },
+  ';pn-ret': {
+    habIds: ['hab-3', 'hab-15', 'hab-17'],
+    prePortaTriggers: [';hab-go', ';hab-ctg', ';hab-presc'],
+    teoriaModIds: ['mod-01', 'mod-05', 'mod-06'],
+  },
+  ';cesarea': {
+    habIds: ['hab-3', 'hab-15', 'hab-21'],
+    prePortaTriggers: [';hab-go', ';hab-ctg', ';hab-sutura'],
+    teoriaModIds: ['mod-05', 'mod-07'],
+    showInConsultaMode: true,
+  },
+  ';dip': {
+    habIds: ['hab-3', 'hab-7', 'hab-17'],
+    prePortaTriggers: [';hab-go', ';hab-abd', ';hab-presc'],
+    teoriaModIds: ['mod-02', 'mod-06'],
+  },
+  ';mastite': {
+    habIds: ['hab-3', 'hab-17'],
+    prePortaTriggers: [';hab-go', ';hab-presc'],
+    teoriaModIds: ['mod-06'],
+  },
+  ';itu': {
+    habIds: ['hab-7', 'hab-17'],
+    prePortaTriggers: [';hab-abd', ';hab-presc'],
+    teoriaModIds: ['mod-02', 'mod-06'],
+  },
+  ';colica-renal': {
+    habIds: ['hab-7', 'hab-17'],
+    prePortaTriggers: [';hab-abd', ';hab-presc'],
+    teoriaModIds: ['mod-02', 'mod-06'],
+  },
+  ';alergia': {
+    habIds: ['hab-18', 'hab-22', 'hab-17'],
+    prePortaTriggers: [';hab-abcde', ';hab-iot', ';hab-presc'],
+    teoriaModIds: ['mod-06', 'mod-08'],
+    showInConsultaMode: true,
+  },
+  ';intoxicacao': {
+    habIds: ['hab-18', 'hab-9', 'hab-12', 'hab-14'],
+    prePortaTriggers: [';hab-abcde', ';hab-neuro', ';hab-ecg', ';hab-gaso'],
+    teoriaModIds: ['mod-05', 'mod-06'],
+    showInConsultaMode: true,
+  },
+  ';sutura': {
+    habIds: ['hab-21', 'hab-8'],
+    prePortaTriggers: [';hab-sutura', ';hab-osteo'],
+    teoriaModIds: ['mod-07'],
+    showInConsultaMode: true,
+  },
+  ';lombalgia': {
+    habIds: ['hab-8', 'hab-9'],
+    prePortaTriggers: [';hab-osteo', ';hab-neuro'],
+    teoriaModIds: ['mod-02'],
+  },
+  ';gota': {
+    habIds: ['hab-8', 'hab-19'],
+    prePortaTriggers: [';hab-osteo', ';hab-proc'],
+    teoriaModIds: ['mod-02', 'mod-07'],
+  },
+  ';surto': {
+    habIds: ['hab-9', 'hab-17'],
+    prePortaTriggers: [';hab-neuro', ';hab-presc'],
+    teoriaModIds: ['mod-06'],
+  },
+  ';enf-insulina': {
+    habIds: ['hab-17', 'hab-14'],
+    prePortaTriggers: [';hab-presc', ';hab-gaso'],
+    teoriaModIds: ['mod-06'],
+  },
+  ';enf-delirium': {
+    habIds: ['hab-9', 'hab-17', 'hab-4'],
+    prePortaTriggers: [';hab-neuro', ';hab-presc', ';hab-sbar'],
+    teoriaModIds: ['mod-06', 'mod-08'],
+  },
+  ';alta-clin': {
+    habIds: ['hab-17', 'hab-16'],
+    prePortaTriggers: [';hab-presc', ';hab-spikes'],
+    teoriaModIds: ['mod-06', 'mod-09'],
+  },
 };
 
 /**

@@ -321,21 +321,11 @@ def parse_hab_card(file_path, seq_num):
         'anchor': anchor,
         'pre_porta': pre_porta,
         'checklist_sections': checklist_sections,
-        'checklist_total': checklist_total,
         'pitfalls': pitfalls,
-        'pitfalls_raw': '\n\n'.join(p for p in [rf_section, pit_section] if p).strip(),
         'path': rel_path,
         'pep_body': sec5_clean,
-        'has_split': False,
-        'evolucao_body': '',
-        'conduta_body': '',
         'has_receita': False,
-        'receita_body': '',
-        'receita_meds_body': '',
-        'orientacoes_body': '',
-        'has_guia': False,
         'guia_body': '',
-        'sections': {'Texto Pronto': sec5_clean} if sec5_clean else {},
     }
 
 
@@ -561,7 +551,6 @@ def build_all():
                 subcat_clean = raw_cat_meta
 
             gravidade = normalize_gravidade(raw_grav_meta, trigger, subcat_clean, mod['id'])
-            sections = extract_pep_sections(snippet_pep)
 
             item = {
                 'id': f"{mod['id']}-{len(pep_snippets)+1}",
@@ -576,16 +565,8 @@ def build_all():
                 'cid10': cid10_meta,
                 'path': rel_path,
                 'pep_body': snippet_pep,
-                'has_split': has_split,
-                'evolucao_body': evolucao_body,
-                'conduta_body': conduta_body,
                 'has_receita': bool(receita_text),
-                'receita_body': receita_text,
-                'receita_meds_body': receita_meds_text,
-                'orientacoes_body': orientacoes_text,
-                'has_guia': bool(guia_text),
                 'guia_body': guia_text,
-                'sections': sections,
             }
             pep_snippets.append(item)
 

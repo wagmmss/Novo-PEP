@@ -216,10 +216,13 @@ const BRACKET_HEADER_LINE_RE =
   /^(?:\*?\s*\[[^\]]+\]\s*\*?\s*:?\s*)$/;
 
 const ALTERNATIVE_LINE_RE =
-  /^(?:[-•*]\s*)?(?:\(?\[?(?:ou|se|opcao\s*(?:[2-9]|[b-z]\b|alternativa)|alternativa|2a?\s*linha|em\s+caso\s+de|apenas\s+se)\b|via\s+(?:oral|venosa|ev|im)\b|com\s+acesso\b|sem\s+acesso\b|crianca\s+(?:vacinada|grave)\b)|\[(?:ou\b|apenas\s+se|se\s+alergia|opcao\s*(?:[2-9]|[b-z]\b|alternativa)|alternativa)[^\]]*\]|\(\s*(?:alternativa|ou\b|se\s+alergia)|\b(?:apenas\s+se|se\s+alergia|se\s+refratario|se\s+intolerancia|2a\s*linha\s*:|alternativa\s*:|ou\s+na\s+falha)\b/i;
+  /^(?:[-•*]\s*)?(?:\(?\[?(?:ou|se|opcao\s*(?:[2-9]|[b-z]\b|alternativa)|alternativa|2a?\s*linha|em\s+caso\s+de|apenas\s+se)\b|via\s+(?:oral|venosa|ev|im)\b|com\s+acesso\b|sem\s+acesso\b|crianca\s+(?:vacinada|grave)\b)|\[(?:ou\b|apenas\s+se|se\s+alergia|opcao\s*(?:[2-9]|[b-z]\b|alternativa)|alternativa)[^\]]*\]|\(\s*(?:alternativa|ou\b|se\s+alergia)|\b(?:apenas\s+se|se\s+alergia|se\s+refratario|se\s+intolerancia|2a\s*linha\s*:|alternativa\s*:|ou\s+na\s+falha|parceir[oa]\s+sexual)\b/i;
+
+const PARTNER_TREATMENT_HEADER_RE =
+  /^(?:>>\s*|\*\s*|#+\s*)?(?:tratamento|convocacao)[^\n:]{0,60}\bparceir[oa]/i;
 
 const NON_VIABLE_PREGNANCY_RE =
-  /\b(?:abortamento\s+infectado|gravidez\s+ectopica|gestacao\s+ectopica|mola\s+hidatiforme|obito\s+fetal)\b/i;
+  /\b(?:abortamento\s+infectado|gravidez\s+ectopica|gestacao\s+ectopica|mola\s+hidatiforme|obito\s+fetal|resolucao\s+da\s+gestacao|inducao\s+do\s+trabalho\s+de\s+parto)\b/i;
 
 const POSOLOGY_CONTINUATION_RE =
   /^(?:[-•*]\s*)?(?:tomar|dar|aplicar|fazer|administrar|infundir|usar|pingar|instilar|inalar|lavar|mastigar|dissolver|repetir|diluir|correr|manter|posologia\s*:|obs\.?\s*:|\(nota\s*:|nota\s*:)/i;
@@ -273,6 +276,11 @@ export function extractPrescriptionItemsFromText(
       inNonViablePregBlock = false;
       continue;
     }
+    if (PARTNER_TREATMENT_HEADER_RE.test(normLine)) {
+      inConditionalBlock = true;
+      nextLineIsAlternative = true;
+      continue;
+    }
     if (CONDUTA_HEADING_RE.test(normLine)) {
       zone = 'conduta';
       inConditionalBlock = false;
@@ -299,7 +307,8 @@ export function extractPrescriptionItemsFromText(
     if (trimmed.length < 4) continue;
 
     // Ignora cabeçalhos puros ou separadores sem fármaco
-    if (/^(?:===|---|#|\*\*|uso\s+(?:oral|topico|nasal|otologico|oftalmico|retal|vaginal|inalatorio|interno|externo)\b)/i.test(normLine)) {
+    if (/^(?:===|---|#|\*\*|uso\s+(?:oral|topico|nasal|otologico|oftalmico|retal|vaginal|inalatorio|interno|externo|intramuscular)\b)/i.test(normLine)) {
+      inConditionalBlock = false;
       continue;
     }
 
@@ -523,7 +532,7 @@ export function auditPrescription(
     // ------------------------------------------------------------------------
     // 3B. GESTAÇÃO
     // ------------------------------------------------------------------------
-    if (effectivePregnant && !(item.nonViablePregnancyScenario && !context.isPregnant)) {
+    if (effectivePregnant && !item.nonViablePregnancyScenario) {
       if (meta.pregnancyRisk === 'X' || meta.pregnancyRisk === 'D') {
         alerts.push({
           id: `preg-block-${meta.canonicalKey}-${alerts.length}`,

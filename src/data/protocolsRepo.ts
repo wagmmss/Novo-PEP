@@ -37,6 +37,10 @@ export interface PatientContextInput {
   alergias?: string;
   /** TFG / ClCr informado manualmente (mL/min). */
   clCr?: string;
+  /** Creatinina sérica (mg/dL) para cálculo integrado CKD-EPI 2021. */
+  creatinina?: string;
+  /** Sexo biológico ('F' | 'M') para cálculo integrado CKD-EPI 2021. */
+  sexo?: string;
 }
 
 export const EMPTY_PATIENT_CONTEXT: PatientContextInput = {
@@ -46,6 +50,8 @@ export const EMPTY_PATIENT_CONTEXT: PatientContextInput = {
   igSemanas: '',
   alergias: '',
   clCr: '',
+  creatinina: '',
+  sexo: '',
 };
 
 export function patientContextHasValues(p: PatientContextInput): boolean {
@@ -55,7 +61,8 @@ export function patientContextHasValues(p: PatientContextInput): boolean {
       p.gestante ||
       p.igSemanas.trim() ||
       (p.alergias ?? '').trim() ||
-      (p.clCr ?? '').trim()
+      (p.clCr ?? '').trim() ||
+      (p.creatinina ?? '').trim()
   );
 }
 
@@ -115,8 +122,43 @@ export const PROTOCOL_BY_ID = new Map<string, ClinicalProtocolItem>(
 );
 
 export const PROTOCOL_BY_TRIGGER = new Map<string, ClinicalProtocolItem>(
-  ALL_PROTOCOLS.map((item) => [String(item.trigger || '').toLowerCase(), item])
+  ALL_PROTOCOLS.flatMap((item) => {
+    const trigs = item.all_triggers?.length ? item.all_triggers : [item.trigger];
+    return trigs
+      .map((t) => String(t || '').trim().toLowerCase())
+      .filter(Boolean)
+      .flatMap((t) => [
+        [t, item] as const,
+        [t.replace(/^;/, ''), item] as const,
+      ]);
+  })
 );
+
+/** ID especial da visão "6 Intercorrências de Madrugada" integrada na aba Pré-Porta. */
+export const INTERCORRENCIAS_HAB_ID = 'intercorrencias';
+
+/**
+ * Resolve um identificador de rota ou favorito (ID numérico "upa-35" ou slug de atalho "sca" / ";sca")
+ * para o ID ativo correspondente na aba solicitada.
+ */
+export function resolveKnownRouteId(tab: 'protocolos' | 'pre-porta', rawId: string): string | null {
+  const clean = String(rawId || '').trim();
+  if (!clean) return null;
+  if (tab === 'pre-porta' && clean.toLowerCase() === INTERCORRENCIAS_HAB_ID) {
+    return INTERCORRENCIAS_HAB_ID;
+  }
+  const byId = PROTOCOL_BY_ID.get(clean);
+  if (byId) {
+    const valid = tab === 'pre-porta' ? byId.mod_id === 'hab' : byId.mod_id !== 'hab';
+    return valid ? byId.id : null;
+  }
+  const byTrigger = PROTOCOL_BY_TRIGGER.get(clean.toLowerCase());
+  if (byTrigger) {
+    const valid = tab === 'pre-porta' ? byTrigger.mod_id === 'hab' : byTrigger.mod_id !== 'hab';
+    return valid ? byTrigger.id : null;
+  }
+  return null;
+}
 
 export const GLOBAL_SEARCH_INDEX = createClinicalSearchIndex(ALL_PROTOCOLS);
 
@@ -170,7 +212,7 @@ const CONDUTA_BOUNDARY_REGEX =
   /^(?:(?:#+\s*|>>\s*)\s*|\d+\.\s*)?(?:5\.\s*AVALIAÇÃO\s*&\s*PLANO\s*\/\s*CONDUTA|(?:PLANO\s*\/\s*CONDUTA|PLANO\s+TERAPÊUTICO|PLANO|CONDUTA|PRESCRIÇÃO(?:\s+HOSPITALAR|\s+INICIAL)?)\s*:?\s*$)/i;
 
 const CONDUTA_HEADING_REGEX =
-  /^(?:#+\s*|>>\s*)(?:PLANO\s*\/\s*CONDUTA|PLANO\s+TERAPÊUTICO|PLANO|CONDUTA|PRESCRIÇÃO)\b/i;
+  /^(?:#+\s*|>>\s*)(?:PLANO\s*\/\s*CONDUTA|PLANO\s+TERAPÊUTICO|PLANO|CONDUTA|PRESCRIÇÃO|DESCRIÇÃO\s+TÉCNICA\s+DO\s+PROCEDIMENTO|PROFILAXIA\s+ANTITETÂNICA)\b/i;
 
 function trimBoundaryEmptyLines(ast: PepDocumentAst, indices: number[]): number[] {
   let start = 0;
@@ -575,6 +617,8 @@ export function compileProtocolForDisplay(
       igSemanas: patient.igSemanas,
       alergias: patient.alergias ?? '',
       clCr: patient.clCr ?? '',
+      creatinina: patient.creatinina ?? '',
+      sexo: patient.sexo ?? '',
     },
     {
       modId: item.mod_id,

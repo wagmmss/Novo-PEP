@@ -128,9 +128,19 @@ export function buildClinicalContext(
     protocolMeta?.modId === 'go' &&
     Boolean(
       protocolMeta.trigger &&
-        [';pn-1cons', ';pn-sub', ';pre-eclampsia', ';tpp', ';rpmo', ';dpp-pp', ';abortamento', ';admissao-tp', ';pn-eutocico'].includes(
-          protocolMeta.trigger.toLowerCase()
-        )
+        [
+          ';pn-1cons',
+          ';pn-ret',
+          ';pn-sub',
+          ';pre-eclampsia',
+          ';tpp',
+          ';rpmo',
+          ';dpp-pp',
+          ';abortamento',
+          ';admissao-tp',
+          ';cesarea',
+          ';pn-eutocico',
+        ].includes(protocolMeta.trigger.toLowerCase())
     );
 
   const isPregnant = Boolean(id.gestante || (igWeeks !== null && igWeeks > 0) || isObstetricProtocol);

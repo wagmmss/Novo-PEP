@@ -1,10 +1,10 @@
 # Sistema Protocolar de Atendimento Médico & Snippets para PEP
 
-> Acervo de 74 protocolos clínicos estruturados para atendimento médico, registros em PEP e prescrições de alta.
+> Acervo de 88 protocolos clínicos + 22 cartões Pré-Porta (110 itens) estruturados para atendimento médico, registros em PEP e prescrições de alta.
 
 ## Módulos Clínicos Disponíveis
 
-### Ginecologia e Obstetrícia (15 protocolos)
+### Ginecologia e Obstetrícia (19 protocolos)
 - [Evolução Diária em Enfermaria de Puerpério](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/01_Enfermaria_Puerperio/02_Puerperio_Evolucao_Diaria.md): Atalho `;puerp-evo`
 - [Script de Passagem de Caso / Round de Puerpério](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/01_Enfermaria_Puerperio/05_Puerperio_Round_Passagem_de_Caso.md): Atalho `;round-puerp`
 - [Ambulatório de Pré-Natal - Primeira Consulta](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/02_Ambulatorio_GO/01_Pre_Natal_Primeira_Consulta.md): Atalho `;pn-1cons`
@@ -20,8 +20,12 @@
 - [Manejo de Emergência - Rotura Prematura de Membranas (RPMO)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/06_Emergencias_GO/04_Rotura_Prematura_de_Membranas_RPMO.md): Atalho `;rpmo`
 - [Manejo de Emergência - Doença Inflamatória Pélvica (DIP)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/06_Emergencias_GO/05_Doenca_Inflamatoria_Pelvica_DIP.md): Atalho `;dip`
 - [Infecções Puerperais: Mastite Lactacional & Endometrite](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/06_Emergencias_GO/06_Infeccoes_Puerperais_Mastite_e_Endometrite.md): Atalho `;mastite` / `;endometrite`
+- [Admissão em Trabalho de Parto & Descrição Cirúrgica de Cesariana](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/04_Centro_Obstetrico_Cirurgias/07_Admissao_TP_e_Descricao_Cesariana.md): Atalho `;cesarea`
+- [Manejo de Emergência - Sangramento do 1º Trimestre: Abortamento e Gravidez Ectópica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/06_Emergencias_GO/07_Sangramento_1Trimestre_Abortamento_e_Ectopica.md): Atalho `;abortamento`
+- [Manejo de Emergência - Sangramento do 2º/3º Trimestre (DPP vs. Placenta Prévia e Vasa Prévia)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/06_Emergencias_GO/08_Sangramento_2e3Trimestre_DPP_e_Placenta_Previa.md): Atalho `;dpp-pp`
+- [Manejo de Emergência - Violência Sexual e Profilaxias Pós-Exposição (ISTs, HIV e Contracepção)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/01_Ginecologia_Obstetricia/06_Emergencias_GO/09_Violencia_Sexual_e_Profilaxias_PEP.md): Atalho `;violencia-sexual`
 
-### Pronto Atendimento / UPA Adulto (37 protocolos)
+### Pronto Atendimento / UPA Adulto (47 protocolos)
 - [Ficha Mestra Universal de Pronto Atendimento (UPA / Pronto-Socorro)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/01_Triagem_e_Ficha_Mestra/00_Ficha_Mestra_Universal_UPA.md): Atalho `;upa-ficha`
 - [Atendimento de Pronto Atendimento - Resfriado Comum e Rinofaringite Aguda](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/02_Infeccoes_e_Vias_Aereas/01_Resfriado_e_Rinofaringite.md): Atalho `;resfriado`
 - [Atendimento de Pronto Atendimento - Faringoamigdalite Aguda](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/02_Infeccoes_e_Vias_Aereas/02_Faringoamigdalite_Aguda.md): Atalho `;amigdalite`
@@ -59,8 +63,18 @@
 - [Atendimento de Pronto Atendimento - Intoxicações Exógenas e Intoxicação Alcoólica Aguda](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/02_Intoxicacao_Exogena_e_Alcoolica.md): Atalho `;intoxicacao`
 - [Atendimento de Pronto Atendimento - Sequência Rápida de Intubação (SRI / IOT)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/03_Sequencia_Rapida_de_Intubacao_SRI.md): Atalho `;sri`
 - [Parada Cardiorrespiratória (PCR) Adulto & Cuidados Pós-RCE](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/04_Parada_Cardiorrespiratoria_PCR.md): Atalho `;pcr`
+- [Constipação Aguda, Fecaloma e Suspeita de Obstrução Intestinal](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/03_Gastrointestinal_e_Abdominal/07_Constipacao_Fecaloma_e_Obstrucao_Intestinal.md): Atalho `;constipacao`
+- [Trombose Venosa Profunda (TVP) e Tromboembolismo Pulmonar (TEP)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/04_Cardiovascular_e_Respiratorio/06_TVP_e_Tromboembolismo_Pulmonar_TEP.md): Atalho `;tvp-tep`
+- [Síncope na Emergência (Vasovagal, Ortostática e Cardiogênica)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/04_Cardiovascular_e_Respiratorio/07_Sincope_na_Emergencia.md): Atalho `;sincope`
+- [Sepse e Choque Séptico (Pacote da 1ª Hora)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/05_Sepse_e_Choque_Septico_Pacote_1Hora.md): Atalho `;sepse`
+- [AVC Agudo & AIT (Código AVC & Alteplase rt-PA)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/06_Acidente_Vascular_Cerebral_AVC_e_AIT.md): Atalho `;avc`
+- [Taquiarritmias & Fibrilação Atrial (ACLS)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/07_Taquiarritmias_e_Fibrilacao_Atrial.md): Atalho `;taqui`
+- [Distúrbios Eletrolíticos Graves (HiperK & HipoNa)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/08_Disturbios_Eletroliticos_Hipercalemia_e_Hiponatremia.md): Atalho `;hiperk`
+- [Pequena Cirurgia: Sutura, Profilaxia de Tétano e Raiva](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/09_Trauma_Menor_Sutura_Tetano_e_Raiva.md): Atalho `;sutura`
+- [Bradiarritmias Sintomáticas, BAV de Alto Grau e Marcapasso Transcutâneo](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/10_Bradiarritmias_e_Marcapasso_Transcutaneo.md): Atalho `;bradi`
+- [Queimaduras Agudas (Parkland) e Acidentes por Animais Peçonhentos](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/11_Queimaduras_e_Animais_Peconhentos.md): Atalho `;queimadura`
 
-### Enfermaria e Internação Hospitalar (7 protocolos)
+### Enfermaria e Internação Hospitalar (9 protocolos)
 - [Admissão em Enfermaria de Clínica Médica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/01_Admissao_e_Avaliacao_Inicial/01_Admissao_Clinica_Medica.md): Atalho `;enf-adm-clin`
 - [Evolução Diária SOAP - Clínica Médica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/02_Evolucao_Diaria_SOAP/01_Evolucao_SOAP_Clinica_Medica.md): Atalho `;enf-evo-clin`
 - [Evolução Diária SOAP - Pós-Operatório Cirúrgico](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/02_Evolucao_Diaria_SOAP/02_Evolucao_SOAP_Pos_Operatorio.md): Atalho `;enf-evo-po`
@@ -68,15 +82,20 @@
 - [Round Matinal e Passagem de Plantão (Formato SBAR)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/03_Passagem_de_Plantao_e_Rounds/01_Round_Matinal_e_Passagem_SBAR.md): Atalho `;sbar-round`
 - [Sumário de Alta Hospitalar - Clínica Médica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/05_Altas_e_Desospitalizacao/01_Sumario_de_Alta_Clinica_Medica.md): Atalho `;alta-clin`
 - [Constatação de Óbito Hospitalar & Preenchimento da Declaração de Óbito (DO)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/06_Declaracao_de_Obito_e_Cuidados/01_Constatacao_de_Obito_e_Checklist_DO.md): Atalho `;obito-do`
+- [Manejo em Enfermaria - Controle Glicêmico Hospitalar e Insulinoterapia Basal-Bolus](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/02_Evolucao_Diaria_SOAP/04_Controle_Glicemico_e_Insulinoterapia_Hospitalar.md): Atalho `;enf-insulina`
+- [Manejo em Enfermaria - Delirium Hospitalar, Agitação no Idoso e Rastreio de Causas Reversíveis](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/03_Enfermaria_Internacao/03_Passagem_de_Plantao_e_Rounds/01_Delirium_Hospitalar_e_Agitacao_no_Idoso.md): Atalho `;enf-delirium`
 
-### Pediatria e Puericultura (10 protocolos)
-- [Ficha Mestra Universal de Pediatria (Pronto Atendimento & Ambulatório)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/01_Ficha_Mestra_e_Triagem/00_Ficha_Mestra_Universal_Pediatrica.md): Atalho `;ped-ficha`
-- [Consulta de Puericultura & Marcos do DNPM (0 a 24 Meses)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/02_Puericultura_e_Ambulatorio/01_Consulta_Puericultura_Marcos_DNPM.md): Atalho `;puericultura`
-- [Resfriado Comum & Rinofaringite Aguda Pediátrica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/01_Resfriado_Comum_e_Obstrucao_Nasal.md): Atalho `;ped-resfriado`
-- [Bronquiolite Viral Aguda (BVA) no Lactente](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/02_Bronquiolite_Viral_Aguda_BVA.md): Atalho `;bva`
-- [Laringite Aguda & Crupe Viral (Laringotraqueobronquite)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/03_Laringite_Estridulosa_Crupe_Viral.md): Atalho `;crupe`
-- [Otite Média Aguda (OMA) Pediátrica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/04_Otite_Media_Aguda_Pediatrica.md): Atalho `;ped-otite`
-- [Pneumonia Adquirida na Comunidade (PAC) Pediátrica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/05_Pneumonia_Adquirida_na_Comunidade_PAC.md): Atalho `;ped-pneumonia`
-- [Gastroenterite Aguda (GECA) & Planos de Desidratação da OMS](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/04_Gastrointestinal_e_Desidratacao/01_GECA_e_Planos_Desidratacao_OMS.md): Atalho `;ped-desidratacao`
-- [Febre sem Foco & Manejo do Lactente Febril](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/05_Febre_e_Infeccoes_Sistemicas/01_Febre_sem_Foco_e_Lactente_Febril.md): Atalho `;ped-febre`
-- [Crise Convulsiva Febril na Infância](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria_Puericultura/05_Febre_e_Infeccoes_Sistemicas/02_Crise_Convulsiva_Febril.md): Atalho `;convulsao-febril`
+### Pediatria e Puericultura (13 protocolos)
+- [Ficha Mestra Universal de Pediatria (Pronto Atendimento & Ambulatório)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/01_Ficha_Mestra_e_Triagem/00_Ficha_Mestra_Universal_Pediatrica.md): Atalho `;ped-ficha`
+- [Consulta de Puericultura & Marcos do DNPM (0 a 24 Meses)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/02_Puericultura_e_Ambulatorio/01_Consulta_Puericultura_Marcos_DNPM.md): Atalho `;puericultura`
+- [Resfriado Comum & Rinofaringite Aguda Pediátrica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/03_Respiratorio_e_IVAS/01_Resfriado_Comum_e_Obstrucao_Nasal.md): Atalho `;ped-resfriado`
+- [Bronquiolite Viral Aguda (BVA) no Lactente](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/03_Respiratorio_e_IVAS/02_Bronquiolite_Viral_Aguda_BVA.md): Atalho `;bva`
+- [Laringite Aguda & Crupe Viral (Laringotraqueobronquite)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/03_Respiratorio_e_IVAS/03_Laringite_Estridulosa_Crupe_Viral.md): Atalho `;crupe`
+- [Otite Média Aguda (OMA) Pediátrica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/03_Respiratorio_e_IVAS/04_Otite_Media_Aguda_Pediatrica.md): Atalho `;ped-otite`
+- [Pneumonia Adquirida na Comunidade (PAC) Pediátrica](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/03_Respiratorio_e_IVAS/05_Pneumonia_Adquirida_na_Comunidade_PAC.md): Atalho `;ped-pneumonia`
+- [Gastroenterite Aguda (GECA) & Planos de Desidratação da OMS](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/04_Gastrointestinal_e_Desidratacao/01_GECA_e_Planos_Desidratacao_OMS.md): Atalho `;ped-desidratacao`
+- [Febre sem Foco & Manejo do Lactente Febril](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/01_Febre_sem_Foco_e_Lactente_Febril.md): Atalho `;ped-febre`
+- [Crise Convulsiva Febril na Infância](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/02_Crise_Convulsiva_Febril.md): Atalho `;convulsao-febril`
+- [Asma Aguda e Crise de Sibilância / Broncoespasmo na Infância (GINA Pediátrico)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/03_Respiratorio_e_IVAS/06_Asma_Aguda_e_Crise_de_Sibilancia_Pediatrica.md): Atalho `;ped-asma`
+- [Doenças Exantemáticas Febris na Infância e Doença de Kawasaki](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/03_Exantemas_Febris_na_Infancia_e_Kawasaki.md): Atalho `;ped-exantema`
+- [Infecção do Trato Urinário (ITU) na Infância e no Lactente (Cistite vs. Pielonefrite)](https://raw.githubusercontent.com/wagmms/protocolos-clinicos/main/04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/04_ITU_na_Infancia_e_Lactente.md): Atalho `;ped-itu`

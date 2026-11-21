@@ -8,6 +8,7 @@ export interface QuickCaptureRequest {
   kind: 'logbook' | 'ponto_cego';
   defaultTitle: string;
   defaultRodizio?: string;
+  defaultNota?: string;
 }
 
 interface QuickCaptureModalProps {
@@ -40,7 +41,7 @@ export function QuickCaptureModal({
     setTitulo(request.defaultTitle);
     setRodizio(request.defaultRodizio || activeRodizioId || RODIZIOS_6ANO[0]?.id || 'cm');
     setAutonomy('supervisionado');
-    setNota('');
+    setNota(request.defaultNota || '');
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

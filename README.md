@@ -7,7 +7,7 @@
 
 Biblioteca médica estruturada, defensiva e padronizada para atendimento clínico, registros em Prontuário Eletrônico do Paciente (PEP: MV, Tasy, Vivver, e-SUS) e discussão de casos em rounds.
 
-**Total de Modelos Prontos:** **74 protocolos médicos de alta performance** com negativas médico-legais, receitas estruturadas, doses ponderais instantâneas, bundles de segurança (FAST HUG BID), condutas de bolso e cópia segmentada (16 protocolos arquivados em `_arquivados/`).
+**Total de Modelos Prontos:** **88 protocolos médicos de alta performance** com negativas médico-legais, receitas estruturadas, doses ponderais instantâneas, bundles de segurança (FAST HUG BID), condutas de bolso e cópia segmentada (16 protocolos arquivados em `_arquivados/`).
 
 ---
 
@@ -19,7 +19,7 @@ Acesse via navegador em **[https://wagmms.github.io/protocolos-clinicos/](https:
 - **Personalizador com Chips Interativos:** Clique nas opções `[Opção A / Opção B]` diretamente nos chips visuais na aba *"⚡ Personalizar & Chips"* para ajustar a conduta antes de copiar para o prontuário.
 - **Calculadora de Doses por Peso na Topbar:** Insira o peso do paciente (`Peso: [ 70 ] kg`) e acesse instantaneamente doses calculadas de Sepse (30 mL/kg), Dengue C (10 mL/kg/h), Alteplase (0,9 mg/kg), Enoxaparina (1 mg/kg vs 0,75 mg/kg em idosos), Drogas de Intubação (SRI), Dipirona e Paracetamol gotas.
 - **Command Palette Global (`Ctrl + K` ou `/`):** Pressione `Ctrl + K` em qualquer tela para abrir a busca instantânea tipo Spotlight, navegar com as setas e copiar o protocolo com `Enter` (ou abrir diretamente cartões da aba `🧠 Habilidades`).
-- **Aba Dedicada `🧠 Habilidades` (19 Cartões Pré-Porta 30s — 100% Isolada dos 74 PEP):**
+- **Aba Dedicada `🧠 Habilidades` (22 Cartões Pré-Porta 30s — 100% Isolada dos 88 PEP):**
   - Localizada em [`05_Habilidades_Clinicas/`](05_Habilidades_Clinicas/), separada da aba `🌐 Geral`, de `snippets/snippets_todos.json` e dos arquivos Espanso (os 74 modelos de PEP não são alterados).
   - Ao abrir um cartão na aba **`🧠 Habilidades`** (ou via `Ctrl + K` marcado como `🧠 Habilidade`), o Drawer exibe 3 abas dedicadas:
     1. **`⚡ Pré-Porta 30s`:** meta de tempo, âncora mnemônica em destaque e roteiro escaneável no celular antes de entrar no atendimento.
@@ -29,26 +29,29 @@ Acesse via navegador em **[https://wagmms.github.io/protocolos-clinicos/](https:
 
 ---
 
-## 📋 Tabela Mestra: Pediatria & Puericultura (10 Modelos Ativos)
+## 📋 Tabela Mestra: Pediatria & Puericultura (13 Modelos Ativos)
 
 > *Nota: O Guia Mestre de Doses Ponderais foi arquivado na pasta `_arquivados/04_Pediatria_Puericultura/`.*
 
 | Protocolo Clínico | Área / Subcategoria | Arquivo |
 | :--- | :--- | :--- |
-| Ficha Mestra Universal de Pediatria (Pronto Atendimento & Ambulatório) | Ficha Mestra e Triagem | [`00_Ficha_Mestra_Universal_Pediatrica.md`](04_Pediatria_Puericultura/01_Ficha_Mestra_e_Triagem/00_Ficha_Mestra_Universal_Pediatrica.md) |
-| Consulta de Puericultura & Marcos do DNPM (0 a 24 Meses) | Puericultura e Ambulatorio | [`01_Consulta_Puericultura_Marcos_DNPM.md`](04_Pediatria_Puericultura/02_Puericultura_e_Ambulatorio/01_Consulta_Puericultura_Marcos_DNPM.md) |
-| Resfriado Comum & Rinofaringite Aguda Pediátrica | Respiratorio e IVAS | [`01_Resfriado_Comum_e_Obstrucao_Nasal.md`](04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/01_Resfriado_Comum_e_Obstrucao_Nasal.md) |
-| Bronquiolite Viral Aguda (BVA) no Lactente | Respiratorio e IVAS | [`02_Bronquiolite_Viral_Aguda_BVA.md`](04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/02_Bronquiolite_Viral_Aguda_BVA.md) |
-| Laringite Aguda & Crupe Viral (Laringotraqueobronquite) | Respiratorio e IVAS | [`03_Laringite_Estridulosa_Crupe_Viral.md`](04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/03_Laringite_Estridulosa_Crupe_Viral.md) |
-| Otite Média Aguda (OMA) Pediátrica | Respiratorio e IVAS | [`04_Otite_Media_Aguda_Pediatrica.md`](04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/04_Otite_Media_Aguda_Pediatrica.md) |
-| Pneumonia Adquirida na Comunidade (PAC) Pediátrica | Respiratorio e IVAS | [`05_Pneumonia_Adquirida_na_Comunidade_PAC.md`](04_Pediatria_Puericultura/03_Respiratorio_e_IVAS/05_Pneumonia_Adquirida_na_Comunidade_PAC.md) |
-| Gastroenterite Aguda (GECA) & Planos de Desidratação da OMS | Gastrointestinal e Desidratacao | [`01_GECA_e_Planos_Desidratacao_OMS.md`](04_Pediatria_Puericultura/04_Gastrointestinal_e_Desidratacao/01_GECA_e_Planos_Desidratacao_OMS.md) |
-| Febre sem Foco & Manejo do Lactente Febril | Febre e Infeccoes Sistemicas | [`01_Febre_sem_Foco_e_Lactente_Febril.md`](04_Pediatria_Puericultura/05_Febre_e_Infeccoes_Sistemicas/01_Febre_sem_Foco_e_Lactente_Febril.md) |
-| Crise Convulsiva Febril na Infância | Febre e Infeccoes Sistemicas | [`02_Crise_Convulsiva_Febril.md`](04_Pediatria_Puericultura/05_Febre_e_Infeccoes_Sistemicas/02_Crise_Convulsiva_Febril.md) |
+| Ficha Mestra Universal de Pediatria (Pronto Atendimento & Ambulatório) | Ficha Mestra e Triagem | [`00_Ficha_Mestra_Universal_Pediatrica.md`](04_Pediatria/01_Ficha_Mestra_e_Triagem/00_Ficha_Mestra_Universal_Pediatrica.md) |
+| Consulta de Puericultura & Marcos do DNPM (0 a 24 Meses) | Puericultura e Ambulatorio | [`01_Consulta_Puericultura_Marcos_DNPM.md`](04_Pediatria/02_Puericultura_e_Ambulatorio/01_Consulta_Puericultura_Marcos_DNPM.md) |
+| Resfriado Comum & Rinofaringite Aguda Pediátrica | Respiratorio e IVAS | [`01_Resfriado_Comum_e_Obstrucao_Nasal.md`](04_Pediatria/03_Respiratorio_e_IVAS/01_Resfriado_Comum_e_Obstrucao_Nasal.md) |
+| Bronquiolite Viral Aguda (BVA) no Lactente | Respiratorio e IVAS | [`02_Bronquiolite_Viral_Aguda_BVA.md`](04_Pediatria/03_Respiratorio_e_IVAS/02_Bronquiolite_Viral_Aguda_BVA.md) |
+| Laringite Aguda & Crupe Viral (Laringotraqueobronquite) | Respiratorio e IVAS | [`03_Laringite_Estridulosa_Crupe_Viral.md`](04_Pediatria/03_Respiratorio_e_IVAS/03_Laringite_Estridulosa_Crupe_Viral.md) |
+| Otite Média Aguda (OMA) Pediátrica | Respiratorio e IVAS | [`04_Otite_Media_Aguda_Pediatrica.md`](04_Pediatria/03_Respiratorio_e_IVAS/04_Otite_Media_Aguda_Pediatrica.md) |
+| Pneumonia Adquirida na Comunidade (PAC) Pediátrica | Respiratorio e IVAS | [`05_Pneumonia_Adquirida_na_Comunidade_PAC.md`](04_Pediatria/03_Respiratorio_e_IVAS/05_Pneumonia_Adquirida_na_Comunidade_PAC.md) |
+| Gastroenterite Aguda (GECA) & Planos de Desidratação da OMS | Gastrointestinal e Desidratacao | [`01_GECA_e_Planos_Desidratacao_OMS.md`](04_Pediatria/04_Gastrointestinal_e_Desidratacao/01_GECA_e_Planos_Desidratacao_OMS.md) |
+| Febre sem Foco & Manejo do Lactente Febril | Febre e Infeccoes Sistemicas | [`01_Febre_sem_Foco_e_Lactente_Febril.md`](04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/01_Febre_sem_Foco_e_Lactente_Febril.md) |
+| Crise Convulsiva Febril na Infância | Febre e Infeccoes Sistemicas | [`02_Crise_Convulsiva_Febril.md`](04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/02_Crise_Convulsiva_Febril.md) |
+| Asma Aguda e Crise de Sibilância / Broncoespasmo na Infância (GINA Pediátrico) | Respiratorio e IVAS | [06_Asma_Aguda_e_Crise_de_Sibilancia_Pediatrica.md](04_Pediatria/03_Respiratorio_e_IVAS/06_Asma_Aguda_e_Crise_de_Sibilancia_Pediatrica.md) |
+| Doenças Exantemáticas Febris na Infância e Doença de Kawasaki | Febre e Infeccoes Sistemicas | [03_Exantemas_Febris_na_Infancia_e_Kawasaki.md](04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/03_Exantemas_Febris_na_Infancia_e_Kawasaki.md) |
+| Infecção do Trato Urinário (ITU) na Infância e no Lactente (Cistite vs. Pielonefrite) | Febre e Infeccoes Sistemicas | [04_ITU_na_Infancia_e_Lactente.md](04_Pediatria/05_Febre_e_Infeccoes_Sistemicas/04_ITU_na_Infancia_e_Lactente.md) |
 
 ---
 
-## 📋 Tabela Mestra: Enfermaria & Internação Hospitalar (7 Modelos Ativos)
+## 📋 Tabela Mestra: Enfermaria & Internação Hospitalar (9 Modelos Ativos)
 
 > *Nota: 3 modelos (admissão cirúrgica pré/pós, parecer de interconsulta e sumário de alta cirúrgica) foram preservados e arquivados na pasta `_arquivados/03_Enfermaria_Internacao/`.*
 
@@ -61,10 +64,12 @@ Acesse via navegador em **[https://wagmms.github.io/protocolos-clinicos/](https:
 | Round Matinal e Passagem de Plantão (Formato SBAR) | Passagem de Plantao e Rounds | [`01_Round_Matinal_e_Passagem_SBAR.md`](03_Enfermaria_Internacao/03_Passagem_de_Plantao_e_Rounds/01_Round_Matinal_e_Passagem_SBAR.md) |
 | Sumário de Alta Hospitalar - Clínica Médica | Altas e Desospitalizacao | [`01_Sumario_de_Alta_Clinica_Medica.md`](03_Enfermaria_Internacao/05_Altas_e_Desospitalizacao/01_Sumario_de_Alta_Clinica_Medica.md) |
 | Constatação de Óbito Hospitalar & Preenchimento da Declaração de Óbito (DO) | Declaracao de Obito e Cuidados | [`01_Constatacao_de_Obito_e_Checklist_DO.md`](03_Enfermaria_Internacao/06_Declaracao_de_Obito_e_Cuidados/01_Constatacao_de_Obito_e_Checklist_DO.md) |
+| Manejo em Enfermaria - Controle Glicêmico Hospitalar e Insulinoterapia Basal-Bolus | Evolucao Diaria SOAP | [04_Controle_Glicemico_e_Insulinoterapia_Hospitalar.md](03_Enfermaria_Internacao/02_Evolucao_Diaria_SOAP/04_Controle_Glicemico_e_Insulinoterapia_Hospitalar.md) |
+| Manejo em Enfermaria - Delirium Hospitalar, Agitação no Idoso e Rastreio de Causas Reversíveis | Passagem de Plantao e Rounds | [01_Delirium_Hospitalar_e_Agitacao_no_Idoso.md](03_Enfermaria_Internacao/03_Passagem_de_Plantao_e_Rounds/01_Delirium_Hospitalar_e_Agitacao_no_Idoso.md) |
 
 ---
 
-## 📋 Tabela Mestra: Pronto Atendimento / UPA Adulto (42 Modelos)
+## 📋 Tabela Mestra: Pronto Atendimento / UPA Adulto (47 Modelos)
 
 | Protocolo Clínico | Área / Subcategoria | Arquivo |
 | :--- | :--- | :--- |
@@ -110,10 +115,15 @@ Acesse via navegador em **[https://wagmms.github.io/protocolos-clinicos/](https:
 | **Taquiarritmias & Fibrilação Atrial (ACLS)** | Emergencias Graves e Procedimentos | [`07_Taquiarritmias_e_Fibrilacao_Atrial.md`](02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/07_Taquiarritmias_e_Fibrilacao_Atrial.md) |
 | **Distúrbios Eletrolíticos Graves (HiperK & HipoNa)** | Emergencias Graves e Procedimentos | [`08_Disturbios_Eletroliticos_Hipercalemia_e_Hiponatremia.md`](02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/08_Disturbios_Eletroliticos_Hipercalemia_e_Hiponatremia.md) |
 | **Pequena Cirurgia: Sutura, Profilaxia de Tétano e Raiva** | Emergencias Graves e Procedimentos | [`09_Trauma_Menor_Sutura_Tetano_e_Raiva.md`](02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/09_Trauma_Menor_Sutura_Tetano_e_Raiva.md) |
+| Constipação Aguda, Fecaloma e Suspeita de Obstrução Intestinal | Gastrointestinal e Abdominal | [07_Constipacao_Fecaloma_e_Obstrucao_Intestinal.md](02_Pronto_Atendimento_UPA/03_Gastrointestinal_e_Abdominal/07_Constipacao_Fecaloma_e_Obstrucao_Intestinal.md) |
+| Trombose Venosa Profunda (TVP) e Tromboembolismo Pulmonar (TEP) | Cardiovascular e Respiratorio | [06_TVP_e_Tromboembolismo_Pulmonar_TEP.md](02_Pronto_Atendimento_UPA/04_Cardiovascular_e_Respiratorio/06_TVP_e_Tromboembolismo_Pulmonar_TEP.md) |
+| Síncope na Emergência (Vasovagal, Ortostática e Cardiogênica) | Cardiovascular e Respiratorio | [07_Sincope_na_Emergencia.md](02_Pronto_Atendimento_UPA/04_Cardiovascular_e_Respiratorio/07_Sincope_na_Emergencia.md) |
+| **Bradiarritmias Sintomáticas, BAV de Alto Grau e Marcapasso Transcutâneo** | Emergencias Graves e Procedimentos | [10_Bradiarritmias_e_Marcapasso_Transcutaneo.md](02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/10_Bradiarritmias_e_Marcapasso_Transcutaneo.md) |
+| **Queimaduras Agudas (Parkland) e Acidentes por Animais Peçonhentos** | Emergencias Graves e Procedimentos | [11_Queimaduras_e_Animais_Peconhentos.md](02_Pronto_Atendimento_UPA/07_Emergencias_Graves_e_Procedimentos/11_Queimaduras_e_Animais_Peconhentos.md) |
 
 ---
 
-## 📋 Tabela Mestra: Ginecologia & Obstetrícia (15 Modelos Ativos)
+## 📋 Tabela Mestra: Ginecologia & Obstetrícia (19 Modelos Ativos)
 
 > *Nota: 12 modelos cirúrgicos/específicos (admissão/altas de puerpério, parecer de interconsulta, inserção de DIU ambulatorial, cesáreas eletivas, parto instrumentado e AMIU/curetagem) foram preservados e arquivados na pasta `_arquivados/01_Ginecologia_Obstetricia/`.*
 
@@ -134,6 +144,10 @@ Acesse via navegador em **[https://wagmms.github.io/protocolos-clinicos/](https:
 | **Manejo de Emergência - Rotura Prematura de Membranas (RPMO)** | Emergencias GO | [`04_Rotura_Prematura_de_Membranas_RPMO.md`](01_Ginecologia_Obstetricia/06_Emergencias_GO/04_Rotura_Prematura_de_Membranas_RPMO.md) |
 | **Manejo de Emergência - Doença Inflamatória Pélvica (DIP)** | Emergencias GO | [`05_Doenca_Inflamatoria_Pelvica_DIP.md`](01_Ginecologia_Obstetricia/06_Emergencias_GO/05_Doenca_Inflamatoria_Pelvica_DIP.md) |
 | **Infecções Puerperais: Mastite Lactacional & Endometrite** | Emergencias GO | [`06_Infeccoes_Puerperais_Mastite_e_Endometrite.md`](01_Ginecologia_Obstetricia/06_Emergencias_GO/06_Infeccoes_Puerperais_Mastite_e_Endometrite.md) |
+| Admissão em Trabalho de Parto & Descrição Cirúrgica de Cesariana | Centro Obstetrico Cirurgias | [`07_Admissao_TP_e_Descricao_Cesariana.md`](01_Ginecologia_Obstetricia/04_Centro_Obstetrico_Cirurgias/07_Admissao_TP_e_Descricao_Cesariana.md) |
+| **Manejo de Emergência - Sangramento do 1º Trimestre: Abortamento e Gravidez Ectópica** | Emergencias GO | [`07_Sangramento_1Trimestre_Abortamento_e_Ectopica.md`](01_Ginecologia_Obstetricia/06_Emergencias_GO/07_Sangramento_1Trimestre_Abortamento_e_Ectopica.md) |
+| **Manejo de Emergência - Sangramento do 2º/3º Trimestre (DPP vs. Placenta Prévia e Vasa Prévia)** | Emergencias GO | [`08_Sangramento_2e3Trimestre_DPP_e_Placenta_Previa.md`](01_Ginecologia_Obstetricia/06_Emergencias_GO/08_Sangramento_2e3Trimestre_DPP_e_Placenta_Previa.md) |
+| **Manejo de Emergência - Violência Sexual e Profilaxias Pós-Exposição (ISTs, HIV e Contracepção)** | Emergencias GO | [`09_Violencia_Sexual_e_Profilaxias_PEP.md`](01_Ginecologia_Obstetricia/06_Emergencias_GO/09_Violencia_Sexual_e_Profilaxias_PEP.md) |
 
 ---
 

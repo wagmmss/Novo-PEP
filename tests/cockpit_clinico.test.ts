@@ -823,31 +823,52 @@ test('Trava de cópia: lacunas clínicas travam, identificação e valores suger
 
 test('Rota na URL: ida e volta de #/p/<id>, #/hab/<id>, #/6ano/<aba> e ids desconhecidos caem na lista', async () => {
   const { formatHashRoute, parseHashRoute } = await import('../src/state/hashRoute.ts');
+  const { resolveKnownRouteId, INTERCORRENCIAS_HAB_ID } = await import('../src/data/protocolsRepo.ts');
   const pep = PEP_PROTOCOLS[3];
   const hab = HAB_PROTOCOLS[2];
-  const known = (tab: 'protocolos' | 'pre-porta', id: string) =>
-    tab === 'protocolos' ? PEP_PROTOCOLS.some((p) => p.id === id) : HAB_PROTOCOLS.some((p) => p.id === id);
 
   const pRoute = { world: 'beira-leito' as const, tab: 'protocolos' as const, id: pep.id, detail: true };
-  assert.deepEqual(parseHashRoute(formatHashRoute(pRoute), known), pRoute);
+  assert.deepEqual(parseHashRoute(formatHashRoute(pRoute), resolveKnownRouteId), pRoute);
 
   const hRoute = { world: 'beira-leito' as const, tab: 'pre-porta' as const, id: hab.id, detail: true };
-  assert.deepEqual(parseHashRoute(formatHashRoute(hRoute), known), hRoute);
+  assert.deepEqual(parseHashRoute(formatHashRoute(hRoute), resolveKnownRouteId), hRoute);
+
+  // Resolução resiliente por trigger/slug (;sca ou sca) e rota especial #/hab/intercorrencias
+  const scaProto = PEP_PROTOCOLS.find((p) => p.trigger === ';sca')!;
+  assert.equal(resolveKnownRouteId('protocolos', 'sca'), scaProto.id);
+  assert.equal(resolveKnownRouteId('protocolos', ';sca'), scaProto.id);
+  assert.deepEqual(parseHashRoute('#/p/sca', resolveKnownRouteId), {
+    world: 'beira-leito',
+    tab: 'protocolos',
+    id: scaProto.id,
+    detail: true,
+  });
+
+  const ecgHab = HAB_PROTOCOLS.find((h) => h.trigger === ';hab-ecg')!;
+  assert.equal(resolveKnownRouteId('pre-porta', 'hab-ecg'), ecgHab.id);
+  assert.equal(resolveKnownRouteId('pre-porta', ';hab-ecg'), ecgHab.id);
+  assert.equal(resolveKnownRouteId('pre-porta', INTERCORRENCIAS_HAB_ID), INTERCORRENCIAS_HAB_ID);
+  assert.deepEqual(parseHashRoute('#/hab/intercorrencias', resolveKnownRouteId), {
+    world: 'beira-leito',
+    tab: 'pre-porta',
+    id: INTERCORRENCIAS_HAB_ID,
+    detail: true,
+  });
 
   assert.equal(formatHashRoute({ world: 'beira-leito', tab: 'protocolos', id: pep.id, detail: false }), '#/p');
-  assert.deepEqual(parseHashRoute('#/6ano/teoria', known), { world: 'sexto-ano', tab: 'teoria' });
-  assert.deepEqual(parseHashRoute('#/6ano/xyz', known), { world: 'sexto-ano', tab: 'pratica' });
-  assert.deepEqual(parseHashRoute('#/p/protocolo-que-nao-existe', known), {
+  assert.deepEqual(parseHashRoute('#/6ano/teoria', resolveKnownRouteId), { world: 'sexto-ano', tab: 'teoria' });
+  assert.deepEqual(parseHashRoute('#/6ano/xyz', resolveKnownRouteId), { world: 'sexto-ano', tab: 'pratica' });
+  assert.deepEqual(parseHashRoute('#/p/protocolo-que-nao-existe', resolveKnownRouteId), {
     world: 'beira-leito',
     tab: 'protocolos',
     id: null,
     detail: false,
   });
   // Um id de Pré-Porta não abre como protocolo PEP
-  assert.equal(parseHashRoute(`#/p/${hab.id}`, known)?.world, 'beira-leito');
-  assert.equal((parseHashRoute(`#/p/${hab.id}`, known) as { detail: boolean }).detail, false);
-  assert.equal(parseHashRoute('', known), null);
-  assert.equal(parseHashRoute('#/qualquer', known), null);
+  assert.equal(parseHashRoute(`#/p/${hab.id}`, resolveKnownRouteId)?.world, 'beira-leito');
+  assert.equal((parseHashRoute(`#/p/${hab.id}`, resolveKnownRouteId) as { detail: boolean }).detail, false);
+  assert.equal(parseHashRoute('', resolveKnownRouteId), null);
+  assert.equal(parseHashRoute('#/qualquer', resolveKnownRouteId), null);
 });
 
 test('Busca por medicamento: nomes de fármacos de toda a receita entram no índice', async () => {
@@ -869,11 +890,15 @@ test('Busca por medicamento: nomes de fármacos de toda a receita entram no índ
   }
 });
 
-test('Auditor de prescrição nos protocolos: receita padrão sem bloqueio; alergia informada bloqueia', async () => {
+test('Auditor de prescrição nos protocolos: 88/88 com seção Conduta, receita padrão sem falsos positivos, CKD-EPI 2021 integrado e alergia informada bloqueia', async () => {
   const { auditProtocolPrescription } = await import('../src/data/protocolsRepo.ts');
-  let blocksWithoutPatient = 0;
+  let alertsWithoutPatient = 0;
   for (const proto of PEP_PROTOCOLS) {
     const compiled = compileProtocolForDisplay(proto, EMPTY_PATIENT_CONTEXT);
+    assert.ok(
+      compiled.sections.some((s) => s.id === 'conduta'),
+      `Protocolo ${proto.id} (${proto.trigger}) deve possuir seção Conduta particionada`
+    );
     const texts: Record<string, string> = {};
     for (const sec of compiled.sections) {
       if (sec.id === 'receita' || sec.id === 'conduta') {
@@ -881,11 +906,53 @@ test('Auditor de prescrição nos protocolos: receita padrão sem bloqueio; aler
       }
     }
     const audit = auditProtocolPrescription(proto, texts, compiled.clinicalContext);
-    blocksWithoutPatient += audit.receita?.blockCount ?? 0;
+    const recAlerts = (audit.receita?.blockCount ?? 0) + (audit.receita?.warnCount ?? 0);
+    const condBlocks = audit.conduta?.blockCount ?? 0;
+    assert.equal(recAlerts, 0, `Receita padrão de ${proto.id} (${proto.trigger}) gerou falso positivo: ${JSON.stringify(audit.receita?.alerts)}`);
+    assert.equal(condBlocks, 0, `Conduta padrão de ${proto.id} (${proto.trigger}) gerou bloqueio falso: ${JSON.stringify(audit.conduta?.alerts)}`);
+    alertsWithoutPatient += recAlerts + condBlocks;
   }
-  assert.equal(blocksWithoutPatient, 0, 'Nenhuma receita padrão pode travar sem dados do paciente (alarme falso)');
+  assert.equal(alertsWithoutPatient, 0, 'Nenhum protocolo padrão pode disparar alarme falso sem dados do paciente');
 
+  // Contexto obstétrico automático em ;pn-ret (go-4) e ;cesarea (go-10)
+  for (const trig of [';pn-ret', ';cesarea']) {
+    const obstProto = PEP_PROTOCOLS.find((p) => p.trigger === trig)!;
+    assert.ok(obstProto, `Protocolo ${trig} deve existir`);
+    const compiledObst = compileProtocolForDisplay(obstProto, EMPTY_PATIENT_CONTEXT);
+    assert.equal(compiledObst.clinicalContext.isPregnant, true, `${trig} deve ativar isPregnant automaticamente`);
+  }
+
+  // ;sutura (upa-64), ;parasitose (upa-33) e ;escabiose (upa-54) particionam Conduta e Prescrição/Receita
+  for (const trig of [';sutura', ';parasitose', ';escabiose']) {
+    const p = PEP_PROTOCOLS.find((x) => x.trigger === trig)!;
+    const comp = compileProtocolForDisplay(p, EMPTY_PATIENT_CONTEXT);
+    assert.ok(comp.sections.some((s) => s.id === 'conduta'), `${trig} deve ter seção Conduta`);
+    assert.ok(comp.sections.some((s) => s.id === 'receita'), `${trig} deve ter seção Prescrição/Receita`);
+  }
+
+  // CKD-EPI 2021 integrado na barra do paciente alimenta automaticamente a TFG e o Prescription Guard
   const pac = PEP_PROTOCOLS.find((p) => p.title.includes('Pronto Atendimento - Pneumonia'))!;
+  const compiledCkd = compileProtocolForDisplay(pac, {
+    ...EMPTY_PATIENT_CONTEXT,
+    idade: '72',
+    creatinina: '3,2',
+    sexo: 'M',
+  });
+  assert.ok(
+    compiledCkd.clinicalContext.tfgCkdEpi !== null && compiledCkd.clinicalContext.tfgCkdEpi < 25,
+    `CKD-EPI 2021 deveria calcular TFGe < 25 mL/min (obtido: ${compiledCkd.clinicalContext.tfgCkdEpi})`
+  );
+  const receitaCkd = compiledCkd.sections.find((s) => s.id === 'receita')!;
+  const auditCkd = auditProtocolPrescription(
+    pac,
+    { receita: serializeProtocolSection(compiledCkd.ast, compiledCkd.initialAstState, compiledCkd.clinicalContext, receitaCkd) },
+    compiledCkd.clinicalContext
+  );
+  assert.ok(
+    (auditCkd.receita?.alerts.length ?? 0) >= 1,
+    'TFGe < 30 mL/min calculada via CKD-EPI 2021 deve acionar alerta renal na prescrição com Amoxicilina'
+  );
+
   const compiled = compileProtocolForDisplay(pac, { ...EMPTY_PATIENT_CONTEXT, alergias: 'penicilina' });
   const receita = compiled.sections.find((s) => s.id === 'receita')!;
   const audit = auditProtocolPrescription(

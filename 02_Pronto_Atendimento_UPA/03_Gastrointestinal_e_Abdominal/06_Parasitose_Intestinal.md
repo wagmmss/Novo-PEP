@@ -31,8 +31,12 @@ Paciente relata queixas gastrointestinais insidiosas há [ ], caracterizadas por
 2. Ausência de abdome agudo obstrutivo ou desidratação.
 
 # CONDUTA:
+1. Manejo ambulatorial: paciente estável, hidratado e sem sinais de abdome agudo obstrutivo ou invasão sistêmica.
+2. Solicitação de exames (se diarreia persistente, anemia ou falha terapêutica): [*Não solicitado no momento (tratamento empírico) / Parasitológico de fezes (EPF 3 amostras - Hoffman/Faust/Baermann-Moraes) + Hemograma completo].
+3. Orientado tratamento simultâneo dos contactantes domiciliares e medidas de higiene alimentar/sanitária.
 
 >> PRESCRIÇÃO DOMICILIAR (ESCOLHA CONFORME O PERFIL CLÍNICO):
+
 
 [OPÇÃO 1 - ESPECTRO COMPLETO / POLIPARASITISMO (HELMINTOS + PROTOZOÁRIOS)]:
 1. Nitazoxanida 500 mg (Annita) - Tomar 1 comprimido VO de 12/12 horas, obrigatoriamente junto com as refeições, por 3 dias consecutivos.

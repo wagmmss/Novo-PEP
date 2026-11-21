@@ -15,19 +15,14 @@ import {
   HAB_PROTOCOLS,
   PEP_PROTOCOLS,
   PROTOCOL_BY_ID,
+  resolveKnownRouteId,
 } from './data/protocolsRepo.ts';
 import { formatHashRoute, parseHashRoute, type AppRoute } from './state/hashRoute.ts';
 import { subscribeAppHealth } from './state/appHealth.ts';
 
-function isKnownRouteId(tab: 'protocolos' | 'pre-porta', id: string): boolean {
-  const item = PROTOCOL_BY_ID.get(id);
-  if (!item) return false;
-  return tab === 'pre-porta' ? item.mod_id === 'hab' : item.mod_id !== 'hab';
-}
-
 function readInitialRoute(): AppRoute | null {
   if (typeof window === 'undefined') return null;
-  return parseHashRoute(window.location.hash, isKnownRouteId);
+  return parseHashRoute(window.location.hash, resolveKnownRouteId);
 }
 import type { ClinicalProtocolItem } from './data/clinical_data.ts';
 import { useCockpitStore, useThemeSync } from './hooks/useCockpitStore.ts';
@@ -94,7 +89,7 @@ export function App() {
 
   useEffect(() => {
     const applyFromLocation = () => {
-      const route = parseHashRoute(window.location.hash, isKnownRouteId);
+      const route = parseHashRoute(window.location.hash, resolveKnownRouteId);
       if (!route) return;
       setWorld(route.world);
       if (route.world === 'sexto-ano') {
@@ -201,6 +196,21 @@ export function App() {
     setMobileHabDetail(true);
   }, []);
 
+  const [selectedTeoriaModId, setSelectedTeoriaModId] = useState<string | null>(null);
+
+  const handleOpenProtocolFromPrePorta = useCallback((protocolId: string) => {
+    setWorld('beira-leito');
+    setBeiraLeitoTab('protocolos');
+    setSelectedProtocolId(protocolId);
+    setMobileProtocolDetail(true);
+  }, []);
+
+  const handleOpenTeoriaFromPrePorta = useCallback((modId: string) => {
+    setSelectedTeoriaModId(modId);
+    setWorld('sexto-ano');
+    setSextoAnoTab('teoria');
+  }, []);
+
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden bg-[#FAFAFA] text-zinc-900 dark:bg-[#0F1115] dark:text-[#F3F4F6]">
       <TopBar
@@ -246,6 +256,9 @@ export function App() {
           }}
           onBackToList={() => setMobileHabDetail(false)}
           onOpenQuickCapture={setQuickCapture}
+          onOpenProtocol={handleOpenProtocolFromPrePorta}
+          onOpenTeoria={handleOpenTeoriaFromPrePorta}
+          onNotify={notify}
         />
       )}
 
@@ -261,6 +274,7 @@ export function App() {
         <TeoriaView
           central6Ano={storeState.central6Ano}
           onOpenPrePorta={handleOpenPrePortaFromProtocol}
+          initialModId={selectedTeoriaModId}
         />
       )}
 

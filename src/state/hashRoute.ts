@@ -27,7 +27,7 @@ export function formatHashRoute(route: AppRoute): string {
  */
 export function parseHashRoute(
   hash: string,
-  isKnownId: (tab: 'protocolos' | 'pre-porta', id: string) => boolean
+  isKnownId: (tab: 'protocolos' | 'pre-porta', id: string) => boolean | string | null
 ): AppRoute | null {
   const raw = String(hash || '').replace(/^#\/?/, '');
   if (!raw) return null;
@@ -41,7 +41,15 @@ export function parseHashRoute(
 
   if (head === 'p' || head === 'hab') {
     const tab = head === 'p' ? 'protocolos' : 'pre-porta';
-    if (id && isKnownId(tab, id)) return { world: 'beira-leito', tab, id, detail: true };
+    if (id) {
+      const check = isKnownId(tab, id);
+      if (typeof check === 'string' && check) {
+        return { world: 'beira-leito', tab, id: check, detail: true };
+      }
+      if (check === true) {
+        return { world: 'beira-leito', tab, id, detail: true };
+      }
+    }
     return { world: 'beira-leito', tab, id: null, detail: false };
   }
   if (head === '6ano') {

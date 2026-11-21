@@ -9,6 +9,7 @@ import { cockpitStore, type TeoriaModuleStatus } from '../state/store.ts';
 interface TeoriaViewProps {
   central6Ano: Central6AnoState;
   onOpenPrePorta: (habId: string) => void;
+  initialModId?: string | null;
 }
 
 const STATUS_OPTIONS: Array<{ value: TeoriaModuleStatus; label: string }> = [
@@ -29,14 +30,21 @@ function stripLeadingH1(markdown: string): string {
   return String(markdown || '').replace(/^\s*#\s+[^\n]+\n+/, '');
 }
 
-export function TeoriaView({ central6Ano, onOpenPrePorta }: TeoriaViewProps) {
+export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId }: TeoriaViewProps) {
   const [selectedModId, setSelectedModId] = useState<string>(
-    FORMACAO_TEORICA_MODULOS[0]?.id || 'mod-01'
+    initialModId || FORMACAO_TEORICA_MODULOS[0]?.id || 'mod-01'
   );
-  const [mobileShowDetail, setMobileShowDetail] = useState(false);
+  const [mobileShowDetail, setMobileShowDetail] = useState(Boolean(initialModId));
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | TeoriaModuleStatus>('todos');
   const detailScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (initialModId && FORMACAO_TEORICA_MODULOS.some((m) => m.id === initialModId)) {
+      setSelectedModId(initialModId);
+      setMobileShowDetail(true);
+    }
+  }, [initialModId]);
 
   const statusById = central6Ano.teoriaStatusById || {};
 

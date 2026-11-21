@@ -36,8 +36,12 @@ Nega febre, calafrios, prostração sistêmica ou lesões bolhosas extensas com 
 2. [Com impetiginização bacteriana secundária associada / Sem infecção bacteriana secundária].
 
 # CONDUTA:
+1. Manejo ambulatorial com regime combinado tópico + oral (repetição obrigatória do ciclo em 7 dias) e controle do prurido noturno.
+2. Determinado tratamento simultâneo obrigatório de todos os contactantes domiciliares/íntimos no mesmo dia (mesmo assintomáticos) e protocolo de descontaminação de roupas/fômites.
+3. Avaliada necessidade de antibioticoterapia sistêmica para impetiginização secundária: [*Não indicada (ausência de infecção bacteriana secundária) / Indicada Cefalexina por presença de crostas melicéricas/impetigo].
 
 >> PRESCRIÇÃO DOMICILIAR:
+
 
 1. TRATAMENTO TÓPICO COM ESCABICIDA (PADRÃO-OURO):
    - Permetrina loção a 5% - 01 a 02 frascos:
