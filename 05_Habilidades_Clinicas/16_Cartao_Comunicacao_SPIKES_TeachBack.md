@@ -1,92 +1,75 @@
-# Comunicação de Más Notícias (SPIKES / Nurse) & TEACH-BACK
+# Comunicação Clínica, Más Notícias e Recusa Terapêutica
 **Atalho Rápido:** `;hab-spikes` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Entrevista & Comunicação
-**Âncora:** SPIKES (Setting → Perception → Invitation → Knowledge c/ disparo → Empathy NURSE → Strategy) → Ask-Tell-Ask + Teach-Back
-
----
+**Âncora:** Privacidade e percepção → SPIKES e NURSE → Teach-Back → Recusa: capacidade e alternativa → C-SSRS e proteção
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Nunca dê uma má notícia em pé no corredor ou sem um "Tiro de Aviso" (*Warning Shot*):** Prepare o ambiente, sente-se na altura dos olhos do paciente e prepare o cérebro dele com uma frase introdutória antes do diagnóstico grave.
-2. **Após dar a notícia, CALE-SE (O Silêncio Terapêutico):** Nos primeiros 15–30 segundos após ouvir *"câncer"*, *"óbito"* ou *"UTI"*, o córtex pré-frontal do paciente desliga por inundação amigdaliana — **nenhuma explicação técnica será absorvida até que a emoção seja acolhida (Protocolo NURSE)**.
-3. **Na alta médica, proibido perguntar "Entendeu tudo?":** 100% dos pacientes respondem *"Sim, doutor"* por vergonha, e 50% erram a dose em casa. Use sempre o **Teach-Back** (*"Para eu saber se expliquei bem, me conta como o senhor vai tomar esse remédio em casa?"*).
 
----
+1. **Más notícias:** SPIKES com aviso breve, linguagem simples e silêncio. Use um movimento NURSE por vez.
+2. **Recusa:** Avalie capacidade para esta decisão, explore a barreira, explique risco e ofereça alternativa com retorno aberto.
+3. **Risco suicida:** Pergunte diretamente. Intenção atual, plano com intenção ou preparação recente exigem proteção e avaliação urgente.
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
 
-> ### **1️⃣ Protocolo "S-P-I-K-E-S" (Baile & Buckman — Más Notícias em 6 Passos):**
-> - **S — Setting (Cenário & Preparação):** Estude o prontuário antes (nunca entre sem saber os nomes e exames!), garanta privacidade, peça presença de acompanhante de confiança, **sente-se** e deixe lenços de papel à mão.
-> - **P — Perception (Percepção do Paciente):** *"Antes de eu te mostrar o resultado, o que você já sabe sobre o motivo de termos pedido essa biópsia? O que tem passado pela sua cabeça?"*
-> - **I — Invitation (Convite à Informação):** *"Você prefere que eu explique todos os detalhes agora ou prefere focar no quadro geral e no plano de tratamento?"*
-> - **K — Knowledge (Conhecimento + Warning Shot):** Dê o **Tiro de Aviso** $\rightarrow$ Fale a verdade em linguagem simples (zero jargão como *"neoplasia maligna metastática"*) $\rightarrow$ Faça pausas curtas.
-> - **E — Emotions (Empatia com Protocolo NURSE):** Acolha o choro, o choque ou a raiva antes de falar de condutas.
-> - **S — Strategy & Summary (Estratégia & Segurança de Continuidade):** Apresente o próximo passo concreto e garanta **não-abandono** (*"Nós vamos caminhar juntos em cada etapa"*).
-
-> ### **2️⃣ Protocolo "N-U-R-S-E" (Como responder à emoção no passo 'E'):**
-> - **N — Name (Nomeie a emoção):** *"Vejo que essa notícia te deixou muito assustado / com muita raiva."*
-> - **U — Understand (Valide a reação):** *"É totalmente compreensível você se sentir assim diante de algo tão inesperado."*
-> - **R — Respect (Respeite a força do paciente):** *"Admiro como você tem cuidado da sua família mesmo enfrentando essa dor."*
-> - **S — Support (Garanta suporte explícito):** *"Eu e nossa equipe estamos aqui com você; você não vai passar por isso sozinho."*
-> - **E — Explore (Explore o foco da angústia):** *"Qual é a sua maior preocupação neste exato momento?"*
-
----
+> **Ask–Tell–Ask: descubra o que a pessoa entendeu, explique em blocos curtos e pergunte como recebeu a informação. No Teach-Back, ela explica o que fará.**
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
 
-### 1️⃣ Frases Prontas de Alta Eficácia para Plantão e Enfermaria
-- **O "Tiro de Aviso" (*Warning Shot*):**
-  - *Exame Grave / Câncer:* *"Infelizmente, o resultado da tomografia/biópsia não veio como nós gostaríamos. Tenho notícias difíceis para conversar com vocês."*
-  - *Comunicação de Óbito na Emergência:* *"O Sr. João chegou para nós em um estado extremamente grave. Nossa equipe fez tudo o que era possível com medicamentos e manobras no coração, mas infelizmente o quadro foi mais forte que o organismo dele, e ele **faleceu** [use sempre a palavra 'faleceu' ou 'morreu' — nunca use eufemismos ambíguos como 'não resistiu', 'partiu' ou 'descansou']."*
-- **Respondendo à pergunta "Quanto tempo eu tenho de vida, doutor?":**
-  - Explore antes o motivo da pergunta (*"Por que essa questão do tempo está tão forte para você hoje? Há algo específico que você precisa organizar?"*) e responda em **faixas de tempo** (*"horas a dias"*, *"semanas a meses"*, *"meses a anos"*), nunca com números exatos de dias.
+1. SPIKES, NURSE E CONFIRMAÇÃO DE ENTENDIMENTO:
+- **Setting, Perception, Invitation:** Sente-se em local privado e pergunte quem a pessoa quer presente. “O que você entendeu até aqui? Quanto gostaria que eu explicasse agora?”
+- **Knowledge, Empathy, Strategy/Summary:** Dê um aviso: “Tenho uma notícia difícil.” Explique o fato em uma frase, pause e acolha. Resuma o plano, quem acompanhará e quando haverá nova conversa. [SPIKES](https://academic.oup.com/oncolo/article/5/4/302/6386019)
+- **Um NURSE e silêncio:** Nomeie a emoção, demonstre compreensão (Understand), reconheça o esforço (Respect), ofereça apoio (Support) ou explore (Explore). “Vejo que essa notícia assustou você.” Pause e ouça.
+- **Ask–Tell–Ask e Teach-Back:** Pergunte o que a pessoa sabe, explique um bloco e pergunte como ela o recebeu. “Para conferir se fui claro, como você vai agir se a dor voltar?” Reformule se a resposta mostrar dúvida e confira de novo. [AHRQ](https://www.ahrq.gov/health-literacy/improve/precautions/tool5.html)
 
-### 2️⃣ Técnica de Teach-Back + Red Flags na Alta (Em 60 Segundos)
-1. **Coloque o ônus na sua explicação (desculpabilize o paciente):**
-   *"Dona Maria, passamos bastante informação hoje e eu quero ter certeza de que eu me expliquei de um jeito claro."*
-2. **Faça a pergunta aberta de verificação prática:**
-   *"Quando a senhora chegar em casa hoje à noite, como vai tomar esses dois comprimidos? E o que vai fazer se a dor ou a falta de ar voltarem?"*
-3. **Corrija gentilmente e reconfirme** se houver falha de compreensão.
+2. ALTA A PEDIDO E RECUSA TERAPÊUTICA:
+- **E3 — e3-alta-cinzenta-recusa:** “O que está impedindo você de ficar?” Identifique o que a pessoa aceita ou recusa e por quê. Explore barreiras de trabalho, família, transporte, custo e medo. Ofereça ajuda e alternativas praticáveis, sem coerção.
+- **Capacidade decisória específica e atual:** Verifique se consegue comunicar escolha consistente, compreender condição e opções, reconhecer como as consequências se aplicam a si e comparar alternativas com justificativa. Corrija barreiras de linguagem, hipóxia, hipoglicemia, delirium ou intoxicação quando possível e reavalie. Orientação isolada é insuficiente.
+- **Recomendação e risco residual:** “Recomendo que fique para repetir o exame. Ainda existe risco de infarto e, se sair agora, pode haver sequela ou morte. Com suas palavras, o que pode acontecer se sair?” Explique benefícios, riscos e alternativas e confirme voluntariedade. Na alta em zona cinzenta, explicite o grave em aberto, reavalie sinais vitais e confira se o seguimento é executável.
+- **Decisão e contingência:** Acione o médico responsável se houver dúvida de capacidade, menoridade, conflito com representante ou risco iminente. Na incapacidade com emergência, priorize estabilização e acione o fluxo institucional e representante quando cabível. Em recusa capaz, siga a avaliação clínica e ético-jurídica aplicável e ofereça a melhor alternativa aceita. Considere diretivas válidas e a tese do STF quando pertinente. [CFM](https://portal.cfm.org.br/noticias/cfm-esclarece-pontos-da-resolucao-que-trata-da-recusa-terapeutica-e-objecao-de-consciencia) · [STF, Tema 1069](https://portal.stf.jus.br/jurisprudenciaRepercussao/verAndamentoProcesso.asp?classeProcesso=RE&incidente=5703626&numeroTema=1069)
+- **Redução de danos e registro:** Combine retorno imediato diante dos alarmes nomeados, local, prazo, pendência e responsável. “Você pode voltar a qualquer momento. Se a dor voltar ou vier falta de ar, procure a emergência imediatamente.” Registre fala, riscos explicados, evidência de capacidade, alternativas aceitas, testemunhas e termo quando aplicável, inclusive eventual recusa de assinatura.
 
----
+3. CONVERSA SENSÍVEL, C-SSRS E PROJECT BETA:
+- **Abertura empática:** “Eu faço essas perguntas para cuidar da sua segurança. Podemos falar em particular? Se houver perigo imediato, vou envolver a equipe e explicar cada passo.”
+- **C-SSRS:** No último mês, pergunte por desejo de morrer, ideação ativa, método pensado, intenção e plano com intenção. Verifique ideação/intenção atual, acesso a meios e comportamento suicida ao longo da vida e nos últimos três meses, incluindo preparativos e tentativas interrompidas, abortadas ou efetivas. Pergunte pelo comportamento mesmo se a pessoa negar ideação.
+- **Ação imediata:** Com intenção atual, plano estruturado, preparativos recentes, acesso letal imediato ou avaliação inviável com suspeita relevante, mantenha observação contínua acompanhada, restrinja acesso a meios, acione preceptor e equipe para avaliação urgente e investigue causas orgânicas concomitantes.
+- **Project BETA:** Uma pessoa conduz, mantém distância de cerca de dois braços e saída livre, usa frases curtas, reduz estímulos, oferece escolhas e estabelece limites: “Quero ouvi-lo. Vamos manter a passagem livre. Podemos conversar daqui ou pedir a outro profissional que nos acompanhe.” Diante de ameaça iminente, interrompa a abordagem e acione o protocolo institucional. [Columbia Lighthouse Project](https://cssrs.columbia.edu/the-columbia-scale-c-ssrs/translations/) · [Project BETA](https://escholarship.org/uc/item/55g994m6)
 
-## 🚨 4. RED FLAGS (Sinais de Alarme na Comunicação)
-- **Negação Extrema que Impede Tratamento Salvavidas:** Paciente com IAM ou sepse querendo assinar "alta a pedido" $\rightarrow$ Aplique **SPIKES/NURSE** para descobrir o medo oculto (muitas vezes é medo de deixar filhos/animais sozinhos em casa ou trauma prévio com hospital) antes de burocratizar o conflito; avalie sempre **capacidade decisória** (paciente hipóxico, séptico ou em *delirium* **não** tem autonomia preservada para recusar suporte de vida).
-- **Conspiração do Silêncio (*Cerco do Silêncio*):** Família pede na porta *"Doutor, não conte para o meu pai que é câncer"*. Não confronte a família com rispidez: valide o amor protetor deles (*"Vejo o quanto vocês o amam e querem protegê-lo do sofrimento"*), e use o passo **P e I do SPIKES** com o paciente (*"Sr. José, até onde o senhor quer saber sobre os seus exames hoje?"*).
+## 🚨 4. RED FLAGS (Sinais de Alarme)
 
----
+- **Intenção suicida atual ou plano com acesso a meios:** Risco agudo. Mantenha observação contínua acompanhada, restrinja meios e acione avaliação urgente.
+- **Tentativa recente ou relato de ingestão potencialmente tóxica:** Risco clínico e psiquiátrico simultâneo. Faça ABCDE, acione equipe e investigue exposição imediatamente.
+- **Desatenção flutuante, confusão ou rebaixamento:** Possível delirium ou comprometimento orgânico. Cheque glicemia, oxigenação e sinais vitais e trate causas reversíveis.
+- **Agitação com ameaça física iminente:** Risco imediato. Ganhe distância, proteja a saída e acione apoio conforme protocolo.
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
+
 ```text
-REGISTRO DE COMUNICAÇÃO CLÍNICA / REUNIÃO FAMILIAR (PROTOCOLO SPIKES & TEACH-BACK):
-Realizada conversa estruturada em ambiente reservado com o(a) paciente [e familiares: nomes e grau de parentesco]. Explorada a percepção prévia sobre o quadro clínico e compartilhadas, em linguagem clara e acessível, as informações referentes ao diagnóstico de [ ], gravidade atual e prognóstico. Acolhidas as dúvidas e reações emocionais com escuta ativa e suporte empático. Alinhado o plano terapêutico conjunto [proporcionalidade terapêutica / condutas definidas] e sinais de alarme. Verificada a compreensão das orientações pelo método Teach-Back, com paciente/família demonstrando entendimento adequado do plano proposto.
+Data/hora [ ]. Participantes, privacidade e informação comunicada [ ]. Reação observada e palavras relevantes da pessoa [ ].
+Conduta recomendada, benefícios, alternativas e riscos explicados [ ]. Escolha expressa e motivo da recusa [ ]. Evidências de compreensão, apreciação, raciocínio e escolha voluntária [ ]. Barreiras e medidas de apoio [ ].
+Achados do rastreio suicida, acesso a meios, fatores de risco/proteção e medidas de segurança, quando pertinentes [ ].
+Sinais vitais de reavaliação [ ]. Plano aceito, alarmes, prazo e local de retorno, pendências e responsável [ ]. Resposta ao Teach-Back [ ]. Médico responsável, testemunhas e termo, quando aplicável [ ].
 ```
 
----
-
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Dar falsa esperança ou mentir para aliviar a própria ansiedade:** Dizer *"Fique tranquilo, vai dar tudo certo!"* diante de um paciente instável destrói a confiança médica se o paciente piorar 20 minutos depois. Troque por: *"O quadro é grave, mas estamos fazendo tudo o que a medicina tem de mais eficaz agora e vou voltar para te atualizar a cada 30 minutos."*
-- **Jogar "Metralhadora de Jargões" logo após o diagnóstico:** Explicar estadiamento TNM e esquema quimioterápico no mesmo minuto em que o paciente descobriu um câncer. Dê o diagnóstico, acolha a emoção e construa o plano em passos digeríveis.
 
----
+- **Despejar informação logo após a notícia:** Sobrecarga reduz a compreensão. Faça pausa e acolha antes do próximo bloco.
+- **Inferir capacidade a partir de orientação ou concordância:** A avaliação fica incompleta. Verifique e documente as quatro habilidades para a decisão em jogo.
+- **Entregar o termo antes de explorar o motivo da saída:** Uma barreira tratável pode persistir. Converse, ofereça apoio e tente uma alternativa aceita.
+- **Usar promessa de segurança como critério de alta:** Pode gerar falsa tranquilidade. Integre comportamento, contexto, meios e avaliação da equipe à disposição.
+- **Usar perguntas sugestivas em conversa sensível:** Reduz a chance de relato espontâneo. Pergunte de forma direta, neutra e privada.
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Não Verbal, Escuta Ativa & NURSE
-- [ ] [CRÍTICO] Sentei na mesma altura visual e mantive contato visual antes de focar no computador/PEP
-- [ ] Respeitei 3–5 segundos de silêncio terapêutico diante de pausa emocional ou choro
-- [ ] [CRÍTICO] Apliquei validação emocional (`NURSE`) antes de dar explicações técnicas
-- [ ] Investiguei medos/expectativas ocultas (`SIFE`: Sentimentos, Ideias, Função, Expectativas)
 
-### 2. Explicação & Adesão (`Ask–Tell–Ask` + `Teach-Back`)
-- [ ] Traduzi o diagnóstico sem jargão médico usando analogia simples e no máximo 3 ideias
-- [ ] Ancorei horários da receita na rotina real do paciente (café, almoço, jantar, dormir)
-- [ ] Apliquei `Teach-Back` assumindo a responsabilidade ("para eu saber se expliquei direito...")
-- [ ] [CRÍTICO] Confirmei se o paciente soube repetir a duração do tratamento e os sinais de alarme para retorno imediato
+### 1. Informação e acolhimento
 
-### 3. Más Notícias (`SPIKES`) & Manejo de Conflitos *(quando aplicável)*
-- [ ] Garanti sala reservada, revisão prévia do caso e convidei acompanhante de escolha (`Setting`)
-- [ ] [CRÍTICO] Dei o "tiro de alerta" e a notícia direta sem jargão, sustentando 5–10s de silêncio após falar
-- [ ] Em demanda sem indicação (ATB/exame), expliquei por que não fazer protege o paciente e ofereci plano ativo
-- [ ] [CRÍTICO] Em hostilidade ou alta a pedido: garanti segurança física, chequei capacidade mental, envolvi o preceptor e registrei com testemunhas
+- [ ] Preparei privacidade, verifiquei percepção e usei uma resposta empática seguida de pausa.
+- [ ] Confirmei o próximo passo com Teach-Back.
 
-### 4. Upgrade Preceptor V2.0 (Warning Shot, NURSE & Teach-Back)
-- [ ] [CRÍTICO] Utilizei o Tiro de Aviso (Warning Shot) antes da notícia grave, respeitei o silêncio terapêutico e acolhi a emoção pelo protocolo NURSE (sem eufemismos no óbito)
-- [ ] [CRÍTICO] Validei a segurança da alta com o método Teach-Back ('Me conta como o senhor vai tomar esses remédios em casa?') em vez de perguntar 'Entendeu tudo?'
+### 2. Recusa e segurança da disposição
+
+- [ ] [CRÍTICO] Documentei a capacidade específica, o risco residual e a escolha livre.
+- [ ] [CRÍTICO] Ofereci alternativa executável e registrei alarmes, retorno, pendências e responsável.
+
+### 3. Risco suicida e agitação
+
+- [ ] [CRÍTICO] Investiguei ideação, comportamento e acesso a meios, com proteção e avaliação urgente quando indicadas.
+- [ ] Mantive espaço e saída livres e escalei com a equipe conforme o risco.

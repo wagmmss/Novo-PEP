@@ -385,9 +385,9 @@ class ClinicalCockpitStore {
     });
   }
 
-  public recordMatrixProcedure(procId: string, role: LogbookRole, note = ''): void {
+  public recordMatrixProcedure(procId: string, role: LogbookRole, note = ''): string | null {
     const proc = LOGBOOK_PROCEDIMENTOS_MATRIX.find((p) => p.id === procId);
-    if (!proc) return;
+    if (!proc) return null;
 
     let nextCentral = this.state.central6Ano;
     if (role !== 'observou') {
@@ -396,18 +396,15 @@ class ClinicalCockpitStore {
 
     const roleLabel = LOGBOOK_ROLE_LABELS[role];
     const cleanNote = sanitizePiiText(note.trim()).sanitized;
+    const entryId = `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const entry = {
-      id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: entryId,
       dateIso: getLocalTodayIso(),
       rodizio: proc.rodizioId,
       tipo: 'procedimento' as const,
       titulo: proc.nome,
       papel: roleLabel,
-      aprendizado:
-        cleanNote ||
-        (role === 'observou'
-          ? 'Observado à beira-leito (registrado no histórico).'
-          : `Execução registrada (${roleLabel}).`),
+      aprendizado: cleanNote,
       status: 'resolvido' as const,
       gatilhoCorrecao: procId,
     };
@@ -416,6 +413,20 @@ class ClinicalCockpitStore {
       ...nextCentral,
       logbookEntries: [entry, ...(nextCentral.logbookEntries || [])],
     });
+    return entryId;
+  }
+
+  public updateLogbookEntryNote(entryId: string, note: string): { sanitizedCount: number } {
+    const current = this.state.central6Ano;
+    const res = sanitizePiiText(note.trim());
+    const nextEntries = (current.logbookEntries || []).map((entry) =>
+      entry.id === entryId ? { ...entry, aprendizado: res.sanitized } : entry
+    );
+    this.setCentral6AnoState({
+      ...current,
+      logbookEntries: nextEntries,
+    });
+    return { sanitizedCount: res.replacedCount };
   }
 
   public deleteLogbookEntry(entryId: string): void {
@@ -431,19 +442,22 @@ class ClinicalCockpitStore {
     if (target.tipo === 'procedimento' && target.gatilhoCorrecao) {
       const procId = target.gatilhoCorrecao;
       const roleKey = labelToProcedureAutonomy(target.papel);
-      if (roleKey && (nextProcCounts[procId] || 0) > 0) {
-        nextProcCounts = {
-          ...nextProcCounts,
-          [procId]: Math.max(0, (nextProcCounts[procId] || 0) - 1),
-        };
+      if (roleKey) {
         const curAuto = nextProcAuto[procId] || { auxiliei: 0, supervisionado: 0, autonomo: 0 };
+        const updatedAuto = {
+          ...curAuto,
+          [roleKey]: Math.max(0, (curAuto[roleKey] || 0) - 1),
+        };
         nextProcAuto = {
           ...nextProcAuto,
-          [procId]: {
-            ...curAuto,
-            [roleKey]: Math.max(0, (curAuto[roleKey] || 0) - 1),
-          },
+          [procId]: updatedAuto,
         };
+        if (roleKey === 'supervisionado' || roleKey === 'autonomo') {
+          nextProcCounts = {
+            ...nextProcCounts,
+            [procId]: Math.max(0, updatedAuto.supervisionado + updatedAuto.autonomo),
+          };
+        }
       }
     }
 

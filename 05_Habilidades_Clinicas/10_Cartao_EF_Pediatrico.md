@@ -1,110 +1,79 @@
-# Exame Físico Pediátrico & Triângulo de Avaliação Pediátrica (tep)
+# Exame Físico Pediátrico e Triângulo de Avaliação Pediátrica
 **Atalho Rápido:** `;hab-ped` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exame Físico & Semiologia
-**Âncora:** Triângulo de Avaliação Pediátrica (Aparência-Respiração-Circulação) → Antropometria/PC → Deixar Orelha/Garganta por ÚLTIMO + Fontanela
-
----
+**Âncora:** TEP sem toque → FR e ausculta no colo → Abdome → TEC, fontanela e pele → Otoscopia e orofaringe → Dose ponderal
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Em Pediatria a Ordem é OPORTUNISTA (Do Menos Invasivo ao Mais Invasivo):** **Inspeção à distância (TEP)** $\rightarrow$ **Ausculta Cardiopulmonar e Contagem de FR em 60s (no colo da mãe, enquanto está calmo!)** $\rightarrow$ **Abdome e Fontanela** $\rightarrow$ **Quadris (Ortolani/Barlow)** $\rightarrow$ **Otoscopia e Orofaringe SEMPRE POR ÚLTIMO** (pois garantem o choro!).
-2. **Hipotensão na Criança é Sinal PRÉ-PARADA (Choque Descompensado Tardio):** A criança mantém PA normal até perder **$30\text{–}40\%$ da volemia** às custas de taquicardia intensa e vasoconstrição periférica. **Taquicardia inexplicada + TEC $> 2\text{s}$ + pulsos periféricos finos = Choque Compensado!**
-3. **Fórmula Rápida de Peso e Hipotensão (PALS — 1 a 10 anos):**
-   - **Peso Estimado ($1\text{–}10\text{ anos}$):** $\text{Peso (kg)} \approx (\text{Idade} \times 2) + 8$.
-   - **Limite Inferior da PAS ($1\text{–}10\text{ anos}$ — Percentil 5):** $\text{PAS mínima} = 70 + (2 \times \text{Idade em anos})$.
 
----
+1. **TEP/PAT em 30 s:** Aparência TICLS, respiração e circulação cutânea. Alteração importante aciona ABCDE imediato.
+2. **Poupe o choro:** Conte a FR por 60 s e ausculte no colo. Deixe otoscopia e orofaringe para o fim, se estável.
+3. **Choque pode ter PA normal:** Observe perfusão e tendência. Prescreva com peso atual em kg e teste teto adulto por dose e por dia.
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
 
-> ### **1️⃣ Triângulo de Avaliação Pediátrica em 15 Segundos Sem Tocar na Criança — "A-R-C":**
-> - **A — Aparência ("TICLS" — O espelho da perfusão cerebral):**
->   **T**ônus (hipotônico/largado?) | **I**nteratividade (brinca ou apático?) | **C**onsolabilidade (acalma no colo da mãe ou choro inconsolável/irritabilidade paradoxal da meningite?) | **L**ook/Olhar (fixa o olhar ou olhar vago?) | **S**peech/Choro (choro forte ou gemência/choro fraco?).
-> - **R — Respiração (Trabalho Respiratório Visível e Audível):**
->   Posição de tripé/cheirador (*sniffing*), batimento de asa nasal (BAN), tiragem subcostal/intercostal/fúrcula, balanço cabeça-pescoço (*head bobbing*), **Gemência expiratória** (*PEEP fisiológica de alvéolo colabando!*) ou estridor/sibilância audível.
-> - **C — Circulação Cutânea (Perfusão de Pele):**
->   Palidez, **Pele Moteada/Rendilhada (Cutis marmorata)**, cianose ou petéquias/púrpura que não somem à digitopressão.
-
-> ### **2️⃣ Limites de Taquipneia pela OMS / AIEPI (Contar FR em 60 Segundos Completos com a Criança Sem Choro!):**
-> - **$< 2$ meses (RN e Lactente jovem):** Taquipneia se **$\ge 60\text{ irpm}$**
-> - **$2 \text{ a } 11$ meses:** Taquipneia se **$\ge 50\text{ irpm}$**
-> - **$1 \text{ a } 4$ anos ($12\text{ a }59$ meses):** Taquipneia se **$\ge 40\text{ irpm}$**
-> - **$\ge 5$ anos:** Taquipneia se **$\ge 30\text{ irpm}$**
-
----
+> **TICLS: Tônus, Interatividade, Consolabilidade, Look (olhar) e Speech (fala ou choro). Observe com o cuidador por perto.**
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
 
-### 1️⃣ Semiologia do RN e Lactente (O que Avaliar Primeiro no Colo ou Berço)
-- **Fontanela Anterior (Bregmática — Losangular, fecha entre $9\text{ e }18\text{ meses}$):**
-  - Avalie com o lactente **semi-sentado ($45^\circ$) e sem chorar** (o choro fisiologicamente abaúla a fontanela!).
-  - *Abaulada e tensa:* Meningite / Hidrocefalia / HIC | *Deprimida/Funda:* Desidratação moderada a grave.
-- **Palpação de Pulsos Femorais / Braquiais no RN e Lactente:**
-  - Pulso femoral ausente ou diminuído em relação ao braquial direito = **Coarctação de Aorta** (emergência ducto-dependente no RN!).
-- **Manobras de Quadril (Displasia do Desenvolvimento do Quadril — DDQ até 3 meses):**
-  - **Manobra de Barlow (*Provocativa — "Bota pra fora"*):** Adução do quadril + leve pressão posterior tentando luxar uma cabeça femoral instável.
-  - **Manobra de Ortolani (*Redutora — "Ouve/Sente o Clunk de volta"*):** Abdução suave das coxas com elevação do grande trocanter pelos dedos médios $\rightarrow$ sente-se um **ressalto seco ("clunk")** quando a cabeça femoral luxada entra de volta no acetábulo (*não valorize "clicks" ligamentares benignos de joelho/tendão*).
+1. TRIÂNGULO DE AVALIAÇÃO PEDIÁTRICA EM 30 SEGUNDOS:
+- **Aparência:** Observe TICLS. Pergunte ao cuidador se aquele comportamento difere do habitual.
+- **Respiração:** Veja postura, tiragem, batimento de asa nasal, balanço da cabeça. Ouça gemência e estridor à distância.
+- **Circulação cutânea:** Procure palidez, moteamento e cianose. Alteração importante em qualquer eixo pede ABCDE, ajuda e medidas de suporte conforme o achado.
 
-### 2️⃣ Classificação da Desidratação Pediátrica (Ministério da Saúde — Planos A, B e C)
-- **🟢 Sem Desidratação (Plano A — Domiciliar):** Alerta, olhos normais, lágrimas presentes, bebe água normalmente, sinal da prega desaparece imediatamente, pulso cheio.
-- **🟡 Desidratação Alguma / Moderada (Plano B — TRO na Sala de Reidratação Oral: $50\text{–}100\text{ mL/kg}$ em $4\text{h}$):** **$\ge 2$ sinais:** **Irritado/Intranquilo**, **Olhos fundos**, **Bebe ávido/sedento**, **Sinal da prega desaparece lentamente ($< 2\text{s}$)**.
-- **🔴 Desidratação Grave / Choque (Plano C — Expansão IV Imediata com SF $0,9\%$ ou Ringer $20\text{ mL/kg}$):** **$\ge 2$ sinais:** **Letárgico/Inconsciente**, **Olhos muito fundos**, **Não consegue beber**, **Sinal da prega muito lento ($> 2\text{s}$)**, **TEC $> 2\text{–}3\text{s}$ / Pulsos finos**.
+2. EXAME NO COLO E SINAIS VITAIS POR IDADE:
+- **Coreografia anti-choro:** Conte FR 60 s em repouso e ausculte coração e pulmões no colo → palpe abdome → avalie TEC, pulsos, fontanela sem choro e pele → deixe otoscopia e orofaringe por último. Evite manipular a orofaringe se houver sialorreia com estridor ou suspeita de via aérea ameaçada.
+- **FR rápida na triagem respiratória AIDPI:** <2 meses ≥60/min, 2–11 meses ≥50/min, 12–59 meses ≥40/min. Em maiores, use faixa etária e tendência. [AIDPI do Ministério da Saúde](https://linhasdecuidado.saude.gov.br/portal/puericultura/unidade-de-atencao-primaria/condicoes-agudas/index.php)
+- **Faixas de referência de FC/FR para crianças doentes:** RN a termo 120–170/25–60; 3 meses 115–170/25–60; 6 meses 110–170/20–55; 1 ano 105–150/20–45; 2 anos 95–150/20–40; 4 anos 80–150/17–30; 6 anos 75–140/16–30; 8 anos 70–130/16–30; 10 anos 60–130/15–25; 12 anos 65–120/15–25; 14–16 anos 60–115/14–25 (bpm/irpm). Interprete com repouso, febre, esforço e medidas seriadas. [Royal Children’s Hospital](https://www.rch.org.au/clinicalguide/guideline_index/Normal_Ranges_for_Physiological_Variables/)
+- **Hipotensão sistólica no PALS:** RN a termo <60 mmHg, 1–12 meses <70, 1–10 anos <70 + 2 × idade em anos, >10 anos <90. Use manguito adequado. Taquicardia com TEC prolongado e pulsos finos já sugere choque compensado. [AHA](https://www.heart.org/-/media/files/affiliates/gra/5a--manoleupdates-in-pediatric-resuscitation.pdf?la=en)
+- **SIPA no trauma:** FC/PAS. Elevação >1,22 de 4–6 anos, >1,0 de 7–12 anos e >0,9 de 13–16 anos nos cortes de Acker. Integre perfusão e tendência na decisão de escalada. [Estudo de validação](https://pubmed.ncbi.nlm.nih.gov/27814956/)
 
-### 3️⃣ Otoscopia e Orofaringe Seguras (A Contenção Afetiva Correta)
-- **Otoscopia:**
-  - *Criança $< 3$ anos:* Tracionar o pavilhão auricular para **TRÁS e para BAIXO** (retifica o conduto cartilaginoso horizontalizado).
-  - *Criança $\ge 3$ anos e Adulto:* Tracionar para **CIMA e para TRÁS**.
-  - **Critério de OMA (Otite Média Aguda):** O principal sinal com maior $LR+$ (**$LR+ 8.4 \text{ a } 51$**) é o **ABAULAMENTO da membrana timpânica** (ou otorreia aguda não-otite externa). *Hiperemia isolada do tímpano em criança chorando com febre NÃO é OMA!*
+3. ACHADOS FOCADOS POR IDADE E QUEIXA:
+- **RN e lactente:** Compare pulsos braquial e femoral. Avalie fontanela com lactente calmo e semissentado. Em puericultura, confira antropometria e perímetro cefálico na curva e aplique Barlow/Ortolani suavemente se indicado pela idade.
+- **Irritabilidade paradoxal:** Piora ao colo ou ao manuseio e melhora quando deixada quieta. Com febre, letargia ou fontanela tensa em repouso, avalie prontamente meningite ou outra doença grave.
+- **Hidratação e otoscopia:** Integre aceitação de líquidos, diurese, olhos, mucosas, prega e perfusão para definir plano A/B/C. Na otoscopia, apoie a mão na face e avalie abaulamento ou otorreia e o conduto. Hiperemia isolada durante choro tem baixa especificidade para OMA.
 
----
+4. PRESCRIÇÃO PONDERAL EM SEIS PASSOS:
+- **1 — Peso e 2 — Unidade:** Afira peso em kg na consulta, com uma casa decimal quando possível. Confira indicação e se a referência usa mg/kg/dia ou mg/kg/dose.
+- **3 — Dose e 4 — Teto:** Calcule mg por tomada. Se a referência for diária, divida pelo número de tomadas. Confira os tetos adulto por tomada e por dia para o fármaco e a indicação.
+- **5 — Conversão e 6 — Administração:** Divida os mg por tomada pelos mg/mL da apresentação disponível. Em gotas, confira gotas/mL do fabricante. Arredonde apenas dentro da faixa segura para uma marca mensurável na seringa, escreva dose em mg e volume em mL, além de via, intervalo e duração. Peça ao cuidador para mostrar a medida.
 
-## 🚨 4. RED FLAGS (Sinais de Alarme em Pediatria)
-- **Qualquer Febre ($\ge 37,8\text{–}38,0^\circ\text{C}$) em RN ($< 28\text{ dias}$) ou Lactente $< 3\text{ meses}$ com Toxemia:** Risco elevado de Doença Bacteriana Invasiva (Sepse neonatal / Meningite / ITU) $\rightarrow$ Internação + Triagem infecciosa completa (Sangue, Urina por cateterismo/punção e Líquor) + Antibiótico IV empírico imediato!
-- **Gemência Expiratória + Tiragem Subcostal + Batimento de Asa Nasal:** Insuficiência respiratória aguda grave.
-- **Petéquias / Púrpura que NÃO desaparecem ao teste do copo de vidro (Vitroscopia) + Febre:** **Meningococcemia / Choque Séptico** $\rightarrow$ Ceftriaxona IV/IM na 1ª hora!
-- **Dor Abdominal + Choro Paroxístico com Flexão das Pernas + Palidez + Fezes em "Geleia de Morango/Framboesa" (3m a 3 anos):** **Invaginação (Intussuscepção) Intestinal**.
+## 🚨 4. RED FLAGS (Sinais de Alarme)
 
----
+- **Apneia, cianose central ou exaustão com queda do esforço respiratório:** Possível falência respiratória. Acione suporte e inicie ventilação assistida quando indicada.
+- **Taquicardia persistente com pulsos finos, TEC prolongado ou alteração de consciência:** Suspeita de choque. Inicie ABCDE e reavalie perfusão após cada intervenção.
+- **Febre com púrpura não esmaecível ou letargia:** Possível sepse invasiva. Acione fluxo de emergência e inicie manejo tempo-dependente.
+- **Fontanela tensa em repouso com febre ou irritabilidade paradoxal:** Possível meningite. Acione avaliação urgente e tratamento conforme protocolo.
+- **Pulsos femorais muito reduzidos com má perfusão em RN:** Possível cardiopatia ducto-dependente. Estabilize e acione neonatologia/cardiologia com urgência.
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
+
 ```text
-EXAME FÍSICO PEDIÁTRICO (ORDEM OPORTUNISTA):
-- Triângulo de Avaliação Pediátrica (TEP): Estável (Aparência preservada/ativa e reativa no colo materno, Respiração sem esforço visível, Circulação cutânea normal).
-- Dados Antropométricos e Vitais: Peso: [ ] kg | FC: [ ] bpm | FR: [ ] irpm (aferida em 60s em repouso) | SpO2: [ ]% AA | Tax: [ ]°C.
-- Hidratação e Perfusão: Hidratada (olhos normais, lágrimas presentes, mucosas úmidas, sinal da prega com retorno imediato, TEC < 2s, pulsos periféricos cheios e simétricos). [Fontanela anterior normotensa e plana].
-- Aparelho Respiratório: Tórax sem tiragens (ausência de tiragem subcostal, intercostal ou fúrcula), sem batimento de asa nasal ou gemência. MV presente e simétrico bilateralmente, sem ruídos adventícios.
-- Aparelho Cardiovascular: RCR em 2T, BNF, sem sopros. Pulsos femorais palpáveis e simétricos.
-- Abdome: Globoso fisiológico, flácido, indolor à palpação, RHA+, sem visceromegalias ou massas.
-- Otoscopia e Orofaringe: Membranas timpânicas translúcidas, em posição neutra (sem abaulamento ou nível líquido), cone luminoso presente bilateralmente. Orofaringe sem hiperemia, exsudato ou petéquias palatinas. Sinais meníngeos ausentes.
+Hora [ ]. Idade, informante e comportamento basal [ ]. TEP: aparência/TICLS [ ], respiração [ ], circulação cutânea [ ].
+FR em repouso [ ] irpm, FC [ ] bpm, PA [ ] mmHg, SpO₂ [ ]%, temperatura [ ], peso aferido [ ] kg. TEC, pulsos, ausculta, abdome, fontanela, pele e achados focais [ ].
+Hipótese, gravidade, medidas e resposta [ ]. Medicação, referência ponderal, teto, concentração e dose final em mg e mL [ ]. Via, intervalo e duração [ ].
+Disposição, alarmes, prazo/local de retorno e demonstração do cuidador no Teach-Back [ ].
 ```
 
----
-
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Começar o exame pediátrico colocando o abaixador de língua na garganta ou deitando a criança à força na maca:** A criança entra em pânico imediato, a FC vai a $190\text{ bpm}$, a FR fica impossível de contar, o abdome fica rígido pelo choro e a membrana timpânica fica vermelha pelo choro. Faça 80% do exame **no colo da mãe**!
-- **Prescrever Amoxicilina para toda membrana timpânica "vermelhinha":** O choro e a febre causam vasodilatação periférica timpânica. Sem **abaulamento**, perda de mobilidade ou otorreia aguda, trata-se de hiperemia reacional/IVAS viral.
 
----
+- **Separar cedo do cuidador para examinar:** O choro altera medidas e ausculta. Comece no colo com FR e ausculta sempre que possível.
+- **Interpretar a fontanela durante choro:** Pode simular abaulamento. Repita com o lactente calmo e semissentado.
+- **Diagnosticar OMA pela hiperemia isolada:** Favorece antibiótico desnecessário. Confirme sinais de efusão/inflamação e examine o conduto.
+- **Aplicar intervalo de adulto às medidas pediátricas:** Distorce a triagem. Use referência por idade e compare com o estado basal e a tendência.
+- **Confundir mg/kg/dia com mg/kg/dose:** Multiplica a dose por tomada. Escreva as unidades em cada etapa e revise teto e apresentação.
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. PAT, Sinais Vitais & Esforço Respiratório
-- [ ] Avaliei o Triângulo de Avaliação Pediátrica (Aparência TICLS, Trabalho Respiratório e Circulação) nos primeiros 30s
-- [ ] Contei a Frequência Respiratória por 60 segundos completos à distância (com tórax exposto e criança calma)
-- [ ] [CRÍTICO] Chequei sinais objetivos de esforço respiratório (tiragem intercostal, subcostal, fúrcula, BAN, balanço e gemência)
-- [ ] Interpretei FC/FR considerando febre (reavaliando após antitérmico se taquipneia/taquicardia febril)
 
-### 2. Ordem Invertida (Colo da Mãe) & Sistêmico
-- [ ] Mantive lactente/pré-escolar no colo e executei ausculta cardíaca/pulmonar com estetoscópio aquecido enquanto calmo
-- [ ] [CRÍTICO] Examinei abdome (I-A-P-P) e coto umbilical/regiões inguinais antes de manobras desconfortáveis
-- [ ] Palpei pulsos braquiais e femorais SIMULTANEAMENTE e avaliei TEC (< 2s no esterno) e pele (petéquias)
-- [ ] Avaliei hidratação pelos 4 sinais cardinais da OMS (incluindo prega cutânea vertical no abdome) -> Plano A/B/C
-- [ ] Avaliei fontanelas com a criança calma e sentada (e em < 18m lembrei que irritabilidade paradoxal/abaulamento superam rigidez de nuca)
-- [ ] No RN/lactente: testei quadril (Barlow e Ortolani um lado por vez), genitália/testículos e reflexos primitivos pertinentes
+### 1. Avaliação inicial
 
-### 3. Antropometria, DNPM & Exame ORL Final
-- [ ] Garanti antropometria correta (peso sem fralda < 2a; comprimento com joelhos estendidos/2 pessoas < 2a; PC até 2a) e plotei nas curvas OMS
-- [ ] [CRÍTICO] Chequei marcos do DNPM para a idade (usando idade corrigida se prematuro < 2a) e excluí Red Flags
-- [ ] Deixei oroscopia e otoscopia POR ÚLTIMO usando contenção segura no colo da mãe ("abraço seguro")
-- [ ] Executei otoscopia com pegada em lápis + apoio do dedo na face + tração correta (< 3 anos baixo/trás; ≥ 3 anos cima/trás)
+- [ ] [CRÍTICO] Avaliei os três eixos do TEP antes de tocar e iniciei ABCDE quando indicado.
+- [ ] Obtive FR e ausculta no colo sempre que possível e deixei exames incômodos para o fim.
 
-### 5. Upgrade Preceptor V2.0 (Ordem Oportunista & Cutoffs OMS)
-- [ ] [CRÍTICO] Apliquei o Triângulo de Avaliação Pediátrica (A-R-C / TICLS) em 15s sem tocar na criança e contei a FR em 60s no colo antes do choro
-- [ ] [CRÍTICO] Classifiquei a hidratação nos Planos A/B/C e, na otoscopia final, exigi abaulamento timpânico (LR+ 8.4–51) para diagnóstico de OMA
+### 2. Perfusão e decisão
+
+- [ ] [CRÍTICO] Interpretei sinais vitais por idade e documentei perfusão e tendência.
+- [ ] Registrei achados focais, resposta ao manejo e disposição.
+
+### 3. Prescrição e orientação
+
+- [ ] [CRÍTICO] Conferi peso, unidade, dose em mg, os dois tetos, apresentação e volume mensurável.
+- [ ] O cuidador mostrou como medir a dose e repetiu quando e onde buscar ajuda.

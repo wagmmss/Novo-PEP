@@ -1,95 +1,80 @@
-# Apresentação Oral de Caso (one-minute Preceptor / SNAPPS) & SBAR
+# Apresentação Oral, Explicação Leiga, SBAR e I-PASS
 **Atalho Rápido:** `;hab-sbar` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Raciocínio & Segurança Clínica
-**Âncora:** Manchete 10s (Pyramid Principle) → SNAPPS (Ambulatório) vs SBAR (Emergência/UTI) → Pausa limpa sem vícios + Closed-Loop
-
----
+**Âncora:** Preceptor ≤90s → Paciente ≤60s e Teach-Back → CROSS com pedido → I-PASS com dono → Alça fechada
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **A Primeira Frase Define Tudo (Summary Statement):** Nunca comece um caso despejando dados soltos (*"Paciente João, 65 anos, veio porque..."*). Abra com o **Enquadramento Semântico + Objetivo da Passagem** (*"Preceptor, trago um homem de 65 anos, tabagista e hipertenso, com dor torácica aguda típica de alto risco para discutir indicação de estratificação invasiva"*).
-2. **Ordem Cronológica Rígida e Filtro de Pertinência:** Só entra na HDA da apresentação oral aquilo que **altera a probabilidade das suas hipóteses** (positivos e negativos pertinentes).
-3. **Na Urgência ou Ligação Telefônica use SBAR em 45 Segundos:** Quando ligar para a UTI, Cirurgia ou Staff na madrugada, diga **o que o paciente tem e o que você precisa** nos primeiros 10 segundos.
 
----
+1. **Preceptor:** One-liner → hipótese → grave em aberto → plano. Feche com um SNAPPS Probe.
+2. **Paciente:** Hipótese, grave avaliado, próximo passo, alarmes com prazo e local. Confirme com Teach-Back.
+3. **Equipe:** Pedido explícito na CROSS, pendência com dono no I-PASS e confirmação da ordem na sala vermelha.
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
 
-> ### **1️⃣ Modo Ambulatório / Enfermaria — Método "SNAPPS" (6 Passos do Interno Proativo):**
-> - **S — Summarize (Sintetize em 60–90s):** Identificação + Queixa + HDA enxuta com negativos pertinentes + EF focado.
-> - **N — Narrow (Estreite para 2–3 DDx):** *"Minhas principais hipóteses são X (mais provável) e Y (gravidade que preciso excluir)"*.
-> - **A — Analyze (Analise comparando as hipóteses):** *"Penso em X por causa de A e B, e afasto Z pela ausência de C"*.
-> - **P — Probe (Pergunte a dúvida específica ao Preceptor):** *"Fiquei em dúvida se neste perfil iniciamos droga A ou B"*.
-> - **P — Plan (Proponha o Plano Completo):** Diagnóstico, Terapêutico e Seguimento (nunca pare no diagnóstico!).
-> - **S — Select (Selecione 1 tema de estudo derivado do caso):** Fechamento de aprendizado ativo.
-
-> ### **2️⃣ Modo Urgência / Passagem de Plantão / Interconsulta — "S-B-A-R":**
-> - **S — Situation (Situação Atual em 1 frase):** Quem sou eu + Quem é o paciente/leito + **Por que estou ligando AGORA** (gravidade/sinal vital crítico).
-> - **B — Background (Contexto Clínico Essencial):** Motivo da internação, comorbidades-chave e o que aconteceu nas últimas horas.
-> - **A — Assessment (Avaliação / Impressão Diagnóstica):** Sinais vitais atuais, exame físico dirigido, exames críticos e **o que eu acho que está acontecendo**.
-> - **R — Recommendation (Recomendação / Pedido Explícito):** O que eu já fiz + **O que eu preciso que você faça e em qual prazo**.
-
----
+> **Quem recebe deve conseguir repetir a decisão, a próxima ação e quando precisa agir.**
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
 
-### 1️⃣ Estrutura da Apresentação Oral Clássica à Beira do Leito (2 a 3 Minutos)
-1. **Headline (Frase de Abertura — 10s):**
-   *"[Nome/Iniciais], [Idade], [Comorbidades-chave], no [Xº DIH / PO] por [Diagnóstico Principal], evoluindo nas últimas 24h com [Estabilidade / Intercorrência Principal]."*
-2. **Subjetivo & Eventos das 24h (20s):**
-   Queixas noturnas, dor, aceitação da dieta, diurese/evacuação, febre documentada (pico e horário).
-3. **Objetivo Direcionado (30s):**
-   - **Sinais Vitais (Tendência, não só foto estática):** PA (variação), FC, FR, $\text{SpO}_2$ (e em qual suporte de $\text{O}_2$), Tax máxima, Balanço Hídrico e Diurese em $\text{mL/kg/h}$.
-   - **Exame Físico Focado:** Ectoscopia, Neurológico, Cardiopulmonar, Abdominal, Extremidades/Dispositivos (CVC, SVD, drenos com aspecto e débito).
-4. **Exames Complementares Relevantes (20s):**
-   Apenas os alterados e os negativos cruciais, sempre comparando com o anterior (*"Hb caiu de 10,2 para 7,8; Cr subiu de 1,1 para 2,3; K+ 5,8"*).
-5. **Impressão & Plano por Problemas (40s — O coração do Round):**
-   Organize por problemas numerados (**P1: Choque Séptico de foco pulmonar — D3 de Piperacilina-Tazo**; **P2: LRA KDIGO 2 pré-renal**; **P3: Profilaxias — TEV, Úlcera de estresse, Glicemia**).
+1. APRESENTAÇÃO AO PRECEPTOR:
+- **One-liner e hipótese (≤ 90 s, cerca de 220 palavras):** Diga idade, contexto que muda risco, síndrome, início e estabilidade. Sustente a hipótese com 2–3 dados. “Homem de 58 anos, diabético, dor opressiva ao esforço há duas horas, agora estável. Suspeito de síndrome coronariana aguda pelo padrão da dor e pela sudorese.”
+- **Grave e plano:** “O ECG inicial não mostrou supra. SCA sem supra segue em aberto. Proponho observação monitorizada, ECG e troponina seriados e reavaliação imediata se a dor voltar.” Em instabilidade, abra com a ameaça e com o pedido de ajuda.
+- **SNAPPS Probe:** “Qual mudança no traçado faria antecipar a avaliação invasiva?” Compare hipóteses quando isso mudar a decisão e selecione uma lacuna para estudar após o caso. [SNAPPS](https://pubmed.ncbi.nlm.nih.gov/14507619/)
 
-### 2️⃣ Script Prático de Ligação SBAR de Urgência (Exemplo Real de Plantão)
-- **S:** *"Dr. Carlos, aqui é o interno Lucas na Sala Vermelha. Estou ligando pelo Sr. Antônio, 68 anos, Leito 2, que acaba de evoluir com **Hipotensão refratária (PA 75x40) e Lactato de 4,8** por Choque Séptico biliar."*
-- **B:** *"Ele é diabético, deu entrada há 3 horas com dor em HCD, icterícia e febre (Tríade de Charcot), US mostrou colédoco de 12 mm com cálculo impactado."*
-- **A:** *"Já infundimos $30\text{ mL/kg}$ de Ringer Lactato, coletamos hemoculturas, fizemos Ceftriaxona + Metronidazol na 1ª hora e iniciamos Noradrenalina a $0,15\text{ mcg/kg/min}$, mas segue obnubilado (Pêntade de Reynolds)."*
-- **R:** *"Preciso de **vaga imediata na UTI** e avaliação da **Cirurgia/Endoscopia para descompressão biliar de urgência (CPRE)**. O senhor consegue vir avaliá-lo nos próximos 15 minutos?"*
+2. EXPLICAÇÃO LEIGA EM QUATRO BLOCOS:
+- **Hipótese e grave avaliado (≤ 60 s, cerca de 150 palavras):** “Sua dor pode ter vindo de uma redução do sangue que chega ao coração. O primeiro exame ainda não resolve toda a dúvida.”
+- **Próximo passo e alarmes:** “Você vai ficar em observação para repetir os exames. Avise a equipe na hora se a dor voltar ou vier falta de ar ou suor frio.” Na saída, diga em que prazo e a qual serviço voltar.
+- **Teach-Back:** “Para eu conferir se expliquei bem, o que você faria se a dor voltasse aqui?” Se houver dúvida, reformule e peça nova devolução. [AHRQ](https://www.ahrq.gov/health-literacy/improve/precautions/tool5.html)
 
----
+3. REGULAÇÃO CROSS POR SBAR E PASSAGEM POR I-PASS:
+- **SBAR (~60 s):** S — identifique unidade, paciente, urgência e pedido. B — cronologia, antecedentes, recursos ausentes e o que já foi feito. A — hipótese, sinais vitais, tendência e resposta. R — solicite recurso, prioridade e transporte compatível. Confirme destino, previsão, medidas de ponte e quando atualizar. Se aplicável, discuta Vaga Zero com o regulador e mantenha cuidado e monitorização até a entrega formal.
+- **Fala na CROSS:** “Aqui é o PA Norte. Solicito transferência urgente para reperfusão de homem de 62 anos com dor há 70 minutos e supra inferior às 14h20. PA 104 por 68, dor persistente, monitorizado e recebeu AAS. Estamos sem hemodinâmica e trombolítico. Solicito transporte avançado. Confirma destino e medidas enquanto aguardamos?”
+- **I-PASS:** I — gravidade atual. P — resumo. A — ação, dono e horário. S — “se a dor voltar, repita o ECG e chame o sênior”. S — peça síntese do receptor: “Rafael, pode repetir o que fará com a troponina das 18h e se a dor voltar?”
 
-## 🚨 4. RED FLAGS (Sinais de Alarme na Passagem de Caso)
-- **Passagem de plantão sem "Pendências Críticas com Horário e Condicional" (*Se X, faça Y*):** Nunca passe *"Ver troponina das 22h"*; passe *"Troponina de 2ª curva sai às 22h (basal foi 12 ng/L para VR < 14): se > 14 ou delta > 5, iniciar dupla antiagregação + enoxaparina e pedir vaga de UCO"*.
-- **Omitir código de status / diretivas antecipadas ou alergias graves** na passagem de enfermaria/UTI.
+4. ALÇA FECHADA NA SALA VERMELHA:
+- **Ordem nominal:** “Luísa, confira a pressão no braço esquerdo agora e me diga o valor.” Para medicação, informe dose, via e velocidade quando pertinente.
+- **Repetição e confirmação:** Luísa repete a ordem, o líder confirma ou corrige e Luísa anuncia execução ou impedimento: “PA 78 por 46.” O líder acusa recebimento e define a próxima ação.
 
----
+5. TREINO SEMANAL DE GRAVAÇÃO:
+- **0:00–1:30:** Na quinta-feira, grave um caso sem dados identificáveis em até 90 s, usando apenas os quatro tópicos da apresentação.
+- **1:30–3:00:** Ouça a primeira tomada e conte as muletas vocais (“né”, “ééé”, “tipo”). Marque onde ocorrem.
+- **3:00–4:15:** Regrave em até 75 s com Pausa Limpa de 1 s entre blocos, em silêncio.
+- **4:15–5:00:** Lance a primeira contagem e um ajuste concreto no LOG: `DD/MM | GRAVAÇÃO | <slug> | 5m | NA | NA | muletas: X (ajuste) | NA | NA`. Marcador da sessão: `[GRAVAÇÃO]`.
 
-## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto — SBAR de Interconsulta/Transferência)
+## 🚨 4. RED FLAGS (Sinais de Alarme)
+
+- **Hipotensão com alteração mental ou extremidades frias:** Suspeita de choque. Acione ajuda presencial e reanimação em paralelo à comunicação.
+- **Queda de saturação com esforço respiratório crescente:** Possível falência ventilatória. Reavalie via aérea e ventilação à beira do leito e acione suporte.
+- **Dor torácica recorrente com instabilidade ou alteração isquêmica dinâmica:** Reavalie imediatamente, repita ECG e informe a mudança de prioridade.
+- **Novo déficit focal ou perda súbita de consciência:** Emergência neurológica provável. Cheque glicemia, registre o último momento bem e acione o fluxo de emergência.
+
+## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
+
 ```text
-REGISTRO DE PASSAGEM DE CASO / INTERCONSULTA (MÉTODO SBAR):
-- [S] SITUAÇÃO: Paciente [Nome], [Idade] anos, Leito [ ], em atendimento por [Diagnóstico Principal], apresentando [Motivo agudo da solicitação / Intercorrência].
-- [B] BACKGROUND (HISTÓRICO): Antecedentes de [Comorbidades]. Admitido em [Data/Hora] com quadro de [Resumo da admissão e condutas iniciais realizadas].
-- [A] AVALIAÇÃO ATUAL: Sinais vitais: PA [ ]x[ ] mmHg | FC [ ] bpm | FR [ ] irpm | SpO2 [ ]% em [AA / O2] | Tax [ ]°C | Diurese [ ] mL/h. Exame físico direcionado: [Achados críticos]. Exames relevantes: [Laboratório / Imagem]. Impressão clínica: [Hipótese principal e gravidade].
-- [R] RECOMENDAÇÃO / CONDUTA PACTUADA: Realizado [Medidas já instituídas]. Solicitada avaliação da equipe de [Especialidade / UTI] para [Objetivo específico]. Caso discutido com Dr(a). [Nome] às [Hora], conduta alinhada: [Plano definido].
+Data/hora [ ]. Caso discutido com [ ]. Síntese, gravidade e tendência clínica: [ ]. Hipótese, grave em aberto e fundamento: [ ]. Decisão e suporte em curso: [ ].
+Regulação: contato, protocolo e horário [ ]. Recurso solicitado, destino, transporte e medidas enquanto aguarda: [ ]. Pendência, responsável, prazo e gatilho de escalada confirmados: [ ].
+Orientações ao paciente/família, alarmes, local e prazo de retorno: [ ]. Resposta ao Teach-Back: [ ].
 ```
 
----
-
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Misturar Anamnese com Exame Físico na fala:** Dizer na HDA que *"paciente teve murmúrio abolido na base direita"* quebra o raciocínio do preceptor. HDA é história; achado de exame físico entra no Objetivo.
-- **Ler números normais de laboratório como lista telefônica:** Em vez de ler 15 eletrólitos normais, diga *"Hemograma, função renal e eletrólitos sem alterações, exceto por..."*.
-- **Parar na Hipótese sem dar o Plano (Síndrome do Repórter):** O bom interno não apenas reporta os fatos (*Reporter*); ele interpreta (*Interpreter*) e propõe o plano terapêutico (*Manager*).
 
----
+- **Apresentar toda a cronologia antes do problema:** Atrasa a decisão. Abra com o one-liner e selecione os dados que sustentam a hipótese.
+- **Trocar entendimento por concordância:** Uma resposta afirmativa pode esconder dúvida. Peça que a pessoa explique o próximo passo.
+- **Regular com pedido genérico de vaga:** Dificulta priorização. Diga qual recurso falta e solicite transporte compatível.
+- **Passar resultado pendente sem nome e hora:** A tarefa pode ficar sem revisão. Combine responsável, prazo e condição de escalada.
+- **Dar ordem para “alguém” na sala vermelha:** Favorece omissão ou duplicação. Nomeie o receptor e feche a alça.
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Caso Novo ao Preceptor (60–90s)
-- [ ] Abri com a Manchete em 1 frase (quem, risco, queixa/duração e estabilidade atual)
-- [ ] [CRÍTICO] Filtrei a história (contei apenas evolução, negativas pertinentes, meds e alergias)
-- [ ] [CRÍTICO] Falei todos os Sinais Vitais numéricos reais antes do exame físico dirigido
-- [ ] Fechei assumindo posição clínica: síntese + 2 a 3 hipóteses diferenciais (SNAPPS)
-- [ ] Propôs explicitamente o meu plano de exames/conduta (não joguei no colo do preceptor)
-- [ ] Mantive a apresentação enxuta entre 60 e 90 segundos
 
-### 2. Round Matinal / Passagem SBAR
-- [ ] No round de enfermaria: foquei apenas no que mudou nas últimas 24h e nos exames novos
-- [ ] Defini o destino de cada dispositivo invasivo (acesso, SVD, dreno, O2)
-- [ ] Na passagem de plantão: deixei plano de contingência ("SE acontecer X -> fazer Y") para toda pendência
+### 1. Preceptor e paciente
 
-### 4. Upgrade Preceptor V2.0 (SNAPPS & SBAR)
-- [ ] [CRÍTICO] Abri a apresentação com Headline / Summary Statement usando qualificadores semânticos e tendência dos sinais vitais
-- [ ] [CRÍTICO] Na passagem de plantão ou interconsulta, explicitei a Recomendação (R do SBAR) com prazo claro e pendências condicionais ('se X, fazer Y')
+- [ ] [CRÍTICO] Expus hipótese, grave em aberto e plano em até 90 s.
+- [ ] Expliquei os quatro blocos em até 60 s e confirmei entendimento com Teach-Back.
+
+### 2. Transferência e equipe
+
+- [ ] [CRÍTICO] Confirmei pedido, destino e medidas de ponte na regulação, quando indicada.
+- [ ] [CRÍTICO] Passei pendências com nome, hora, contingência e síntese do receptor.
+- [ ] Fechei a alça nas ordens críticas.
+
+### 3. Treino de voz
+
+- [ ] Contei as muletas da primeira tomada, regravei com pausas de 1 s e registrei um ajuste no LOG.

@@ -1,91 +1,112 @@
-# Exame Cardiovascular Avançado (Hemodinâmica & Manobras Dinâmicas)
+# Exame Cardiovascular Avançado (Congestão, Perfusão & Manobras Dinâmicas)
 **Atalho Rápido:** `;hab-cardio` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exame Físico & Semiologia
-**Âncora:** Pulsos (Parvus/Corrigan/Paradoxal) → PVJ a 45° + RHJ → Ictus em DLE → Ausculta + Pulso Simultâneo → Manobras Dinâmicas (Rivero-Carvallo / Valsalva)
+**Âncora:** PA nos 2 braços + pulsos → TJV a 45° + RHJ 10s → Ictus → Ausculta com pulso simultâneo + B3 em DLE → Valsalva/agachamento → Perfil de Stevenson
 
 ---
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Perfusão, PA Bilateral & Pulsos:** Medir PA nos dois braços se dor torácica/síncope (diferença PAS > 15–20 mmHg = Dissecção Aórtica); checar Pulso Paradoxal, *Parvus et Tardus* (EAo), Corrigan (IAo) e déficit de pulso (FA).
-2. **PVJ a 45° + Precórdio + Pulso Simultâneo:** Sempre palpar pulso carotídeo/radial durante a ausculta para cravar B1; usar campânula em DLE (Pachon) para B3/B4 e manobras dinâmicas (Rivero-Carvallo, Valsalva, Handgrip).
+1. **Dor Torácica = PA nos 2 Braços + Pulsos:** Déficit de pulso ou assimetria de PA tem LR+ ~5,7 para dissecção aórtica; ausência NÃO afasta.
+2. **Congestão Tem Hierarquia de LR:** B3 (LR+ ~11) > Refluxo hepatojugular sustentado 10s (LR+ ~6,4) > TJV a 45° (LR+ ~5,1) > Estertores (LR+ ~2,8).
+3. **Classifique Stevenson e Teste o Sopro:** Quente/Frio × Seco/Úmido define a conduta da IC aguda; sopro sistólico + síncope no jovem = Valsalva e agachamento (CMHO).
 
 ---
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Pulsos (Parvus/Corrigan/Paradoxal) → PVJ a 45° + RHJ → Ictus em DLE → Ausculta + Pulso Simultâneo → Manobras Dinâmicas (Rivero-Carvallo / Valsalva)**
+> **"Esvaziou o VE, cresceu o sopro = CMHO ou Prolapso." Valsalva/levantar-se diminui quase todos os sopros, EXCETO CMHO e PVM; agachamento/elevar pernas faz o inverso. Estertores não confirmam IC — B3, RHJ e TJV confirmam.**
 
 ---
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-1. PERFUSÃO, PA & PULSOS PERIFÉRICOS:
-- PA: Manguito adequado; medir nos 2 BRAÇOS se dor torácica/síncope (diferença PAS > 15-20 mmHg = Dissecção Aórtica ou estenose subclávia!) | Pulso Paradoxal (queda da PAS > 10 mmHg na inspiração tranquila = Tamponamento Cardíaco, asma grave ou TEP!).
-- Pulsos & Morfologia Carotídea (palpar 1 carótida por vez no 1/3 inferior, após auscultar!):
-* Parvus et Tardus (amplitude fraca e pico atrasado; LR+ 3,5) = Estenose Aórtica grave!
-* Célere / Martelo d'Água (Corrigan: sobe rápido e colaba na diástole + Sinal de Quincke no leito ungueal) = Insuficiência Aórtica crônica grave (ou estados hiperdinâmicos/sepse/fístula AV).
-* Pulso Alternante (bate forte, bate fraco em ritmo regular) = Disfunção sistólica grave de VE! | Déficit de Pulso (FC apical > FC radial) = Fibrilação Atrial!
-* Simetria Braquial/Radial vs Femoral: Atraso radiofemoral = Coarctação de Aorta!
-2. PULSO VENOSO JUGULAR INTERNO DIREITO A 45° (O "Manômetro de PVC" à Beira do Leito):
-- Jugular Interna D (entre as 2 cabeças do ECM c/ luz tangencial): BIFÁSICA, não palpável, nível oscila e CAI na inspiração. Altura vertical acima do Ângulo de Louis (2º EIC) > 3–4 cm = PVC elevada (> 8–9 cmH2O)!
-- Semiogênese das Ondas Jugulares: Onda `a` gigante em "canhão" (átrio contrai contra valva tricúspide fechada = BAVT ou TV!) | Onda `a` ausente = FA! | Onda `v` gigante (fusão c-v sistólica) = Insuficiência Tricúspide! | Sinal de Kussmaul (jugular SOBE na inspiração em vez de cair) = Pericardite Constritiva, Infarto de VD ou Restrição! | Refluxo Hepatojugular (compressão periumbilical/QSD por 10-15s mantendo respiração normal: elevação sustentada > 3 cm = falência de VD / congestão!).
-3. PRECÓRDIO A 30°–45°:
-- Impulsão Paraesternal Esquerda Baixa (mão espalmada na borda esternal E) = Sobrecarga de VD!
-- Ictus Cordis (5º EIC na LHCE, <= 2 polpas / <= 2,5 cm): Deslocado p/ baixo e p/ fora (6º EIC linha axilar anterior) e hiperdinâmico = sobrecarga de volume (IAo/IM); Sustentado/propulsivo = sobrecarga de pressão (EAo/HAS).
-4. AUSCULTA SISTEMÁTICA (SEMPRE PALPANDO O PULSO CAROTÍDEO/RADIAL SIMULTÂNEO = B1!):
-- Diafragma (Sons agudos — B1, B2, cliques, sopros sistólicos e diastólico aspirativo da IAo): Aórtico (2º EIC D) -> Pulmonar (2º EIC E: desdobramento fisiológico na inspiração; fixo = CIA; paradoxal = BRE/EAo) -> Aórtico Acessório/Erb (3º EIC E) -> Tricúspide (4º EIC BEE) -> Mitral (Ápice).
-- Campânula c/ MÃO LEVE no Ápice em DLE (Manobra de Pachon — sons graves!): B3 (protodiastólica = sobrecarga de volume / IC sistólica descompensada; LR+ 6,0!) | B4 (telediastólica pré-sistólica = contração atrial contra VE rígido/hipertrófico na HAS/EAo/IAM; NUNCA existe B4 na Fibrilação Atrial!) | Ruflar diastólico da Estenose Mitral.
-5. MANOBRAS DINÂMICAS PARA DIFERENCIAR SOPROS (Regra Fisiopatológica do Volume do VE):
-- Inspiração Profunda (Manobra de Rivero-Carvallo): Aumenta o retorno venoso p/ o lado DIREITO -> AUMENTA todos os sopros de câmaras direitas (Insuficiência Tricúspide, Estenose/Insuficiência Pulmonar).
-- Manobra de Valsalva (fase de esforço) ou Levantar-se Rapidamente (Orthostasis): DIMINUI o retorno venoso e esvazia o VE -> DIMINUI quase todos os sopros (inclusive Estenose Aórtica!), EXCETO DOIS que AUMENTAM: **Cardiomiopatia Hipertrófica Obstrutiva (CMHO)** (VE vazio aproxima o septo do folheto mitral!) e **Prolapso de Valva Mitral (PVM)** (clique antecipa e sopro prolonga).
-- Agachamento Rápido (Squatting) ou Elevação Passiva das Pernas: AUMENTA o retorno venoso e enche o VE -> AUMENTA Estenose Aórtica/IM e DIMINUI o sopro da CMHO!
-- Handgrip (Aperto de mão isométrico por 20–30s): AUMENTA a pós-carga (resistência arterial periférica) -> AUMENTA sopros regurgitativos esquerdos (Insuficiência Mitral, IAo e CIV) e DIMINUI Estenose Aórtica e CMHO!
-- Sentado Inclinado p/ Frente em Apneia Expiratória (Foco de Erb c/ diafragma firme): Aproxima a base do coração da parede torácica -> realça o sopro diastólico aspirativo de **Insuficiência Aórtica** e o **Atrito Pericárdico** (trifásico em couro novo).
-6. PERFIL HEMODINÂMICO DE STEVENSON NA IC AGUDA:Congestão (Seco vs Úmido: ortopneia é o sintoma de maior LR+, TJ 45°, refluxo hepatojugular, B3, estertores, ascite/edema) x Perfusão (Quente vs Frio: pressão de pulso estreita [(PAS-PAD)/PAS < 25%], TEC > 3s, extremidades frias, sonolência, oligúria).
+1. PERFUSÃO, PA BILATERAL & PULSOS:
+- **PA nos 2 Braços (dor torácica/dorsal, síncope, déficit neurológico):** Diferença de PAS > 20 mmHg ou déficit de pulso radial/carotídeo/femoral = dissecção aórtica (LR+ ~5,7); déficit focal + dor torácica tem LR+ 6–33.
+- **Perfusão:** TEC no indicador 10s (≤ 3s), temperatura de extremidades, pressão de pulso proporcional ((PAS−PAD)/PAS < 25% = baixo débito), índice de choque FC/PAS.
+- **Morfologia do Pulso Carotídeo (auscultar antes, palpar 1 por vez):** Parvus et tardus = estenose aórtica grave; célere/martelo d'água (Corrigan, Quincke) = insuficiência aórtica ou estado hiperdinâmico; alternante = disfunção grave de VE; FC apical > radial = FA.
+- **Pulso Paradoxal:** Queda da PAS > 10 mmHg na inspiração tranquila = tamponamento, asma grave ou TEP maciço.
+
+2. PULSO VENOSO JUGULAR A 45° & REFLUXO HEPATOJUGULAR:
+- **TJV a 45° (LR+ ~5,1):** Jugular interna D entre as cabeças do ECM, luz tangencial; pulsação bifásica, não palpável, que cai na inspiração; topo > 3–4 cm acima do ângulo de Louis = PVC elevada. Ajuste a cabeceira (0–90°) até ver o topo.
+- **Refluxo Hepatojugular (LR+ ~6,4):** Pressão firme e contínua no QSD por 10s, paciente respirando normalmente (sem Valsalva); elevação sustentada ≥ 3 cm durante toda a compressão = positivo.
+- **Ondas e Kussmaul:** Onda a em canhão = dissociação AV (BAVT/TV); a ausente = FA; v gigante = insuficiência tricúspide; jugular que SOBE na inspiração = constrição, infarto de VD ou restrição.
+
+3. PRECÓRDIO (30–45° E DLE):
+- **Ictus Cordis:** 5º EIC LHCE, ≤ 2 polpas; desviado para baixo/fora e difuso = sobrecarga de volume/dilatação; sustentado = sobrecarga de pressão (EAo/HAS).
+- **Impulsão Paraesternal E Baixa:** Sobrecarga de VD (hipertensão pulmonar, TEP).
+- **Frêmito:** Sopro grau ≥ 4/6 = orgânico até prova em contrário.
+
+4. AUSCULTA SISTEMÁTICA COM PULSO SIMULTÂNEO:
+- **Diafragma nos 5 Focos com Polegar no Pulso:** Aórtico → Pulmonar → Erb → Tricúspide → Mitral; B1 coincide com o pulso carotídeo (essencial na taquicardia).
+- **Campânula Leve no Ápice em DLE (Pachon):** B3 protodiastólica (LR+ ~11 para IC na dispneia; LR− 0,88, ausência não afasta); B4 = VE rígido — impossível na FA; ruflar de estenose mitral.
+- **Sentado Inclinado em Expiração (Erb, diafragma firme):** Sopro diastólico aspirativo da insuficiência aórtica e atrito pericárdico.
+- **Desdobramento de B2:** Fisiológico na inspiração; fixo = CIA; paradoxal = BRE/EAo grave.
+- **Caracterize o Sopro em 6 Atributos:** Fase, foco de máxima intensidade, irradiação, intensidade (1–6), timbre, resposta às manobras.
+
+5. MANOBRAS DINÂMICAS (VOLUME DO VE):
+- **Valsalva (fase de esforço 10–15s) ou Agachado → Em Pé:** Reduz retorno venoso → diminui quase todos os sopros (inclusive EAo) e AUMENTA CMHO e PVM (clique mais precoce).
+- **Agachamento ou Elevação Passiva das Pernas:** Aumenta pré-carga → aumenta EAo/IM e DIMINUI CMHO.
+- **Handgrip Isométrico 20–30s:** Aumenta pós-carga → aumenta IM, IAo e CIV; diminui EAo e CMHO.
+- **Rivero-Carvallo (inspiração profunda):** Aumenta sopros de câmaras direitas (insuficiência tricúspide).
+
+6. PERFIS HEMODINÂMICOS DE STEVENSON (IC AGUDA):
+- **Congestão (Úmido):** Ortopneia, TJV a 45°, RHJ positivo, B3, edema/ascite, estertores (menos confiáveis na IC crônica).
+- **Perfusão (Frio):** Pressão de pulso proporcional < 25%, TEC > 3s, extremidades frias, sonolência, oligúria, hipotensão sintomática, piora de função renal.
+- **A Quente-Seco:** Compensado — ajustar ambulatorial.
+- **B Quente-Úmido (mais comum):** Diurético IV (furosemida IV ≥ dose oral diária) ± vasodilatador se PA permitir.
+- **C Frio-Úmido:** Pior prognóstico — inotrópico/vasopressor + diurético após perfusão, UTI.
+- **L Frio-Seco:** Avaliar hipovolemia/excesso de diurético — prova volêmica cautelosa.
 
 ---
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Auscultar paciente taquicárdico sem o polegar no pulso carotídeo/radial:** Na taquicardia a diástole encurta e você confunde B1 com B2, laudando sopro diastólico grave como sistólico inocente (ou vice-versa).
-- **Esquecer de testar Valsalva / Agachamento num jovem com síncope e sopro sistólico ejetivo:** A Estenose Aórtica **diminui** na Valsalva, enquanto a **Cardiomiopatia Hipertrófica Obstrutiva (CMHO)** **aumenta** na Valsalva e diminui no agachamento — diagnóstico que previne morte súbita!
-- **Pressionar a campânula com força contra o ápice:** A pele esticada sob pressão funciona como um diafragma e filtra exatamente os sons de baixa frequência (B3, B4 e ruflar diastólico mitral), tornando-os inaudíveis.
+- **Dor Torácica Lancinante com Déficit de Pulso ou PA Assimétrica:** Dissecção aórtica; NÃO anticoagular nem antiagregar até excluir, controle de FC/PA, AngioTC e cirurgia vascular.
+- **Pulso Paradoxal + TJV + Hipotensão (Tríade de Beck):** Tamponamento cardíaco; prova volêmica, POCUS/ecocardiograma urgente e pericardiocentese.
+- **Perfil Frio-Úmido (Stevenson C):** Choque cardiogênico; ECG imediato (IAM?), lactato, sala vermelha e evitar betabloqueador/vasodilatador agressivo.
+- **Síncope ao Esforço com Sopro Sistólico Ejetivo:** Estenose aórtica grave ou CMHO; repouso, ECG, ecocardiograma antes da alta — risco de morte súbita.
+- **Onda a em Canhão com Bradicardia ou Taquicardia de QRS Largo:** BAVT ou TV; monitor, pás de desfibrilação, preparar marca-passo/cardioversão.
 
 ---
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
 ```text
 EXAME CARDIOVASCULAR DIRECIONADO:
-- Hemodinâmica & Perfil Clínico: Perfil de Stevenson [A - Quente e Seco]. PA: [ ]x[ ] mmHg | FC: [ ] bpm. Extremidades bem perfundidas (TEC < 2s), sem edema sacral ou pré-tibial.
-- Pulsos & Jugulares: Pulsos radiais, braquiais, femorais e pediosos amplos, rítmicos e simétricos (amplitude normal, sem pulso parvus et tardus ou em martelo d'água). PVJ fisiológica a 45° (< 3 cm do ângulo de Louis), com descensos x e y preservados e refluxo hepatojugular negativo. Carótidas sem sopros.
-- Precórdio & Ausculta: Ictus cordis palpável no 5º EIC E na LHC, extensão de 2 polpas digitais, sem frêmitos ou impulsão paraesternal de VD. RCR em 2T, BNF (B1/B2 identificadas por palpação simultânea do pulso; desdobramento fisiológico de B2). Ausência de B3 ou B4 à campânula em DLE. Ausência de sopros ou atrito pericárdico (manobras de Rivero-Carvallo e Valsalva negativas).
+- PA MSD [ ]x[ ] mmHg | PA MSE [ ]x[ ] mmHg (diferença PAS [ ] mmHg) | FC [ ] bpm | Índice de Choque [ ] | Pulso paradoxal [ ].
+- Perfusão: TEC no indicador [ ] s | Extremidades [ ] | Pressão de pulso proporcional [ ] %.
+- Pulsos: Carotídeos [ ], radiais [ ], femorais [ ], pediosos [ ]; simetria [ ]; morfologia [ ]; déficit de pulso [ ].
+- Jugular a 45°: Topo a [ ] cm acima do ângulo de Louis | Refluxo hepatojugular (10s) [ ] | Kussmaul [ ].
+- Precórdio: Ictus [ ] EIC, [ ] polpas, [ ]; impulsão paraesternal [ ]; frêmito [ ].
+- Ausculta (B1 por palpação simultânea do pulso): RCR/RCI [ ] T, B2 [ ], B3 [ ] (campânula em DLE), B4 [ ], atrito [ ].
+- Sopro: [ ] (fase [ ], foco [ ], grau [ ]/6, irradiação [ ]); Valsalva [ ]; agachamento [ ]; handgrip [ ].
+- Edema: [ ]/4+ ([ ]). Ortopneia [ ].
+- Perfil de Stevenson: [ ] (Quente/Frio [ ] × Seco/Úmido [ ]).
 ```
 
 ---
 
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Auscultar paciente taquicárdico sem o polegar no pulso carotídeo/radial:** Na taquicardia a diástole encurta e você confunde B1 com B2, laudando sopro diastólico grave como sistólico inocente (ou vice-versa).
-- **Esquecer de testar Valsalva / Agachamento num jovem com síncope e sopro sistólico ejetivo:** A Estenose Aórtica **diminui** na Valsalva, enquanto a **Cardiomiopatia Hipertrófica Obstrutiva (CMHO)** **aumenta** na Valsalva e diminui no agachamento — diagnóstico que previne morte súbita!
-- **Pressionar a campânula com força contra o ápice:** A pele esticada sob pressão funciona como um diafragma e filtra exatamente os sons de baixa frequência (B3, B4 e ruflar diastólico mitral), tornando-os inaudíveis.
-- **Dizer que auscultou B4 num paciente em Fibrilação Atrial:** A quarta bulha (B4) depende da contração atrial vigorosa no fim da diástole; na FA não há contração atrial organizada, logo **é fisiopatologicamente impossível existir B4 na FA** (se ouvir bulha extra na FA, é B3!).
-- **Achar que ausência de estertores pulmonares exclui IC descompensada ("Perfil Úmido"):** Em pacientes com IC crônica, a drenagem linfática pulmonar hipertrofiada mantém os pulmões limpos; confie na **ortopneia, turgência jugular a 45°, refluxo hepatojugular e B3**!
+- **Fechar IC Só por Estertores Bibasais:** LR+ ~2,8 e inespecífico; procure B3, RHJ e TJV a 45° antes de prescrever diurético — e lembre que pulmão limpo não exclui congestão na IC crônica.
+- **Fazer Refluxo Hepatojugular por 2–3 Segundos:** Teste inválido; exige 10s de compressão sustentada com respiração normal e leitura da elevação mantida.
+- **Auscultar Taquicárdico Sem Palpar o Pulso:** Confunde B1 com B2 e inverte sistólico/diastólico; polegar no carotídeo em toda ausculta.
+- **Apertar a Campânula Contra a Pele:** Vira diafragma e apaga B3/B4/ruflar; toque leve, apenas vedando.
+- **Descrever B4 em Paciente com FA:** Fisiologicamente impossível (sem contração atrial); bulha extra na FA é B3.
 
 ---
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. SSVV, Pulsos & Sinais Periféricos
-- [ ] Medi PA com manguito adequado (e nos 2 braços ou ortostática quando indicado)
-- [ ] Avaliei TEC (< 2s), temperatura de extremidades e estigmas de endocardite (Osler/Janeway/estilhas)
-- [ ] Palpei pulsos periféricos simétricos (radiais, femorais vs radiais e pediosos/tibiais posteriores)
-- [ ] Palpei as carótidas uma de cada vez no terço inferior do pescoço (longe do seio carotídeo)
+### 1. Pressão, Pulsos & Perfusão
+- [ ] [CRÍTICO] Medi PA nos 2 braços e palpei pulsos bilaterais na dor torácica/dorsal ou síncope
+- [ ] Avaliei TEC (10s), extremidades e pressão de pulso proporcional
+- [ ] Caracterizei morfologia do pulso carotídeo e pesquisei pulso paradoxal quando indicado
 
-### 2. Pescoço 45° & Precórdio
-- [ ] Avaliei pulso venoso jugular interno direito a 45° + ângulo de Louis (e refluxo hepatojugular se dúvida)
-- [ ] Palpei precórdio buscando frêmitos, impulsão paraesternal esquerda (VD) e ictus cordis (DLE se preciso)
+### 2. Congestão à Beira do Leito
+- [ ] [CRÍTICO] Avaliei TJV a 45° com referência ao ângulo de Louis e refluxo hepatojugular sustentado por 10s
+- [ ] Pesquisei B3 com campânula leve no ápice em DLE
+- [ ] Classifiquei o perfil de Stevenson e escolhi a conduta coerente com ele
 
-### 3. Ausculta Sistemática & Manobras
-- [ ] Auscultei A-P-A-T-M com diafragma PALPANDO pulso arterial simultâneo para diferenciar B1 de B2
-- [ ] Usei a campânula com toque leve no ápice (e DLE) buscando B3, B4 e ruflar da estenose mitral
-- [ ] Fiz manobra sentado inclinado para frente em expiração (Erb) para pesquisar insuficiência aórtica
-- [ ] Apliquei manobras dinâmicas pertinentes (Rivero-Carvallo, Valsalva ou agachamento) e caracterizei sopros em 6 atributos
-- [ ] Classifiquei perfil hemodinâmico (Seco/Úmido x Quente/Frio) se suspeita de IC ou choque
+### 3. Ausculta & Manobras
+- [ ] Auscultei os 5 focos com pulso simultâneo para cravar B1
+- [ ] Fiz manobra sentado inclinado em expiração para IAo/atrito
+- [ ] [CRÍTICO] Testei Valsalva e agachamento em sopro sistólico ejetivo com síncope/jovem (CMHO vs. EAo)
+- [ ] Descrevi o sopro nos 6 atributos
 
-### 5. Upgrade Preceptor V2.0 (Semiologia Dinâmica & Hemodinâmica)
-- [ ] [CRÍTICO] Diferenciei pulso Parvus et Tardus (EAo) de Martelo d'Água/Corrigan (IAo) e avaliei PVJ a 30–45° com refluxo hepatojugular
-- [ ] [CRÍTICO] Executei manobras dinâmicas (Rivero-Carvallo para câmaras direitas e Valsalva/Agachamento para diferenciar CMH de Estenose Aórtica) e classifiquei o perfil de Stevenson
+### 4. Raciocínio & Registro
+- [ ] Hierarquizei os achados por LR (B3 > RHJ > TJV > estertores) na apresentação ao preceptor
+- [ ] Registrei os negativos pertinentes (pulsos simétricos, ausência de B3/RHJ)

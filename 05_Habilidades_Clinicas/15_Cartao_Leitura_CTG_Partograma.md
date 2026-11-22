@@ -1,92 +1,75 @@
-# Leitura de Cardiotocografia (CTG / Acog) & Partograma (oms)
+# Cardiotocografia Intraparto e Partograma
 **Atalho Rápido:** `;hab-ctg` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exames & Diagnóstico
-**Âncora:** Regra Mnemonic DR C BRAVADO → Linha de Base (110-160 bpm) + Variabilidade + Desacelerações (DIP I/II/III) → Partograma (Linha de Alerta/Ação)
-
----
+**Âncora:** Valide sinal → Contrações, base, variabilidade, acelerações e desacelerações → ACOG I/II/III → Aja e reavalie → Registre progresso
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **A Variabilidade (6–25 bpm) é o "Exame Neurológico do Feto":** Variabilidade moderada ($6\text{–}25\text{ bpm}$) tem **VPN de $98\%$ para acidemia fetal hipóxica** no momento do exame (o tronco encefálico e o córtex autonômico estão oxigenados!).
-2. **Desaceleração Tardia (DIP II) e Variável Recorrente com Variabilidade Ausente ($< 5\text{ bpm}$):** Define **CTG Categoria III** $\rightarrow$ Ressuscitação intrauterina imediata (**MOPS**: **M**udança para DLE, **O**xigênio se hipóxia materna, **P**arar ocitocina, **S**oro IV bolus + Tocolítico se taquissistolia) e preparar **Parto Imediato (Via mais rápida)**.
-3. **No Partograma, diferencie Parada de Progressão de Fase Latente:** Só abra a linha de alerta/ação ou diagnostique distocia da fase ativa a partir de **$\ge 5\text{–}6\text{ cm}$ de dilatação (Diretriz OMS/ACOG moderna)**.
 
----
+1. **CTG em cinco passos:** Contrações, linha de base, variabilidade, acelerações e desacelerações. Compare com o pulso materno.
+2. **Categoria III:** Chame obstetrícia, corrija causas reversíveis e prepare nascimento expedito se persistir.
+3. **Progresso do parto:** Use o tempo na dilatação atual, a descida e o quadro materno-fetal para decidir reavaliação.
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
 
-> ### **1️⃣ Leitura Sistemática da CTG em 5 Passos — "D-B-V-A-D" (Contração, Basal, Variabilidade, Aceleração, Desaceleração):**
-> - **D — Dinâmica Uterina (Tocometria no Canal Inferior):** Normal $\le 5$ contrações em $10\text{ min}$ (média de $30\text{ min}$). Se $> 5$ contrações em $10\text{ min}$ = **Taquissistolia** (*desligue a ocitocina imediatamente!*).
-> - **B — Linha de Base (BCF Basal por $\ge 2\text{ min}$ em janela de $10\text{ min}$):** Normal **$110 \text{ a } 160\text{ bpm}$** ($> 160$ = Taquicardia: febre materna/corioamnionite, hipóxia inicial, drogas; $< 110$ por $> 10\text{ min}$ = Bradicardia).
-> - **V — Variabilidade (Oscilação pico-a-vale da linha de base):**
->   - **Ausente:** Indetectável ($\le 2\text{ bpm}$) $\rightarrow$ **ALERTA VERMELHO (Acidose/Depressão SNC)**.
->   - **Mínima:** $\le 5\text{ bpm}$ (pode ser sono fetal se durar $< 20\text{–}40\text{ min}$, ou opioide/sulfato de magnésio, ou hipóxia em evolução).
->   - **Moderada (NORMAL):** **$6 \text{ a } 25\text{ bpm}$** $\rightarrow$ Feto normoxêmico!
->   - **Acentuada:** $> 25\text{ bpm}$ | **Padrão Sinusoidal:** Ondas lisas de $3\text{–}5\text{ ciclos/min}$ por $\ge 20\text{ min}$ $\rightarrow$ **Anemia Fetal Grave / Isoimunização Rh / Rotura de Vasa Prévia (Categoria III!)**.
-> - **A — Acelerações Transitórias ($\ge 15\text{ bpm} \times \ge 15\text{s}$; se $< 32$ sem: $\ge 10\text{ bpm} \times \ge 10\text{s}$):** Garantem ausência de acidemia no momento (reatividade).
-> - **D — Desacelerações (A Tríade Fisiopatológica de Hon — "C-P-U"):**
->   1. **DIP I (Precoce — Espelho da Contração):** Começa, atinge o nadir e termina **junto** com a contração $\rightarrow$ **C**abeça fetal comprimida (estímulo vagal benigno na fase ativa final).
->   2. **DIP II (Tardia — Após o Pico da Contração):** Começa após o início da contração, o **nadir ocorre APÓS o pico da contração** e retorna lento à base $\rightarrow$ **P**lacenta insuficiente (**Hipóxia uteroplacentária / Estase intervilositária — ALERTA!**).
->   3. **DIP III (Variável — Queda Abrupta em 'V' ou 'W'):** Queda rápida ($< 30\text{s}$ do início ao nadir), relação temporal variável com a contração $\rightarrow$ **U**mbilical (**Compressão de cordão** / oligoâmnio / circular). *Sinais de gravidade no DIP III (Regra dos 60):* queda para $< 60\text{ bpm}$, queda de $> 60\text{ bpm}$ abaixo da base ou duração $> 60\text{s}$ com perda de variabilidade.
-
----
+> **DR C BRAVADO: Defina Risco, Contrações, Base, Variabilidade, Acelerações, Desacelerações e resuma a Opinião com categoria e conduta.**
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
 
-### 1️⃣ Classificação ACOG / NICHD em 3 Categorias e Conduta Imediata
-- **🟢 CATEGORIA I (Normal / Tranquilizadora):**
-  - Base $110\text{–}160\text{ bpm}$ + **Variabilidade Moderada ($6\text{–}25$)** + **Zero DIP II ou DIP III** (DIP I e acelerações podem estar presentes ou ausentes).
-  - *Conduta:* Seguimento habitual do trabalho de parto.
-- **🟡 CATEGORIA II (Indeterminada — $80\%$ dos traçados intraparto):**
-  - Tudo o que não é Cat I nem Cat III (ex: variabilidade mínima sem desaceleração recorrente; DIP II ou DIP III *COM variabilidade moderada preservada*; taquicardia fetal).
-  - *Conduta:* **Ressuscitação Intrauterina ("M-O-P-S")** + Corrigir causa base (hipotensão pós-raqui $\rightarrow$ efedrina/SF; taquissistolia $\rightarrow$ suspender ocitocina; febre materna $\rightarrow$ antitérmico/ATB; oligoâmnio/DIP III $\rightarrow$ mudança de decúbito) + Reavaliar em $20\text{–}30\text{ min}$ (se não reverter ou perder variabilidade $\rightarrow$ resolver parto).
-- **🔴 CATEGORIA III (Anormal / Hipóxia-Acidemia Fetal Iminente):**
-  - **Variabilidade AUSENTE** associada a: (a) DIP II recorrente, (b) DIP III recorrente, ou (c) Bradicardia fetal ($< 110\text{ bpm}$); **OU Padrão Sinusoidal**.
-  - *Conduta:* **MOPS imediato + Preparar Parto Imediato** pela via mais rápida (Fórceps/Vácuo se $10\text{ cm}$ e plano $\ge +2$ favorável, ou Cesárea de Emergência código vermelho).
+1. LEITURA SISTEMÁTICA DA CTG EM CINCO PASSOS:
+- **1 — Contrações:** Revise qualidade, escala, IG, período do parto e ocitocina. Conte em 10 min, em média ao longo de 30 min. Mais de cinco contrações em 10 min caracteriza taquissistolia.
+- **2 — Linha de base:** Estime em janela de 10 min, com pelo menos 2 min de base identificável, excluindo acelerações e desacelerações. Normal 110–160 bpm. Compare com a frequência materna.
+- **3 — Variabilidade:** Ausente, mínima (≤5 bpm), moderada (6–25 bpm) ou acentuada (>25 bpm).
+- **4 — Acelerações:** A partir de 32 semanas, aumento ≥15 bpm por ≥15 s e <2 min. Antes de 32 semanas, ≥10 bpm por ≥10 s. Ausência isolada de aceleração pode ocorrer em categoria I.
+- **5 — Desacelerações:** DIP I precoce, gradual e em espelho da contração. DIP II tardia, gradual, com nadir depois do pico. DIP III variável, abrupta (início ao nadir <30 s), com queda ≥15 bpm por ≥15 s e <2 min, compatível com compressão de cordão. Descreva profundidade, duração, retorno à base e recorrência (≥50% das contrações em 20 min). Queda ≥15 bpm por 2 a <10 min é prolongada. A partir de 10 min, reavalie a linha de base.
 
-### 2️⃣ As 5 Distocias Clássicas do Partograma (Triângulos de Dilatação e Círculos de De Lee)
-1. **Fase Ativa Prolongada (Distocia Funcional Primária):** Dilatação progride lentamente ($< 1\text{ cm/h}$ no partograma clássico, cruzando a Linha de Alerta e aproximando da Linha de Ação).
-   - *Causa & Conduta:* Hipossistolia uterina (Motor fraco) $\rightarrow$ Deambulação, amniotomia criteriosa ou **Ocitocina em bomba de infusão** se dinâmica $< 3/10\text{ min}$.
-2. **Parada Secundária da Dilatação:** Dilatação permanece estagnada no mesmo valor em **2 toques sucessivos com intervalo de $\ge 2\text{ a }4\text{ horas}$** durante a fase ativa com contrações eficazes.
-   - *Causa & Conduta:* **Desproporção Cefalopélvica (DCP)** absoluta (bossas volumosas, acavalgamento ósseo parietal, contrações fortes $\rightarrow$ **Cesárea**) ou Relativa/Deflexão/Hipodinamia (corrigir motor se não houver sinais de DCP).
-3. **Período Pélvico Prolongado:** Descida lenta da apresentação após dilatação total ($10\text{ cm}$), porém ainda progredindo ($> 2\text{h}$ em multípara ou $> 3\text{h}$ em nulípara).
-4. **Parada Secundária da Descida:** Dilatação total ($10\text{ cm}$), porém a apresentação **não desce de plano de De Lee por $\ge 1\text{ a }2\text{ horas}$** de puxos ativos (avaliar DCP vs exaustão materna / rotação anômala $\rightarrow$ Cesárea ou Parto Instrumental se plano $\ge +2$).
-5. **Parto Precipitado (Taquitócito):** Dilatação e expulsão em $\le 4\text{ horas}$ totais (velocidade $> 4\text{–}5\text{ cm/h}$), geralmente por taquissistolia espontânea ou iatrogênica $\rightarrow$ alto risco de **Laceração de Canal de Parto, Atonia Uterina Pós-Parto (HPP) e Sofrimento Fetal Agudo**.
+2. CLASSIFICAÇÃO ACOG E RESSUSCITAÇÃO INTRAUTERINA:
+- **Categoria I:** Base 110–160, variabilidade moderada, sem tardias ou variáveis. Precoces e acelerações podem estar presentes ou ausentes. Mantenha vigilância habitual.
+- **Categoria II:** Traçado que fica fora de I e III. Revise tendência e causas reversíveis, reavalie em intervalo explícito e escale se persistir ou piorar.
+- **Categoria III:** Variabilidade ausente com tardias recorrentes, variáveis recorrentes ou bradicardia, ou padrão sinusoidal. Acione obstetrícia de imediato. Se persistir após medidas iniciais, agilize o nascimento conforme o cenário.
+- **Medidas dirigidas:** Reposicione em lateral, reduza/suspenda ocitocina conforme o padrão, trate hipotensão, avalie taquissistolia e considere tocólise se persistir com alteração fetal. Diante de desaceleração súbita após rotura, avalie prontamente prolapso de cordão. Considere amnioinfusão para variáveis recorrentes quando indicada e disponível. Reserve oxigênio para hipoxemia materna. Registre horário e resposta de cada medida. [ACOG](https://www.acog.org/clinical/clinical-guidance/clinical-practice-guideline/articles/2025/10/intrapartum-fetal-heart-rate-monitoring-interpretation-and-management)
 
----
+3. PARTOGRAMA E FASES DO TRABALHO DE PARTO:
+- **Primeiro período:** Latência até 5 cm e fase ativa de 5 cm até dilatação completa conforme OMS. No Labour Care Guide, acompanhe tempo na dilatação, descida/posição, contrações, membranas/líquido, sinais maternos, BCF e cuidados de suporte.
+- **Alertas de progresso:** Sem avanço cervical em 5/6/7/8/9 cm por ≥6/5/3/2,5/2 h, respectivamente, reavalie dinâmica, posição, descida, possibilidade de obstrução e condição materno-fetal. No partograma clássico, marque dilatação e estação de De Lee ao longo do tempo. Cruzar alerta/ação pede revisão clínica. A velocidade fixa de 1 cm/h, isoladamente, é insuficiente para indicar intervenção.
+- **Parada da fase ativa pela ACOG:** Com dilatação ≥6 cm e membranas rotas, avalie parada se não houver progresso após 4 h de contrações adequadas ou 6 h de contrações inadequadas com ocitocina. [ACOG](https://www.acog.org/clinical/clinical-guidance/clinical-practice-guideline/articles/2024/01/first-and-second-stage-labor-management)
+- **Segundo e terceiro períodos:** Dilatação completa até nascimento é o expulsivo. Registre início dos puxos, descida e condição fetal. Após o nascimento, acompanhe dequitação, tônus uterino e sangramento. [Labour Care Guide da OMS](https://www.who.int/publications/i/item/9789240017566)
 
-## 🚨 4. RED FLAGS (Sinais de Alarme Obstétricos)
-- **Sinal de Bandl-Frommel (Iminência de Rotura Uterina na DCP):** Anel patológico palpável/visível separando o corpo uterino do segmento inferior (Bandl) + ligamentos redondos retesados como cordas de violão (Frommel) $\rightarrow$ **Desligar ocitocina + Cesárea de Emergência Imediata!**
-- **Sinal de Clark + Sinal de Reasens (Rotura Uterina Consumada):** Dor súbita lancinante seguida de "alívio" com parada das contrações + **subida da apresentação ao toque vaginal (Reasens)** + **crepitação de enfisema subcutâneo abdominal (Clark)** + partes fetais superficiais e bradicardia/óbito fetal.
+## 🚨 4. RED FLAGS (Sinais de Alarme)
 
----
+- **Bradicardia fetal sustentada ou desaceleração prolongada:** Possível evento agudo. Chame obstetrícia, confira o pulso materno e procure causas imediatamente.
+- **Variabilidade ausente com tardias recorrentes ou padrão sinusoidal:** Categoria III. Inicie medidas dirigidas e prepare nascimento expedito se persistir.
+- **Taquissistolia com alteração da FCF durante ocitocina:** Risco de hipóxia fetal. Suspenda ocitocina, lateralize, reavalie e discuta tocólise se persistir.
+- **Dor súbita, sangramento ou perda da estação fetal:** Suspeita de DPP ou rotura. Acione protocolo obstétrico e estabilização imediata.
+- **Febre materna com taquicardia fetal:** Possível infecção intra-amniótica. Reavalie mãe e feto e acione o protocolo com obstetrícia.
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
+
 ```text
-AVALIAÇÃO DE CARDIOTOCOGRAFIA (CTG) E PARTOGRAMA:
-- CTG (Duração: [ ] min): Dinâmica uterina com [ ] contrações em 10 minutos, sem taquissistolia. Linha de base em [ ] bpm. Variabilidade moderada (6-25 bpm). Presença de acelerações transitórias (>15 bpm x 15s). Ausência de desacelerações periódicas ou episódicas (DIP II ou III ausentes). Conclusão: CTG Categoria I (ACOG) — Feto reativo / Bem-estar fetal preservado.
-- Partograma: Gestante em fase ativa do trabalho de parto. Dilatação evoluindo de [ ] cm para [ ] cm em [ ] horas (à esquerda da linha de alerta). Apresentação cefálica fletida ([OEA]), em plano [ ] de De Lee, bolsa [íntegra/rota com LA claro]. Ausência de sinais de desproporção cefalopélvica.
+Data/hora e intervalo do traçado [ ]. IG e período do parto [ ]. Qualidade do sinal e pulso materno [ ]. Contrações por 10 min [ ]. FCF basal, variabilidade, acelerações e desacelerações com recorrência [ ]. Categoria ACOG e tendência [ ].
+Hora do exame, dilatação, posição e descida da apresentação, membranas/líquido e sinais maternos [ ]. Alerta de progresso, quando presente, e avaliação clínica [ ].
+Condutas e horários [ ]. Resposta materno-fetal [ ]. Equipe acionada, responsável, prazo de nova leitura e decisão/gatilho de escalada [ ].
 ```
 
----
-
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Aumentar a ocitocina na Parada Secundária da Dilatação sem excluir DCP:** Se a paciente já tem $4\text{ a }5$ contrações fortes em $10\text{ min}$ e bossa serossanguínea volumosa com ossos acavalgados, o problema é **Obstrução (Trajeto/Objeto)**, não Motor. Dar mais ocitocina rompe o útero!
-- **Fazer Amniotomia com apresentação alta/móvel (De Lee $-3$):** O jato de líquido amniótico arrasta o cordão umbilical para a frente da cabeça fetal e causa **Prolapso de Cordão Umbilical**.
 
----
+- **Classificar sinal ruim como traçado tranquilizador:** Pode mascarar comprometimento fetal. Corrija a captação e confirme a origem do sinal.
+- **Ler só o nadir da desaceleração:** Perde relação com contrações e recorrência. Descreva início, nadir, retorno e frequência.
+- **Tratar todo traçado II da mesma forma:** Perde diferenças de risco. Integre variabilidade, tendência, contexto e resposta às medidas.
+- **Prescrever oxigênio por rotina à gestante normoxêmica:** Desvia a atenção da causa reversível. Confira SpO₂ e faça intervenção dirigida.
+- **Usar 1 cm/h como ordem automática de ocitocina:** Pode induzir intervenção desnecessária. Revise progresso, descida e condições materno-fetais.
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Cardiotocografia (Os 5 Passos & Ressuscitação)
-- [ ] Conferi velocidade do papel, tempo mínimo (20 min), IG e pulso materno simultâneo
-- [ ] Avaliei dinâmica uterina em 10 min descartando taquissistolia (> 5/10) e hipertonia
-- [ ] Determinei linha de base (110–160 bpm) e grau de variabilidade (moderada 6–25 vs ausente/sinusoidal)
-- [ ] Classifiquei acelerações e desacelerações (DIP I, II, III ou prolongada) e cravei Categoria I, II ou III
-- [ ] Em Categoria II/III: executei ressuscitação intrauterina completa (DLE, parar ocitocina, volume, toque vaginal)
 
-### 2. Leitura & Conduta no Partograma
-- [ ] Confirmei abertura do partograma apenas na Fase Ativa real (≥ 4–5 cm com contrações rítmicas)
-- [ ] Registrei dilatação, De Lee, variedade de posição, bolsa, dinâmica e BCF no gráfico
-- [ ] [CRÍTICO] Ao cruzar Linha de Alerta/Ação, avaliei os 3 Ps diferenciando distócia funcional vs mecânica (DCP)
+### 1. Leitura do traçado
 
-### 4. Upgrade Preceptor V2.0 (ACOG Cat I-III, MOPS & Bandl-Frommel)
-- [ ] [CRÍTICO] Avaliei a Variabilidade (6–25 bpm = VPN 98% para acidemia) e classifiquei as desacelerações pela fisiopatologia C-P-U (DIP I, II e III)
-- [ ] [CRÍTICO] Instituí manobras de ressuscitação intrauterina (MOPS) na CTG Cat II/III e rastreei as 5 distocias do partograma e sinais de iminência de rotura uterina (Bandl-Frommel)
+- [ ] [CRÍTICO] Confirmei a origem fetal do sinal e descrevi os cinco passos.
+- [ ] Registrei categoria ACOG, tendência e hora da leitura.
+
+### 2. Resposta a anormalidades
+
+- [ ] [CRÍTICO] Acionei ajuda, tratei causas reversíveis e estabeleci escalada para traçado persistente.
+- [ ] Documentei hora e resposta de cada intervenção.
+
+### 3. Progresso do parto
+
+- [ ] Comparei dilatação, tempo, descida, dinâmica e condição materno-fetal.
+- [ ] Registrei próximo exame, responsável e gatilho de antecipação.

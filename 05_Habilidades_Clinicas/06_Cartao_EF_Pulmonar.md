@@ -1,109 +1,107 @@
-# Exame Físico Pulmonar & Síndromes Pleuropulmonares
+# Exame Físico Pulmonar (Fadiga Ventilatória & Síndromes Pleuropulmonares)
 **Atalho Rápido:** `;hab-pulm` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exame Físico & Semiologia
-**Âncora:** Inspeção + FR Real + Traqueia → FTV ("33") + Percussão → Ausculta em Z + Linhas Axilares → Derrame vs Pneumotórax vs Consolidação
+**Âncora:** Fadiga iminente? → FR contada 30s → Traqueia/expansibilidade → FTV + percussão → Ausculta em escada + egofonia → Congestão vs. Consolidação vs. Derrame vs. Pulmão limpo
 
 ---
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Inspeção do Trabalho Respiratório:** Contar **FR real em 60s** + checar uso de musculatura acessória (ECOM, tiragem intercostal/supraclavicular, batimento de asa nasal e respiração paradoxal abdominal).
-2. **Simetria Comparativa em Escada Grena (Zigue-Zague):** Nunca ausculte nem percuta um pulmão inteiro para depois ir ao outro — compare **ponto a ponto homólogo** (ápice D vs E, terço médio D vs E, base D vs E e axilas).
-3. **Tríade Semiológica Clássica (FTV + Percussão + Ausculta):** Consolidação *transmite* o som (FTV $\uparrow$, Egofonia $LR+ 4.1$); Derrame e Pneumotórax *bloqueiam* o som (FTV abolido).
-4. **Tórax Silencioso na Asma/DPOC:** Ausência de sibilos em paciente taquipneico, diaforético e exausto **NÃO é melhora** — é colapso crítico de fluxo aéreo com risco de PCR iminente.
+1. **Fadiga Ventilatória Primeiro:** Respiração paradoxal abdominal, fala em palavras soltas, sudorese, sonolência ou FR que CAI sem melhora clínica = falência iminente → X-ABCDE e via aérea antes do exame segmentar.
+2. **FR Real por 30s:** FR ≥ 24 é o preditor isolado nº 1 de deterioração; conte sem avisar e registre "contada".
+3. **Pulmão Limpo NÃO é Pulmão Normal:** Taquipneia + hipoxemia + ausculta limpa = TEP/shunt até prova em contrário; taquipneia com SpO2 normal e ausculta limpa = acidose metabólica (Kussmaul) ou sepse.
 
 ---
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-
-> ### **"C-A-D-P" (As 4 Grandes Síndromes Pleuropulmonares pela Física Acústica):**
-> - **C — Consolidação (Pneumonia / Alvéolo cheio de exsudato):**
->   *O líquido dentro do alvéolo com brônquio pérvio conduz o som 4x melhor que o ar!*
->   $\rightarrow$ **FTV Aumentado** + **Macicez** + **Estertores Finos/Sopro Tubário** + **Egofonia ("E $\rightarrow$ A") / Pectorilóquia Áfona**.
-> - **A — Atelectasia Obstrutiva (Rolha mucosa / Tumor / IOT seletiva):**
->   *O brônquio está fechado: o som da laringe não chega à periferia e o lobo murcha!*
->   $\rightarrow$ **FTV Abolido** + **Macicez** + **MV Abolido** + **Traqueia puxada PARA o lado lesado**.
-> - **D — Derrame Pleural (Líquido no espaço pleural):**
->   *Parede de água entre o pulmão e o estetoscópio!*
->   $\rightarrow$ **FTV Abolido** + **Macicez pétrea** (com egofonia apenas na borda superior — linha de Damoiseau) + **MV Abolido**.
-> - **P — Pneumotórax (Ar no espaço pleural):**
->   *Colchão de ar isolante entre o pulmão colabado e a parede!*
->   $\rightarrow$ **FTV Abolido** + **Hipertimpanismo** + **MV Abolido** (+ Traqueia desviada para o lado OPOSTO se hipertensivo).
+> **Macicez com FTV ↓ = Derrame (macicez LR+ ~8,7; FTV reduzido LR− ~0,2). Macicez com FTV ↑ + sopro tubário + egofonia = Consolidação (egofonia LR+ 2–8,6). Hipertimpanismo + MV abolido + traqueia desviada para o lado oposto = Pneumotórax hipertensivo. SSVV todos normais têm LR− ~0,2 para pneumonia.**
 
 ---
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
+1. PORTA — FADIGA VENTILATÓRIA IMINENTE (10s):
+- **Fala:** Frases completas (estável) → frases curtas → palavras soltas/não fala (grave).
+- **Músculos Acessórios e Tiragem:** ECM/escalenos, retração supraclavicular/intercostal, batimento de asa nasal, posição em tripé.
+- **Respiração Paradoxal Abdominal:** Abdome afunda na inspiração = diafragma exausto, falência iminente.
+- **Sinais Tardios Pré-Parada:** Sonolência/confusão (hipercapnia), cianose, FR caindo (< 10) sem melhora, tórax silencioso na asma, bradicardia → chamar ajuda, O2, BVM e preparar via aérea.
 
-### 1️⃣ Inspeção Estática, Dinâmica e Palpação Traqueal
-- Paciente sentado à beira do leito, tórax descoberto, braços cruzados à frente (afasta as escápulas para abrir os campos posteriores).
-- **Posição da Traqueia na Fúrcula Esternal:** Palpe com o indicador entre a traqueia e o ECOM bilateralmente.
-- **Sinal de Hoover (DPOC Grave / Hiperinsuflação):** Retração paradoxal das margens costais inferiores *para dentro* durante a inspiração (o diafragma retificado traciona as costelas horizontalmente em vez de descer; $LR+ 4.2$ para obstrução grave).
-- **Respiração Paradoxal Abdominal (Fadiga Diafragmática):** O abdome entra na inspiração enquanto o tórax sobe $\rightarrow$ indica falência muscular respiratória iminente.
+2. INSPEÇÃO + FR REAL + TRAQUEIA:
+- **FR Contada 30s × 2 (dedos no pulso radial):** FR ≥ 24 = alarme (NEWS2 pontua ≥ 2 a partir de 21; ≥ 25 pontua 3).
+- **Padrão:** Kussmaul (profunda e regular = acidose metabólica), Cheyne-Stokes (IC grave/lesão neurológica), Biot (lesão de tronco), expiração prolongada (obstrução).
+- **SpO2 com Contexto:** Curva de pletismografia confiável, O2 em uso, alvo 88–92% no DPOC retentor e 94–98% nos demais.
+- **Traqueia na Fúrcula:** Desviada para o lado oposto = derrame volumoso/pneumotórax hipertensivo; para o mesmo lado = atelectasia/pneumonectomia.
 
-### 2️⃣ Expansibilidade e Frêmito Toracovocal (FTV — "Trinta e Três")
-- **Expansibilidade:** Mãos espalmadas nos ápices e bases posteriores, polegares unidos na linha vertebral — observe o afastamento simétrico dos polegares na inspiração profunda.
-- **FTV:** Aplique a **borda ulnar ou face palmar metacarpiana** de uma única mão (ou ambas cruzadas comparativamente) em zigue-zague enquanto o paciente fala *"Trinta e Três"* com voz grave.
-- *Pérola:* Mulheres e crianças têm voz mais aguda (menor transmissão de baixa frequência); se FTV fraco bilateralmente, é fisiológico — valorize sempre a **assimetria** ($LR+ 5.7$ para derrame pleural quando reduzido unilateralmente).
+3. PALPAÇÃO — EXPANSIBILIDADE & FTV:
+- **Expansibilidade Assimétrica (LR+ ~8,1 para derrame):** Mãos espalmadas nas bases com polegares na linha média (T9–T10) e nos ápices (Ruault).
+- **FTV com "33" (borda ulnar, comparação em escada):** Reduzido/abolido = derrame, pneumotórax ou atelectasia obstrutiva (FTV reduzido LR+ ~5,7, LR− ~0,2 para derrame); aumentado = consolidação com brônquio pérvio.
 
-### 3️⃣ Percussão Digito-Digital Comparativa
-- Dedo médio plexímetro bem apoiado no espaço intercostal (nunca sobre a costela!), falange distal do dedo médio plexor golpeando com movimento seco de punho.
-- **Percussão Diafragmática / Assimetria Basal:** Macicez à percussão basal tem $LR+ 4.8$ para derrame pleural (detecta a partir de $200\text{–}300\text{ mL}$; POCUS detecta a partir de $20\text{ mL}$).
+4. PERCUSSÃO COMPARATIVA:
+- **Técnica:** Dedo plexímetro firme no espaço intercostal, golpe de punho solto, comparar lado a lado de cima para baixo.
+- **Macicez (LR+ ~8,7 para derrame; LR+ ~3 para pneumonia):** Líquido ou consolidação — diferencie pelo FTV.
+- **Hipertimpanismo Unilateral:** Pneumotórax (ou bolha de enfisema).
+- **Excursão Diafragmática:** Bases que não descem 3–5 cm = derrame, paralisia frênica ou hiperinsuflação.
 
-### 4️⃣ Ausculta Pulmonar Sistemática e Ressonância Vocal
-- Peça para o paciente respirar **pela boca, um pouco mais fundo que o normal**.
-- Ausculte em escada grena: **6 a 8 pontos posteriores**, **2 pontos axilares** (não esqueça o lobo médio à direita na axila/paraesternal inferior!) e **4 pontos anteriores**.
-- **Ruídos Adventícios e sua Semiogênese:**
-  - **Estertores Finos (Crepitantes / Teleinspiratórios):** Som de *velcro abrindo* ou cabelo roçando perto da orelha. **NÃO mudam com a tosse**. Causa: abertura explosiva de alvéolos colabados ao final da inspiração (Pneumonia, Congestão/EAP, Fibrose Pulmonar Intersticial).
-  - **Estertores Grossos / Roncos (Protoinspiratórios e Expiratórios):** Som de *borbulha grossa ou ronco grave*. **CLAREIAM ou mudam com a tosse**. Causa: secreção móvel em brônquios de médio/grande calibre (Bronquite, DPOC hipersecretivo).
-  - **Sibilos (Polifônicos vs Monofônicos):** Som musical contínuo (predomínio expiratório).
-    - *Polifônicos difusos:* Broncoespasmo difuso (Asma, DPOC) ou **Asma Cardíaca** (edema peribrônquico no EAP!).
-    - *Monofônico localizado fixo:* Obstrução mecânica de um único brônquio (corpo estranho, neoplasia endobrônquica).
-  - **Estridor (Inspiratório Cervical):** Som agudo audível sem estetoscópio ou sobre a traqueia. Causa: obstrução crítica de via aérea superior/extratorácica (laringite/crupe, edema de glote/anafilaxia, corpo estranho laríngeo).
-- **Manobras de Ressonância Vocal (Quando houver suspeita de Consolidação):**
-  - **Egofonia ($LR+ 4.1$ para Pneumonia):** Peça para dizer *"E-E-E"* longo $\rightarrow$ no foco consolidado ou no limite superior do derrame, o som nasaliza e vira *"A-A-A"* de cabra.
-  - **Pectorilóquia Áfona:** Peça para *sussurrar* *"Trinta e Três"* $\rightarrow$ normalmente inaudível; na consolidação, ouve-se nitidamente cada sílaba sussurrada pelo estetoscópio.
+5. AUSCULTA + EGOFONIA:
+- **Ausculta em Escada com Boca Entreaberta:** Posterior, axilar (lobo inferior) e anterior (lobo médio no 4º–5º EIC D, língula à E).
+- **Sopro Tubário e Egofonia ("iii" soa "eee"):** Consolidação com brônquio pérvio (egofonia LR+ 2–8,6; sensibilidade baixa).
+- **Estertores:** Finos teleinspiratórios (congestão, fibrose, pneumonia — LR+ ~2,8 para IC, inespecífico); grossos que mudam com a tosse (secreção).
+- **Sibilos/Roncos:** Obstrução difusa (asma/DPOC) ou localizada fixa (corpo estranho/tumor). Tórax silencioso na asma = gravíssimo.
+- **Atrito Pleural:** Pleurite (TEP com infarto, pneumonia, LES).
+
+6. INTEGRAÇÃO À BEIRA DO LEITO (PADRÕES QUE DECIDEM CONDUTA):
+- **Congestão:** Estertores bilaterais simétricos + TJV a 45° + RHJ + B3 + ortopneia (ver `;hab-cardio`) → diurético/VNI.
+- **Consolidação:** Macicez + FTV ↑ + sopro tubário + egofonia, febre, taquicardia → RX e escore de gravidade (CURB-65).
+- **Derrame:** Macicez + FTV ↓ + MV ↓ + expansibilidade reduzida → RX/USG, toracocentese se volumoso ou febril.
+- **Pneumotórax:** Hipertimpanismo + MV abolido; com hipotensão/desvio traqueal = descompressão imediata.
+- **Pulmão Limpo + Hipoxemia:** TEP (Wells/PERC), shunt, pneumotórax pequeno, PCP inicial → gasometria e AngioTC conforme probabilidade.
+- **Pulmão Limpo + SpO2 Normal + Taquipneia:** Acidose metabólica (CAD, sepse, intoxicação), dor, ansiedade só após excluir orgânico → gasometria com ânion gap.
 
 ---
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Tórax Silencioso + Taquipneia/Sonolência** (fadiga respiratória com retenção de $\text{CO}_2$ / acidose respiratória aguda).
-- **Estridor Inspiratório + Voz Abafada ("Batata Quente") + Sialorreia** (obstrução iminente de via aérea superior — chamar via aérea difícil imediatamente).
-- **Assimetria Aguda de MV + Hipotensão + Turgência Jugular** (Pneumotórax Hipertensivo $\rightarrow$ descompressão imediata).
-- **Cianose Central / $\text{SpO}_2 < 90\%$ refratária a $\text{O}_2$ suplementar** ou **Respiração Paradoxal Toracoabdominal**.
+- **Respiração Paradoxal Abdominal ou Fala em Palavras Soltas:** Falência ventilatória iminente; O2, sentar o paciente, VNI se indicada ou preparar IOT e chamar o preceptor agora.
+- **Sonolência com FR Caindo e Cianose:** Narcose por CO2 ou exaustão pré-parada; gasometria imediata, BVM disponível e não "aguardar melhorar".
+- **Tórax Silencioso na Crise de Asma:** Fluxo aéreo mínimo; adrenalina/sulfato de magnésio, sala vermelha e preparação de via aérea difícil.
+- **Hipertimpanismo + MV Abolido + Hipotensão ou Desvio de Traqueia:** Pneumotórax hipertensivo; descompressão por agulha no 4º–5º EIC na linha axilar média sem esperar RX.
+- **Hipoxemia Refratária com Ausculta Limpa e Taquicardia:** TEP de alto risco; ECG, POCUS de VD se disponível, anticoagulação conforme probabilidade e avaliação de trombólise se instável.
 
 ---
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
 ```text
-EXAME PULMONAR (APARELHO RESPIRATÓRIO):
-Tórax simétrico, atípico, sem retrações ou uso de musculatura acessória (FR: [ ] irpm). Traqueia centralizada. Expansibilidade preservada e simétrica nos ápices e bases. Frêmito toracovocal (FTV) fisiológico e simétrico bilateralmente. Som claro pulmonar à percussão comparativa em todos os campos. Murmúrio vesicular presente e universalmente audível, sem ruídos adventícios (ausência de estertores, roncos, sibilos ou estridor). Ressonância vocal fisiológica (ausência de broncofonia, egofonia ou pectorilóquia áfona).
+EXAME FÍSICO RESPIRATÓRIO:
+- Fadiga ventilatória: Fala [ ]. Musculatura acessória [ ]. Tiragem [ ]. Respiração paradoxal abdominal [ ]. Nível de consciência [ ].
+- FR [ ] irpm (contada 60s) | Padrão [ ] | SpO2 [ ]% em [ ] (alvo [ ]%) | FC [ ] bpm.
+- Inspeção: Tórax [ ], expansibilidade [ ] (assimetria [ ]). Traqueia [ ].
+- Palpação: FTV [ ] (reduzido/aumentado em [ ]).
+- Percussão: [ ] (macicez/hipertimpanismo em [ ]).
+- Ausculta: MV [ ]. Ruídos adventícios: [ ] em [ ]. Sopro tubário [ ]. Egofonia [ ]. Atrito pleural [ ].
+- Síndrome predominante: [ ] (congestão / consolidação / derrame / pneumotórax / obstrução / pulmão limpo com hipoxemia).
+- Negativos pertinentes: [ ].
 ```
 
 ---
 
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Auscultar por cima da roupa ou do avental hospitalar:** O tecido cria atrito idêntico a estertores finos ou atrito pleural. O estetoscópio **sempre** toca diretamente a pele.
-- **Esquecer de pedir para o paciente tossir ao ouvir ruídos basais:** Atelectasias laminares basais (paciente acamado) e secreções em grandes vias desaparecem após 1–2 tosses eficazes; estertores verdadeiros de pneumonia ou congestão **permanecem ou aumentam** pós-tosse.
-- **"Nem tudo que sibila é asma":** Idoso hipertenso/cardiopata que abre quadro de dispneia e sibilos noturnos com ortopneia e B3 tem **Edema Agudo de Pulmão (Asma Cardíaca)** até prova em contrário — evita o erro de fazer corticoide isolado sem furosemida/VNI/nitrato.
+- **Anotar "FR 18" Sem Contar:** Apaga o sinal mais precoce de deterioração (sepse, TEP, acidose); conte 30s × 2 com os dedos no pulso.
+- **Tranquilizar-se com Ausculta Limpa no Dispneico Hipoxêmico:** TEP e shunt não fazem ruído; ausculta limpa + hipoxemia exige Wells/PERC e gasometria.
+- **Auscultar Sobre a Roupa ou Só no Tórax Anterior:** Perde lobos inferiores e base posterior (onde estão derrame e pneumonia); pele nua, posterior + axilas.
+- **Confundir Macicez de Derrame com Consolidação:** Ambas são maciças; o FTV separa (↓ derrame, ↑ consolidação) e muda a conduta (toracocentese vs. antibiótico).
+- **Dar O2 Alto Fluxo ao DPOC Retentor Sem Alvo:** Piora a hipercapnia e a sonolência; titular para SpO2 88–92% e colher gasometria.
 
 ---
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Ectoscopia & Sinais de Esforço
-- [ ] Contei a FR real por 30–60s sem avisar o paciente (sem chutar "16 irpm")
-- [ ] [CRÍTICO] Chequei ativamente tiragens, musculatura acessória, fala entrecortada e respiração paradoxal abdominal
-- [ ] Identifiquei o padrão respiratório e cianose central/periférica quando presentes
+### 1. Gravidade Respiratória
+- [ ] [CRÍTICO] Pesquisei sinais de fadiga ventilatória iminente (fala, acessória, paradoxal abdominal, consciência) antes do exame segmentar
+- [ ] [CRÍTICO] Contei a FR real por 30s × 2 e interpretei FR ≥ 24 como alarme
+- [ ] Interpretei a SpO2 com alvo adequado ao paciente (DPOC vs. demais)
 
-### 2. Palpação & Percussão Torácica
-- [ ] [CRÍTICO] Chequei centralização da traqueia na fúrcula esternal
-- [ ] Avaliei expansibilidade de ápices (Ruault) e bases (T9–T10) bilateralmente
-- [ ] Testei Frêmito Toracovocal ("33") com borda ulnar em 3 andares comparativos fora das escápulas
-- [ ] Percuti espaços intercostais em escada comparando D vs E (e excursão diafragmática se indicado)
+### 2. Técnica Semiológica
+- [ ] Avaliei traqueia e expansibilidade (bases e ápices)
+- [ ] Fiz FTV e percussão comparativa em escada, lado a lado
+- [ ] Auscultei posterior, axilas e anterior (lobo médio/língula) com pele nua e boca entreaberta
+- [ ] Pesquisei egofonia/sopro tubário quando havia macicez
 
-### 3. Ausculta Sistemática & Diferenciação Sindrômica
-- [ ] Auscultei em Z comparando D vs E no mesmo nível (costas, bases, axilas)
-- [ ] Auscultei a região anterior incluindo obrigatoriamente Lobo Médio (4º–5º EIC D) e Língula (4º–5º EIC E)
-- [ ] [CRÍTICO] Diferenciei ruídos adventícios (crepitantes vs subcrepitantes vs sibilos vs roncos vs atrito/estridor)
-- [ ] Fiz testes de transmissão da voz (broncofonia, pectorilóquia sussurrada, egofonia) diante de alteração focal
-
-### 4. Upgrade Preceptor V2.0 (Física Acústica C-A-D-P)
-- [ ] [CRÍTICO] Integrei FTV + Percussão + Ausculta em zigue-zague para diferenciar Consolidação, Atelectasia, Derrame e Pneumotórax
-- [ ] [CRÍTICO] Pedi para o paciente tossir (diferenciando estertores grossos que clareiam de estertores finos fixos) e pesquisei Egofonia (LR+ 4.1) e Sinal de Hoover
+### 3. Integração Diagnóstica
+- [ ] Classifiquei a síndrome (congestão, consolidação, derrame, pneumotórax, obstrução, pulmão limpo)
+- [ ] [CRÍTICO] Diante de pulmão limpo com hipoxemia, considerei TEP/shunt e apliquei Wells/PERC
+- [ ] Registrei os negativos pertinentes e a síndrome predominante no prontuário

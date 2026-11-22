@@ -1,86 +1,85 @@
-# Manejo de Via Aérea, Laringoscopia (LEMON) & Ajuste Inicial da Ventilação Mecânica
+# Via Aérea no Adulto, Intubação e Ventilação Mecânica Inicial
 **Atalho Rápido:** `;hab-iot` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Emergência & Procedimentos
-**Âncora:** Ressuscitar ANTES de Intubar (Shock Index > 0,9) → LEMON + Posição Olfativa (Trago = Fúrcula) → Capnografia/5 Pontos → VM Protetora (VC 6 mL/kg Peso Predito + Pplatô < 30 + Driving Pressure < 15)
-
----
+**Âncora:** LEMON/MOANS → Ressuscite e pré-oxigene → 7 Ps e capnografia → DAS/Vortex se falhar → VM protetora e DOPES
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Via Aérea Fisiologicamente Difícil ("Ressuscite Antes de Intubar"):** Se **Índice de Choque (FC/PAS) > 0,9**, iniciar cristaloide + **Noradrenalina em infusão ou Push-Dose Pressor** e usar **Etomidato (0,3 mg/kg) ou Cetamina (1,5 mg/kg)** — nunca fazer Propofol/Midazolam em dose cheia no paciente chocado!
-2. **Alinhamento dos 3 Eixos (Posição Olfativa / *Ramping*):** O **meato acústico externo (trago da orelha) deve ficar na mesma linha horizontal do manúbrio esternal** (elevar cabeceira/coxins sob as escápulas em obesos) — isso garante 80% do sucesso da visão glótica antes mesmo de ligar o laringoscópio.
-3. **Confirmação Pós-IOT em 5 Pontos (Nunca Comece pelos Pulmões!):** (1) **Capnografia em onda (ETCO₂)** é o padrão-ouro absoluto; na ausculta, o **1º ponto é sempre o EPIGÁSTRIO** (se borbulhar = intubação esofágica -> retirar tubo na hora!), seguido de bases e ápices (se MV abolido à esquerda = intubação seletiva no brônquio fonte direito -> tracionar o tubo até 21–23 cm na rima labial!).
-4. **Volume Corrente na VM é Calculado pelo PESO PREDITO (Pela Altura), NUNCA pelo Peso Real:** Um obeso de 130 kg e 1,65 m tem o mesmo tamanho de pulmão que uma pessoa de 60 kg e 1,65 m — regular **6 a 8 mL/kg de Peso Predito** mantendo **Pressão de Platô ≤ 30 cmH₂O** e **Driving Pressure (Pplatô - PEEP) < 15 cmH₂O**.
 
----
+1. **Otimize antes de induzir:** Antecipe dificuldade anatômica e trate hipóxia, choque e acidose grave em paralelo ao preparo.
+2. **Oxigene entre tentativas:** Use vedação bimanual. Confirme tubo com capnografia com onda. Declare CICO se as três linhas falharem.
+3. **Proteja após intubar:** Sedoanalgesia imediata, volume corrente pelo peso predito e avaliação de platô, driving pressure e auto-PEEP.
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Ressuscitar ANTES de Intubar (Shock Index > 0,9) → LEMON + Posição Olfativa (Trago = Fúrcula) → Capnografia/5 Pontos → VM Protetora (VC 6 mL/kg Peso Predito + Pplatô < 30 + Driving Pressure < 15)**
 
----
+> **Cada tentativa precisa de uma otimização concreta e de uma linha de resgate pronta.**
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-1. **CHECKLIST PRÉ-INTUBAÇÃO ("S-O-A-P-M-E") E AVALIAÇÃO LEMON:**
-- **S** (Suction/Aspirador rígido Yankauer testado debaixo do travesseiro) | **O** (Oxigênio: pré-oxigenação 3–5 min com MNR 15 L/min + cateter nasal ou VNI se hipoxemia; **Zero ventilação com bolsa-válvula-máscara na apneia**, exceto se SpO₂ < 90%!) | **A** (Airway: tubos 7.5 e 8.0 testados com seringa de 10 mL, fio-guia/Bougie, Guedel e máscara laríngea de resgate) | **P** (Pharmacology: Indutor + Bloqueador Neuromuscular + Noradrenalina pronta + Sedação contínua pós-IOT) | **M** (Monitorização + Capnógrafo).
-- **Regra LEMON (3-3-2):** **L**ook externally | **E**valuate **3** dedos de abertura bucal, **3** dedos mento-hioide, **2** dedos hioide-tireoide | **M**allampati | **O**bstrução | **N**eck mobility.
-2. **TÉCNICA DA LARINGOSCOPIA DIRETA (LÂMINA CURVA MACINTOSH):**
-- Segurar o laringoscópio com a **mão esquerda**, entrar pelo canto direito da boca deslocando a língua para a esquerda.
-- Avançar deslizando pela linha média até visualizar a **epiglote**, posicionar a ponta da lâmina curva na **valécula** (acionando o ligamento hioepiglótico) e tracionar o cabo **para cima e para a frente a 45°** (em direção ao canto do teto da sala — **PROIBIDO fazer alavanca/báscula nos dentes incisivos superiores!**).
-- Se visão Cormack-Lehane IIb/III: aplicar manobra **BURP** (*Backward, Upward, Rightward Pressure* na cartilagem tireoide) e usar o **Bougie** sentindo os cliques nos anéis traqueais.
-3. **AJUSTE INICIAL DO VENTILADOR MECÂNICO (AS 3 RECEITAS DE BOLSO):**
-- **Fórmula Rápida de Peso Predito (PBW):** Homem ≈ Altura (cm) - 100 (ex: 170 cm → 66 kg); Mulher ≈ Altura (cm) - 105 (ex: 160 cm → 52 kg).
-- **Perfil 1 — Pulmão Normal / Rebaixamento Neurológico (AVC, TCE, Pós-Op):**
-  - Modo **VCV** ou **PCV** | **VC:** 6 a 8 mL/kg (Peso Predito) | **PEEP:** 5 cmH₂O | **FR:** 12 a 16 irpm | **Relação I:E:** 1:2 | FiO₂ inicial 100% titulada para SpO₂ 94–96%.
-- **Perfil 2 — Pulmão Restritivo / SDRA / Pneumonia Grave / Sepse:**
-  - **VC Protetor Estrito:** **6 mL/kg** (se Pplatô > 30 ou *Driving Pressure* ≥ 15, reduzir VC para 4–5 mL/kg) | **PEEP:** 8 a 12 cmH₂O (conforme tabela PEEP/FiO₂) | **FR:** 18 a 26 irpm (permitir hipercapnia permissiva até pH ≥ 7,20).
-- **Perfil 3 — Pulmão Obstrutivo (Asma Grave / DPOC Exacerbado — Risco de Auto-PEEP!):**
-  - O problema é **esvaziar o ar**! **FR Baixa:** **10 a 12 irpm** | **Fluxo Inspiratório Alto:** 60 a 80 L/min | **Relação I:E Longa:** **1:4 a 1:5** (tempo expiratório longo!) | **VC:** 6 a 7 mL/kg | **PEEP:** 0 a 5 cmH₂O.
-4. **ALARME DE PRESSÃO DE PICO ALTA OU DESSATURAÇÃO SÚBITA NO VENTILADOR (MNEMÔNICO "D-O-P-E"):**
-- Se o paciente intubado chocar ou dessaturar agudamente: **Desconectar do ventilador e ventilar no Ambu com O₂ a 100%** checando **D-O-P-E**:
-  - **D — Deslocamento** do tubo (extubação acidental ou seletivação para o brônquio direito).
-  - **O — Obstrução** do tubo (rolha de secreção espessa, tubo mordido ou acotovelado -> passar sonda de aspiração!).
-  - **P — Pneumotórax Hipertensivo** (barotrauma pela pressão positiva -> POCUS/ausculta e descompressão torácica imediata!).
-  - **E — Equipamento / Empilhamento de Ar (Auto-PEEP)** (se asma/DPOC grave chocando na VM: desconectar o tubo por 30–60 segundos e comprimir suavemente o tórax para esvaziar o ar aprisionado!).
 
----
+1. ANTECIPAÇÃO, POSICIONAMENTO E VENTILAÇÃO COM BOLSA-MÁSCARA:
+- **LEMON — laringoscopia difícil:** Look (aparência externa), Evaluate 3–3–2 (abertura oral, mento–hioide, hioide–tireoide), Mallampati se factível, Obstrução e mobilidade do pescoço (Neck). Dificuldade prevista importante exige avaliação sênior e estratégia planejada, incluindo intubação acordada quando apropriada.
+- **MOANS — máscara difícil:** Mask seal (barba/trauma), Obesidade/obstrução, Age >55, No teeth (edentulismo) e Stiff lungs (baixa complacência). Confira cânulas, aspiração e segundo operador.
+- **Posição e BVM:** Posição olfativa quando apropriada, rampa em obesidade com meato acústico alinhado à fúrcula e estabilização cervical em linha se trauma. Faça vedação bimanual C–E e elevação da mandíbula enquanto outro profissional comprime a bolsa. Use apenas o volume que eleva o tórax. Em apneia adulta com pulso, cerca de uma ventilação a cada 6 s, fora de situações que exijam ajuste individual.
+
+2. OS SETE PS DA SEQUÊNCIA RÁPIDA DE INTUBAÇÃO:
+- **1 — Preparação:** Acione supervisão e equipes, defina papéis e planos A–D. Confira monitorização, acesso, aspiração, videolaringoscópio quando disponível, tubo, introdutor, BVM, supraglótico, capnógrafo e material de acesso cervical de emergência.
+- **2 — Pré-oxigenação:** Eleve a cabeceira se tolerado e administre O₂ a alta concentração com boa vedação. Considere VNI na hipoxemia grave se apropriada e oxigênio nasal durante a tentativa quando possível. Se precisar ventilar, use pressões baixas e confira expansão.
+- **3 — Pré-tratamento e otimização fisiológica:** Corrija hipoxemia, trate a causa do choque e prepare vasopressor conforme necessidade. Em acidose metabólica grave, preserve ventilação espontânea até a indução quando possível, minimize a apneia e planeje ventilação-minuto pós-IOT compatível com a compensação, monitorando gases e pressões. Ressuscite em paralelo se a via aérea for inadiável. [SCCM](https://www.sccm.org/clinical-resources/guidelines/guidelines/guidelines-rapid-sequence-intubation)
+- **4 — Paralisia com indução:** Administre hipnótico antes do bloqueador. No adulto, etomidato 0,2–0,3 mg/kg EV ou cetamina 1–2 mg/kg EV são opções usuais. Individualize no choque e tenha vasopressor pronto, pois cetamina também pode causar hipotensão. Reserve propofol para situação hemodinâmica compatível. Para bloqueio, rocurônio 1,2 mg/kg EV ou succinilcolina 1–1,5 mg/kg EV quando apropriada. Evite succinilcolina com hipercalemia ou risco elevado (queimadura extensa/esmagamento após fase inicial, desnervação, doença neuromuscular ou história de hipertermia maligna). Confira dose, peso de referência e contraindicações conforme protocolo. [Ministério da Saúde — doses usuais](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/covid-19/publicacoes-tecnicas/recomendacoes/orientacoes-sobre-intubacao-orotraqueal-em-pacientes-com-covid-19/%40%40download/file)
+- **5 — Posicionamento:** Garanta posição otimizada antes da tentativa e reajuste se a visão ou a ventilação forem inadequadas.
+- **6 — Passagem e prova:** Visualize o tubo atravessar as cordas quando possível e exija capnografia com onda sustentada. Confira expansão, ausculta e profundidade como dados complementares. Na ausência de onda sustentada, verifique imediatamente circuito, perfusão e posição. Presuma intubação esofágica e remova para reoxigenar se a posição traqueal não puder ser confirmada de imediato.
+- **7 — Pós-intubação:** Fixe, verifique cuff e mantenha capnografia contínua. Inicie sedoanalgesia imediatamente, faça ajuste de VM, reavalie PA/SpO₂, avalie gases e confirme profundidade por RX quando disponível.
+
+3. FALHA DE VIA AÉREA NO ADULTO PELA DAS 2025 E VORTEX:
+- **DAS 2025 — Planos A–C:** A — tente IOT otimizada, até 3 tentativas + 1 por operador mais experiente apenas se houver condições. B — se IOT falhar, use supraglótico de segunda geração, até 3 tentativas. C — faça tentativa final de máscara otimizada com dois profissionais, cânulas, posição e bloqueio adequado. Acione ajuda cedo, prepare o acesso cervical antes de CICO e avance antes dos limites se a oxigenação piorar. [DAS 2025](https://doi.org/10.1016/j.bja.2025.10.006)
+- **Vortex — três linhas de vida:** Tubo, supraglótico e máscara. Otimize posição, aspiração, dispositivo, técnica e bloqueio. Se uma linha restabelecer oxigenação, estabilize e repactue estratégia com a equipe. Se as três linhas otimizadas falharem, declare “Não intubo, não oxigeno” (CICO). [Vortex](https://www.vortexapproach.org/besteffort)
+- **Plano D — CICO:** Acione imediatamente acesso cervical anterior de emergência (eFONA/cricotireoidostomia cirúrgica no adulto) pelo profissional treinado, com material bisturi–bougie–tubo e confirmação por capnografia. Mantenha oxigênio pela via superior enquanto prepara o resgate. [DAS 2025](https://das.uk.com/guidelines/das_intubation_guidelines/)
+
+4. AJUSTE INICIAL DA VENTILAÇÃO MECÂNICA PROTETORA:
+- **Peso predito e limites:** Homem: 50 + 0,91 × (altura em cm − 152,4). Mulher: 45,5 + 0,91 × (altura em cm − 152,4). Inicie VT 6–8 mL/kg de peso predito, em geral PEEP 5 cmH₂O se sem hipoxemia grave, e titule FiO₂ pela meta de saturação apropriada. Meça platô em pausa inspiratória sem esforço e mantenha ≤30 cmH₂O. Almeje driving pressure ≤15 cmH₂O, calculada por platô menos PEEP total. [ATS](https://academic.oup.com/ajrccm/article/195/9/1253/8500154) · [AARC](https://pmc.ncbi.nlm.nih.gov/articles/PMC11298231/)
+- **Restritivo/SDRA:** Comece em 6 mL/kg, ajuste para 4–6 mL/kg se necessário para limitar pressões. Titule PEEP/FiO₂ pelo protocolo de SDRA e tolerância hemodinâmica. Ajuste FR e acompanhe pH, gases e sincronia. [ATS — atualização de SDRA](https://pmc.ncbi.nlm.nih.gov/articles/PMC10870893/)
+- **Obstrutivo:** Priorize expiração longa, FR baixa (ex.: 10–12/min), fluxo inspiratório alto e I:E em torno de 1:4 a 1:5, ajustando à curva de fluxo. Individualize PEEP e confira se o fluxo expiratório retorna a zero e se há auto-PEEP. Aceite hipercapnia apenas quando clinicamente apropriado.
+
+5. DOPES NA DETERIORAÇÃO APÓS INTUBAÇÃO:
+- **Resposta imediata:** Acione ajuda, cheque pulso, capnografia e circuito e administre O₂ a 100% no resgate. Se precisar excluir falha do ventilador, desconecte do circuito e ventile manualmente com cuidado. Se houver forte suspeita de hiperinsuflação com choque, permita expiração antes de voltar a ventilar.
+- **D — Deslocamento e O — Obstrução:** Confira marca, capnografia, profundidade e simetria. Passe sonda de aspiração para testar patência. Busque rolha, dobra, mordida ou tubo seletivo.
+- **P — Pneumotórax, E — Equipamento, S — Sobreposição de ciclos:** Na suspeita de pneumotórax hipertensivo com instabilidade, acione descompressão imediata. Cheque conexões, fonte de O₂, válvulas e ventilador. Na auto-PEEP, prolongue a expiração e reduza a ventilação-minuto excessiva.
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Usar Succinilcolina em Grande Queimado (> 24–48h), Politrauma/Esmagamento subagudo, Rabdomiólise, AVC/Lesão Medular crônica (> 72h) ou Hipercalemia conhecida:** A despolarização de receptores extrajuncionais suprarregulados eleva o K⁺ sérico em 3 a 5 mEq/L em segundos, causando **PCR hipercalêmica imediata** — usar **Rocurônio (1,2 mg/kg)**!
-- **Esquecer de ligar a sedoanalgesia contínua (Fentanil + Midazolam/Propofol) logo após intubar com Rocurônio:** O efeito do Etomidato/Cetamina dura apenas **10 a 15 minutos**, enquanto o bloqueio muscular do Rocurônio dura **45 a 60 minutos** — o paciente acorda **totalmente consciente, sentindo dor e paralisado sem conseguir piscar ou se mexer** (consciência sob paralisia!).
-- **Colocar FR de 20 irpm e relação I:E 1:2 em paciente intubado por Asma Grave:** Impede a expiração completa, gera hiperinsuflação dinâmica (*Auto-PEEP / Air Trapping*), colaba a veia cava inferior e causa **Pneumotórax Bilateral e PCR em AESP**.
 
----
+- **Dessaturação rápida ou ausência de expansão durante laringoscopia:** Interrompa a tentativa e reoxigene pela linha de resgate disponível. Se todas falharem, declare CICO e inicie eFONA.
+- **Ausência de onda de CO₂ sustentada após passagem do tubo:** Possível intubação esofágica ou ventilação ineficaz. Confirme prontamente pelo algoritmo e reoxigene.
+- **Hipotensão profunda ou perda de pulso após indução:** Acione reanimação e trate causas reversíveis, incluindo hipovolemia, vasoplegia, auto-PEEP e pneumotórax.
+- **Hipoxemia abrupta com assimetria ventilatória e choque em VM:** Suspeite de pneumotórax hipertensivo e trate imediatamente se provável. Avalie profundidade e patência do tubo em paralelo.
+- **Fluxo expiratório que não zera com hipotensão e tórax hiperinsuflado:** Suspeite de auto-PEEP crítica. Permita expiração e reajuste FR/tempo expiratório.
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
+
 ```text
-DESCRIÇÃO DE PROCEDIMENTO — INTUBAÇÃO OROTRAQUEAL (SRI) & ACOPLAMENTO À VM:
-1. Indicação e Preparo: Indicada via aérea definitiva por [insuficiência respiratória aguda / rebaixamento do nível de consciência (Glasgow <= 8) / fadiga ventilatória / proteção de via aérea]. Realizado checklist SOAPME, pré-oxigenação a 100%, posicionamento em eixo olfativo e estabilização hemodinâmica pré-indução ([cristaloide / noradrenalina]).
-2. Sequência Rápida de Intubação (SRI): Administrados em bólus EV: [Fentanil ___ mcg / Sem pré-tratamento] + Indutor [Etomidato ___ mg / Cetamina ___ mg] + Bloqueador Neuromuscular [Succinilcolina ___ mg / Rocurônio ___ mg].
-3. Laringoscopia e Passagem do TOT: Laringoscopia direta com lâmina [Macintosh nº 3 / nº 4], visualização glótica Cormack-Lehane [I / IIa / IIb com uso de Bougie]. Passado Tubo Orotraqueal (TOT) nº [7.5 / 8.0] na [ ]ª tentativa, sem intercorrências, insuflado balonete (cuff) até 20-30 cmH2O e fixado em [ ] cm na rima labial.
-4. Confirmação e Pós-Intubação: Posicionamento confirmado por [capnografia com curva presente] e ausculta em 5 pontos (epigástrio negativo e murmúrio vesicular simétrico em bases e ápices). Passada SNG/SOG, iniciada sedoanalgesia contínua em BIC ([Fentanil + Midazolam / Propofol]) e solicitado RX de tórax no leito.
-5. Parâmetros Iniciais da Ventilação Mecânica: Acoplado à VM em modo [VCV / PCV], Volume Corrente: [ ] mL ([ ] mL/kg de peso predito), PEEP: [ ] cmH2O, FR: [ ] irpm, Relação I:E: [1:2 / 1:4], FiO2 titulada para [ ]% mantendo SpO2 de [ ]%, Pressão de Platô de [ ] cmH2O (< 30) e Driving Pressure de [ ] cmH2O (< 15).
+Hora [ ]. Indicação, dificuldade anatômica/fisiológica e sinais vitais [ ]. Pré-oxigenação, ressuscitação, equipe/supervisor e estratégia de resgate [ ].
+Indução e bloqueio: fármacos, doses, via e horário [ ]. Técnica, dispositivo, número de tentativas, tubo e profundidade [ ]. Capnografia com onda sustentada, achados complementares e confirmação de profundidade [ ].
+Intercorrências, intervenções e resposta [ ]. Sedoanalgesia, peso predito, modo, VT em mL e mL/kg, FR, FiO₂, PEEP, platô, driving pressure e auto-PEEP [ ]. Reavaliação e responsável [ ].
 ```
 
----
-
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Fazer movimento de alavanca (báscula) apoiando a lâmina do laringoscópio nos dentes incisivos superiores:** Além de quebrar os dentes do paciente, empurra a laringe para cima (piorando a visão da glote); o vetor correto é **tração firme a 45° para cima e para a frente** com o punho rígido.
-- **Introduzir o tubo profundo demais (25–26 cm na rima labial):** O tubo entra diretamente no **brônquio fonte direito** (mais verticalizado), causando atelectasia completa do pulmão esquerdo e hipoxemia — a marca padrão na rima labial é **20–21 cm em mulheres** e **22–23 cm em homens**.
-- **Calcular o Volume Corrente (6 mL/kg) pelo peso real de um paciente obeso:** Dar 780 mL de volume corrente para um paciente de 130 kg e 1,65 m causa **volutrauma e barotrauma graves** (o pulmão não cresce com a obesidade; calcule sempre pela altura!).
-- **Tentar "resolver" alarme do ventilador aumentando a sedação sem checar D-O-P-E:** Agitação e briga com o ventilador quase sempre são sinais de **hipóxia, tubo obstruído por rolha, tubo seletivo ou pneumotórax** — examine o paciente e passe a sonda de aspiração antes de apenas fazer bólus de Midazolam.
 
----
+- **Induzir sem tratar choque ou planejar ventilação na acidose:** Pode precipitar colapso peri-intubação. Ressuscite, combine suporte e minimize apneia.
+- **Repetir laringoscopia com a mesma técnica:** Aumenta trauma e perde tempo. Corrija um fator concreto ou avance no resgate.
+- **Aceitar ausculta ou RX como prova inicial da posição traqueal:** Atrasa o reconhecimento da posição incorreta. Confirme com capnografia com onda.
+- **Aguardar o bloqueio passar para iniciar sedoanalgesia:** Permite consciência sob paralisia. Deixe infusão preparada para início imediato.
+- **Programar VT pelo peso atual em obesidade:** Pode causar distensão pulmonar excessiva. Calcule pelo peso predito e revise pressões.
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Estabilização Pré-IOT & Técnica (SOAPME + LEMON)
-- [ ] [CRÍTICO] Calculei o Índice de Choque (FC/PAS) e estabilizei a hemodinâmica (vasopressor/volume) ANTES do indutor
-- [ ] Posicionei o paciente alinhando o trago da orelha com a fúrcula esternal e pré-oxigenei por 3–5 min
-- [ ] [CRÍTICO] Chequei contraindicações absolutas à Succinilcolina (hipercalemia, queimado/trauma > 48h, denervação)
-- [ ] Tracionei o laringoscópio a 45° sem bascular nos dentes e fixei o TOT em 21–23 cm na rima labial
 
-### 2. Confirmação & Ventilação Protetora
-- [ ] [CRÍTICO] Confirmei o TOT com Capnografia + Ausculta em 5 pontos começando pelo EPIGÁSTRIO
-- [ ] Regulei o Volume Corrente (6–8 mL/kg) pelo PESO PREDITO (pela altura) e adequei I:E e FR ao perfil pulmonar
-- [ ] Medi a Pressão de Platô (≤ 30 cmH2O) e a Driving Pressure (< 15 cmH2O)
+### 1. Preparação e indução
 
-### 3. Upgrade Preceptor V2.0 (Segurança Pós-Intubação)
-- [ ] [CRÍTICO] Iniciei sedoanalgesia contínua imediatamente após o bloqueador neuromuscular (evitando consciência sob paralisia por Rocurônio)
-- [ ] [CRÍTICO] Solicitei RX de tórax pós-IOT, passei sonda gástrica (SOG/SNG) e apliquei o protocolo D-O-P-E diante de qualquer dessaturação/alarme
+- [ ] [CRÍTICO] Antecipei dificuldade anatômica e fisiológica, otimizei pré-oxigenação e reanimação e preparei resgate.
+- [ ] Conferi fármacos, contraindicações, doses e funções da equipe.
+
+### 2. Confirmação e resgate
+
+- [ ] [CRÍTICO] Confirmei tubo por capnografia com onda sustentada e registrei tentativas.
+- [ ] [CRÍTICO] Mantive limite de tentativas e verbalizei a transição para resgate quando indicada.
+
+### 3. Ventilação e vigilância
+
+- [ ] [CRÍTICO] Iniciei sedoanalgesia, programei VT por peso predito e conferi pressões e auto-PEEP.
+- [ ] Revisei sinais vitais, capnografia, profundidade, gases e o gatilho para DOPES.

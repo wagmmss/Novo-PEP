@@ -1,89 +1,122 @@
-# Leitura Sistemática de Gasometria & Lab Crítico (Os 5 Passos + Eletrólitos)
+# Gasometria & Laboratório Clínico Diário (5 Passos, Figge, Delta-Delta & Gap Osmolar)
 **Atalho Rápido:** `;hab-gaso` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exames & Diagnóstico
-**Âncora:** Validação + Arterial vs Venosa → ROME → Compensação (Fórmula de Winter) → Ânion Gap Corrigido p/ Albumina (Figge) + GOLD MARK → Delta-Delta + Trava K+/Ca++
+**Âncora:** pH → Distúrbio primário → Compensação (Boston/Winter) → AG corrigido por Figge (mesmo com pH normal) → Delta-Delta → Gap osmolar → Lab diário: Cr/KDIGO, K+, Na+ corrigido, R-factor, troponina, hemograma, urina
 
 ---
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Validade Interna & ROME:** Venosa serve para pH/pCO₂/HCO₃⁻/Lactato, mas NUNCA para PaO₂; aplicar Kassirer-Bleich e ROME, lembrando que pH normal com pCO₂/HCO₃⁻ alterados ou AG alto = **Distúrbio Misto**.
-2. **Winter + AG Corrigido (Figge) + Delta-Delta:** Sempre calcular PaCO₂ esperada (1,5 × HCO₃⁻ + 8 ± 2), corrigir AG pela albumina (`AG + 2,5 × (4 - Alb)`) e checar ΔAG/ΔHCO₃⁻ + trava de K⁺ na acidemia.
+1. **AG Corrigido pela Albumina SEMPRE, Mesmo com pH Normal:** pH 7,38 pode esconder acidose de AG alto + alcalose metabólica; AG "normal" no hipoalbuminêmico esconde acidose.
+2. **PaCO2 Acima do Esperado por Winter = Fadiga Ventilatória:** Na acidose metabólica, PaCO2 real > (1,5 × HCO3 + 8 ± 2) é acidose respiratória associada — alarme de falência iminente.
+3. **Laboratório é Tendência e Contexto:** Na LRA a creatinina não está em equilíbrio (não use CKD-EPI); Na+ se corrige pela glicose e não sobe mais que 8–10 mEq/L em 24h; troponina exige cinética.
 
 ---
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Validação + Arterial vs Venosa → ROME → Compensação (Fórmula de Winter) → Ânion Gap Corrigido p/ Albumina (Figge) + GOLD MARK → Delta-Delta + Trava K+/Ca++**
+> **Winter: PaCO2 esperada = 1,5 × HCO3 + 8 ± 2. Figge: AG corrigido = AG + 2,5 × (4,0 − albumina). Delta-Delta = (AG corrigido − 12) ÷ (24 − HCO3): < 1 hiperclorêmica associada | 1–2 AG pura | > 2 alcalose metabólica associada. Gap osmolar > 10 = álcool tóxico.**
 
 ---
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-GASOMETRIA ARTERIAL (Valores Normais: pH 7,35–7,45 | PaCO2 35–45 mmHg | HCO3 22–26 mEq/L | Lactato < 2,0 mmol/L):
-1. PASSO 1 — TIPO DE AMOSTRA & VALIDADE INTERNA:
-- Arterial vs Venosa: A gasometria venosa central/periférica reflete bem pH (+0,03), PaCO2 (+5 mmHg), HCO3 e Lactato, mas NÃO serve p/ avaliar PaO2! (Se SpO2 no oxímetro for 98% e a "gasometria" vier com PO2 de 38 mmHg = você puncionou VEIA!).
-- Equação de Kassirer-Bleich: [H+] = 24 x (PaCO2 / HCO3) -> pH 7,40=[H+] 40 | 7,30=50 | 7,20=63 | 7,10=80 | 7,50=32.
-2. PASSO 2 — OLHAR O pH: < 7,35 = Acidemia | > 7,45 = Alcalemia. (ATENÇÃO: pH normal 7,35–7,45 com PaCO2 e HCO3 francamente alterados OU Ânion Gap alto = DISTÚRBIO MISTO!).
-3. PASSO 3 — DISTÚRBIO PRIMÁRIO (Regra ROME — Respiratory Opposite, Metabolic Equal):
-- pH e HCO3 caminham no MESMO sentido = Metabólico (pH↓ + HCO3↓ = Acidose Metabólica | pH↑ + HCO3↑ = Alcalose Metabólica).
-- pH e PaCO2 caminham em sentidos OPOSTOS = Respiratório (pH↓ + PaCO2↑ = Acidose Respiratória | pH↑ + PaCO2↓ = Alcalose Respiratória).
-4. PASSO 4 — CALCULAR A COMPENSAÇÃO ESPERADA (Se sair da faixa = Distúrbio Misto!):
-- Acidose Metabólica (Fórmula de Winter): PaCO2 esperada = (1,5 x HCO3) + 8 (± 2). [Dica rápida: os 2 dígitos após a vírgula do pH devem ser ≈ PaCO2! Se PaCO2 real > esperada = Acidose Respiratória associada / fadiga ventilatória iminente -> cuidado com IOT! Se PaCO2 real < esperada = Alcalose Respiratória associada, ex: sepse ou intoxicação por salicilato].
-- Alcalose Metabólica: PaCO2 esperada = (0,7 x HCO3) + 20 (± 5) [ou ≈ HCO3 + 15].
-- Acidose Respiratória: Aguda -> HCO3 sobe 1 mEq/L p/ cada +10 mmHg de PaCO2 acima de 40 | Crônica (DPOC retentor) -> HCO3 sobe 3,5 a 4 mEq/L p/ cada +10 mmHg de PaCO2.
-- Alcalose Respiratória: Aguda -> HCO3 cai 2 mEq/L p/ cada -10 mmHg de PaCO2 | Crônica -> HCO3 cai 4 a 5 mEq/L p/ cada -10 mmHg de PaCO2.
-5. PASSO 5 — ÂNION GAP CORRIGIDO PELA ALBUMINA + RELAÇÃO DELTA-DELTA + OXIGENAÇÃO:
-- SEMPRE calcular o Ânion Gap (mesmo se pH normal!): AG = Na+ - (Cl- + HCO3-) [Normal: 8 a 12 mEq/L].
-- Correção obrigatória pela Albumina (Figge): AG_corrigido = AG_calculado + 2,5 x (4,0 - Albumina g/dL). (Cada 1 g/dL de queda na albumina esconde 2,5 mEq/L de ácidos fixos no paciente séptico/cirrótico!).
-- Causas de AG Elevado (>12 — Mnemônico GOLD MARK): Glicóis (etilenoglicol/propilenoglicol), Oxoprolina (paracetamol crônico), L-Lactato (choque/isquemia/metformina), D-Lactato, Metanol, Aspirina (salicilato), Renal (uremia), Ketoacidosis (CAD/alcoólica/jejum). vs AG Normal (Hiperclorêmica): Diarreia, fístula, SF 0,9% excessivo, Acidose Tubular Renal (ATR).
-- Delta-Delta (se AG_corr > 12): HCO3_corrigido = HCO3_medido + (AG_corrigido - 12). Se HCO3_corrigido < 22 = Acidose Metabólica Hiperclorêmica associada | Se > 26 = Alcalose Metabólica associada (vômitos/diurético).
-- Oxigenação (PaO2/FiO2): Normal > 400 | SDRA Leve 201–300 | Moderada 101–200 | Grave <= 100.
-LABORATÓRIO CRÍTICO DE PLANTÃO (INTERPRETAÇÃO IMEDIATA):
-- POTÁSSIO (K+ 3,5–5,0): Hipercalemia (>5,5) -> 1º ECG IMEDIATO! Se alteração de ECG (T em tenda/QRS largo) ou K+ >= 6,5: Gluconato de Cálcio 10% 10 mL IV em 2–3 min (estabiliza membrana, não baixa K+!) + Solução Polarizante (10 unidades Insulina Regular + 50g Glicose [10 ampolas G50%]) + Beta-2 inalatório + Furosemida/Sorcal. | Hipocalemia (<3,5): Checar e REPOR MAGNÉSIO junto (hipoMg++ impede reabsorção renal de K+ pelo canal ROMK!).
-- SÓDIO (Na+ 135–145): Na hiperglicemia (CAD/EHH), corrigir o Na+ (Katz: +1,6 mEq/L p/ cada 100 mg/dL de glicose acima de 100). Em hipo ou hipernatremia crônica (>48h), NUNCA variar > 8 a 10 mEq/L em 24h (risco de Mielinólise Pontina / Edema Cerebral!).
-- HEMOGRAMA & FÍGADO: Neutropenia Febril (Neutrófilos < 500 ou < 1000 c/ queda + Tax >= 38,3°C) = Cefepime/Pip-Tazo na 1ª hora! | Plaquetopenia isolada sem sangramento = pedir contagem em tubo de CITRATO (descartar pseudotrombocitopenia por EDTA!). | Fígado: TGO/TGP = necrose; FA/GGT/BD = colestase; Função/Gravidade REAL = RNI (Fator VII) + Albumina + Encefalopatia!
+1. PASSO 1 E 2 — pH E DISTÚRBIO PRIMÁRIO:
+- **Amostra:** Arterial ou venosa? (Venosa serve para pH/HCO3/lactato/K+; PaO2 exige arterial.) Horário, FiO2, temperatura.
+- **pH:** < 7,35 acidemia; > 7,45 alcalemia; pH normal com PaCO2/HCO3 alterados ou AG alto = distúrbio misto.
+- **Distúrbio Primário:** PaCO2 (35–45 mmHg) ou HCO3 (22–26 mEq/L) explica a direção do pH?
+- **Oxigenação:** Relação PaO2/FiO2 (< 300 lesão, < 200 moderada, < 100 grave) e gradiente A-a (PAO2 ar ambiente ≈ 150 − 1,25 × PaCO2; normal ≈ idade/4 + 4).
+
+2. PASSO 3 — COMPENSAÇÃO ESPERADA (BOSTON):
+- **Acidose Metabólica (Winter):** PaCO2 esperada = 1,5 × HCO3 + 8 ± 2; real maior = acidose respiratória associada (fadiga); real menor = alcalose respiratória associada (sepse, AAS).
+- **Alcalose Metabólica:** PaCO2 esperada ≈ 0,7 × HCO3 + 21 ± 2.
+- **Acidose Respiratória:** HCO3 sobe 1 (aguda) ou 3,5–4 (crônica) para cada 10 mmHg de PaCO2 — separa retenção aguda do DPOC retentor crônico.
+- **Alcalose Respiratória:** HCO3 cai 2 (aguda) ou 4–5 (crônica) para cada 10 mmHg de PaCO2.
+
+3. PASSO 4 E 5 — AG CORRIGIDO (FIGGE), DELTA-DELTA E GAP OSMOLAR:
+- **AG = Na − (Cl + HCO3):** Referência ~12 (verificar o laboratório local).
+- **AG Corrigido (Figge):** AG + 2,5 × (4,0 − albumina) — calcular em todo doente, mesmo com pH normal.
+- **AG Alto (GOLDMARK):** Glicóis, Oxoprolina (paracetamol crônico), L-lactato, D-lactato, Metanol, AAS, Renal (uremia), Cetoacidose.
+- **Delta-Delta:** (AG corrigido − 12) ÷ (24 − HCO3); < 1 = acidose hiperclorêmica associada (diarreia, SF em excesso, ATR); 1–2 = AG pura; > 2 = alcalose metabólica associada (vômitos, diurético) ou HCO3 basal alto.
+- **Gap Osmolar:** Osm medida − calculada (2 × Na + glicose/18 + ureia/6); > 10 com AG alto = metanol/etilenoglicol (fomepizol/etanol, hemodiálise).
+- **AG Normal:** Calcular AG urinário (Na + K − Cl urinários): negativo = perda GI; positivo = acidose tubular renal.
+
+4. LABORATÓRIO DIÁRIO — RIM, POTÁSSIO E SÓDIO:
+- **LRA pelo KDIGO:** Aumento de Cr ≥ 0,3 mg/dL em 48h, ≥ 1,5× o basal em 7 dias ou diurese < 0,5 mL/kg/h por ≥ 6h. CKD-EPI/Cockcroft não valem com Cr em ascensão — dose de fármacos pela função real/diurese.
+- **LRA vs. DRC:** Basal prévio, rins pequenos à USG, anemia normocítica, hiperfosfatemia/PTH alto = crônica.
+- **Trimetoprima (e cimetidina, dolutegravir):** Bloqueia a secreção tubular de Cr (sobe Cr sem queda de TFG) e o ENaC distal (hipercalemia tipo amilorida) — checar K+ em idoso com IECA/BRA.
+- **Potássio:** Hemólise, leucocitose/trombocitose extremas e garrote prolongado elevam falsamente — ECG em 2 min decide a urgência; hipocalemia refratária = repor Mg2+.
+- **Na+ Corrigido pela Glicose:** Na + 1,6 × (glicose − 100)/100 (2,4 se glicose > 400). Hiponatremia hipotônica: Osm e Na urinários; teto de correção ≤ 8–10 mEq/L em 24h (≤ 8 se etilista, desnutrido, hipocalêmico) — risco de desmielinização osmótica.
+- **Cálcio:** Ca corrigido = Ca + 0,8 × (4,0 − albumina); no crítico, dosar cálcio iônico.
+
+5. LABORATÓRIO DIÁRIO — FÍGADO, TROPONINA, HEMOGRAMA E URINA:
+- **R-Factor Hepático:** (ALT/LSN) ÷ (FA/LSN); > 5 hepatocelular (ALT > 1.000 = isquemia, viral aguda, paracetamol, cálculo migrado); < 2 colestático; 2–5 misto. Função hepática real = INR, albumina e bilirrubina.
+- **Troponina:** hs-cTn em algoritmo 0h/1h (ou 0h/2h); convencional 0h/3h–6h; cortes específicos do kit do laboratório. A cinética (delta) separa injúria aguda de elevação crônica (DRC/IC); elevação aguda sem clínica coronária = TEP, miocardite, sepse, taquiarritmia.
+- **Hemograma — Hb no Sangramento Agudo:** Demora 24–72h para cair; guie-se por índice de choque, TEC e lactato.
+- **Esquizócitos > 1% + Plaquetopenia + Anemia:** Microangiopatia trombótica (PTT, SHU, CIVD, HELLP) → LDH, BI, haptoglobina, coagulograma e hematologia/GO.
+- **Plaquetopenia Isolada Inesperada Sem Sangramento:** Pseudoplaquetopenia por EDTA → recoletar em citrato e olhar a lâmina.
+- **Bacteriúria Assintomática (IDSA 2019):** Não tratar (inclusive idoso com delirium afebril e sonda vesical); tratar apenas gestante e antes de procedimento urológico com sangramento de mucosa.
+
+6. INTEGRAÇÃO E COMUNICAÇÃO:
+- **Frase de Laudo em Voz Alta:** "Acidose metabólica de AG corrigido [valor] com compensação respiratória adequada/inadequada, delta-delta [valor] = [distúrbio associado]".
+- **Correlação com o 3H:** O laboratório explica o quadro clínico? Número discordante da clínica = recoletar ou rever pré-analítico antes de tratar.
 
 ---
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Olhar apenas o pH 7,40 e dizer "gasometria normal":** Um paciente com vômitos incoercíveis (alcalose metabólica) e sepse/choque láctico (acidose de AG elevado) pode ter `pH 7,40`, `PaCO2 40` e `HCO3 24`, sendo desmascarado apenas pelo **Ânion Gap elevado (> 18–20)**!
-- **Achar que PaCO2 "normal" (40 mmHg) é boa notícia numa Acidose Metabólica grave (HCO3 = 10):** Pela Fórmula de Winter, a `PaCO2` deveria estar em `23 mmHg`; uma `PaCO2` de `40 mmHg` significa **Acidose Respiratória associada por exaustão muscular** e parada respiratória iminente!
-- **Dar Bicarbonato de Sódio IV indiscriminadamente na Cetoacidose Diabética ou Acidose Láctica (pH > 6,9–7,0):** Desvia a curva da hemoglobina, gera acidose paradoxal intracelular/liquórica por produção de $CO_2$, causa hipocalemia e sobrecarga de sódio.
+- **Acidose Metabólica com PaCO2 Acima do Previsto por Winter:** Exaustão ventilatória; preparar VNI/IOT com ventilação-minuto alta e chamar o preceptor — IOT mal ventilada nesse paciente precipita PCR.
+- **K+ ≥ 6,5 ou Qualquer K+ Alto com Alteração no ECG:** Gluconato de cálcio 10% IV imediato, insulina + glicose, β2 inalatório, suspender fármacos causadores e avaliar diálise.
+- **Na+ < 120 com Convulsão ou Rebaixamento:** Hiponatremia sintomática grave; NaCl 3% em bolus conforme protocolo, Na+ seriado a cada 2–4h e respeito ao teto de correção.
+- **AG Alto + Gap Osmolar > 10 + Distúrbio Visual ou Rebaixamento:** Intoxicação por metanol/etilenoglicol; fomepizol ou etanol, bicarbonato se acidemia grave e hemodiálise.
+- **Esquizócitos com Plaquetopenia e Lesão Renal ou Neurológica:** PTT/SHU/HELLP; NÃO transfundir plaquetas na PTT sem hematologia, plasmaférese urgente; na gestante, resolução obstétrica.
 
 ---
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
 ```text
-INTERPRETAÇÃO SISTEMÁTICA DE GASOMETRIA ARTERIAL & ELETRÓLITOS:
-- Dados Gasométricos: pH: [ ] | PaCO2: [ ] mmHg | HCO3: [ ] mEq/L | BE: [ ] | PaO2: [ ] mmHg | SaO2: [ ]% (FiO2: [ ]%, Relação PaO2/FiO2: [ ]) | Lactato: [ ] mmol/L.
-- Eletrólitos & Bioquímica: Na+: [ ] mEq/L | Cl-: [ ] mEq/L | K+: [ ] mEq/L | Ca++ iônico: [ ] mmol/L | Albumina: [ ] g/dL | Glicemia: [ ] mg/dL.
-- Passo 1 e 2 (Distúrbio Primário - ROME): [Acidemia / Alcalemia / pH normal] por distúrbio primário [Metabólico / Respiratório].
-- Passo 3 (Resposta Compensatória): PaCO2 esperada (Fórmula de Winter) de [ ] ± 2 mmHg -> [Compensação adequada / Distúrbio misto associado].
-- Passo 4 e 5 (Ânion Gap Corrigido p/ Albumina e Delta-Delta): AG calculado de [ ] mEq/L (AG corrigido por Figge: [ ] mEq/L). Relação ΔAG/ΔHCO3 de [ ] -> Conclusão: [Acidose metabólica de ânion gap elevado / hiperclorêmica pura / mista].
+GASOMETRIA ([ ] arterial/venosa — [ ] h — FiO2 [ ]%):
+- pH [ ] | PaCO2 [ ] mmHg | HCO3 [ ] mEq/L | BE [ ] | PaO2 [ ] mmHg | SatO2 [ ]% | Lactato [ ] mmol/L.
+- Distúrbio primário: [ ] | Compensação esperada (Boston/Winter): [ ] → [ ] (adequada / distúrbio associado: [ ]).
+- Na [ ] | Cl [ ] | Albumina [ ] g/dL → AG [ ] | AG corrigido (Figge) [ ].
+- Delta-Delta: [ ] → [ ].
+- Osm medida [ ] | Osm calculada [ ] | Gap osmolar [ ].
+- PaO2/FiO2 [ ] | Gradiente A-a [ ].
+- Conclusão: [ ].
+LABORATÓRIO DO DIA (tendência vs. exame anterior de [ ]):
+- Função renal: Cr [ ] (basal [ ]) | Ureia [ ] | Diurese [ ] mL/kg/h → KDIGO [ ] | LRA vs. DRC: [ ] | Fármacos nefrotóxicos/que elevam Cr: [ ].
+- Eletrólitos: K [ ] | Mg [ ] | Na [ ] (Na corrigido pela glicose [ ]) | Variação de Na nas últimas 24h [ ] | Ca corrigido/iônico [ ].
+- Fígado: ALT [ ] | AST [ ] | FA [ ] | GGT [ ] | BT [ ] | INR [ ] → R-factor [ ] ([ ]).
+- Troponina: 0h [ ] → [ ] h [ ] (delta [ ]) — ensaio [ ].
+- Hemograma: Hb [ ] | Leuc [ ] | Plaq [ ] | Esquizócitos [ ] | Lâmina/citrato [ ].
+- Urina: [ ] | Bacteriúria assintomática sem indicação de tratamento: [ ].
+- Interpretação integrada: [ ]. Conduta: [ ].
 ```
 
 ---
 
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Olhar apenas o pH 7,40 e dizer "gasometria normal":** Um paciente com vômitos incoercíveis (alcalose metabólica) e sepse/choque láctico (acidose de AG elevado) pode ter `pH 7,40`, `PaCO2 40` e `HCO3 24`, sendo desmascarado apenas pelo **Ânion Gap elevado (> 18–20)**!
-- **Achar que PaCO2 "normal" (40 mmHg) é boa notícia numa Acidose Metabólica grave (HCO3 = 10):** Pela Fórmula de Winter, a `PaCO2` deveria estar em `23 mmHg`; uma `PaCO2` de `40 mmHg` significa **Acidose Respiratória associada por exaustão muscular** e parada respiratória iminente!
-- **Dar Bicarbonato de Sódio IV indiscriminadamente na Cetoacidose Diabética ou Acidose Láctica (pH > 6,9–7,0):** Desvia a curva da hemoglobina, gera acidose paradoxal intracelular/liquórica por produção de $CO_2$, causa hipocalemia e sobrecarga de sódio.
-- **Tratar Hipocalemia sem repor Magnésio:** A deficiência de magnésio libera o freio do canal `ROMK` no néfron distal, fazendo todo o potássio infundido na veia ser imediatamente perdido na urina.
-- **Corrigir Hiponatremia crônica rápido demais (> 8–10 mEq/L em 24h):** Desencadeia a **Síndrome de Desmielinização Osmótica (Mielinólise Pontina Central)** com tetraparesia flácida/espástica e síndrome do encarceramento (*locked-in*).
+- **"pH Normal, Gasometria Normal":** Distúrbios mistos se anulam no pH; calcule AG corrigido e delta-delta em todo doente grave.
+- **Não Corrigir o AG pela Albumina no Cirrótico/Desnutrido/Séptico:** Cada 1 g/dL a menos de albumina esconde 2,5 de AG; acidose lática passa como "AG normal".
+- **Aplicar CKD-EPI na Creatinina em Ascensão:** A fórmula assume equilíbrio; superestima a TFG e leva a dose tóxica de antibiótico/anticoagulante — ajuste pela situação clínica e diurese.
+- **Corrigir Hiponatremia Crônica Rápido Demais:** Subir > 8–10 mEq/L em 24h causa desmielinização osmótica; dose Na+ seriado e tenha DDAVP/SG5% como freio.
+- **Tratar Bacteriúria em Idosa Sonolenta Afebril:** Não explica o delirium, gera resistência e C. difficile; procure desidratação, fármacos, eletrólitos, hipóxia e outros focos.
 
 ---
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Os 5 Passos da Gasometria
-- [ ] Conferi validade interna (Henderson-Hasselbalch) e se a amostra era arterial ou venosa
-- [ ] Classifiquei o pH (acidemia vs alcalemia) sem presumir normalidade em pH 7,35–7,45 alterado
-- [ ] Identifiquei o componente primário (PaCO2 vs HCO3) e apliquei a fórmula de compensação esperada
-- [ ] Calculei Ânion Gap corrigido pela albumina e apliquei Delta-Delta se AG > 12
-- [ ] Avaliei Lactato, Gradiente A-a e relação PaO2/FiO2 (índice de oxigenação)
+### 1. Gasometria em 5 Passos
+- [ ] Identifiquei pH, distúrbio primário e tipo de amostra (arterial/venosa, FiO2)
+- [ ] [CRÍTICO] Calculei a compensação esperada (Winter/Boston) e identifiquei distúrbio associado ou fadiga
+- [ ] [CRÍTICO] Calculei AG corrigido por Figge mesmo com pH normal e o delta-delta quando AG alto
+- [ ] Calculei gap osmolar quando havia AG alto sem causa clara
 
-### 2. Laboratório Básico Crítico
-- [ ] [CRÍTICO] Chequei Hemograma completo (VCM/RDW, contagem absoluta de neutrófilos e plaquetas)
-- [ ] Avaliei K+ (ECG imediato se hipercalemia; Mg++ se hipocalemia) e Na+ respeitando limite de 8 mEq/L/24h
-- [ ] Comparei Creatinina atual com a basal + diurese (estadiamento KDIGO) e ajustei medicações
-- [ ] [CRÍTICO] Separei padrão hepatocelular vs colestático (FA + GGT) e chequei síntese real (INR e Albumina)
+### 2. Rim & Eletrólitos
+- [ ] Classifiquei a LRA pelo KDIGO, diferenciei de DRC e não usei CKD-EPI com Cr em ascensão
+- [ ] Considerei trimetoprima/outros fármacos como causa de Cr e K+ elevados
+- [ ] [CRÍTICO] Corrigi o Na+ pela glicose e respeitei o teto de correção de 8–10 mEq/L em 24h
+- [ ] Afastei pseudo-hipercalemia e corrigi Mg2+ na hipocalemia refratária
 
-### 4. Upgrade Preceptor V2.0 (Figge, Delta-Delta & Trava de K+)
-- [ ] [CRÍTICO] Corrigi o Ânion Gap pela albumina sérica (Fórmula de Figge: +2,5 mEq/L para cada 1 g/dL de queda da albumina) e calculei o Delta-Delta (ΔAG / ΔHCO3)
-- [ ] [CRÍTICO] Apliquei a trava de segurança do Potássio na acidose (proibido iniciar insulina na CAD se K+ < 3,3 mEq/L) e identifiquei normocapnia na crise de asma como fadiga iminente
+### 3. Fígado, Troponina & Hemograma
+- [ ] Calculei o R-factor e avaliei função hepática real por INR, albumina e bilirrubina
+- [ ] Interpretei a troponina pela cinética no algoritmo do kit local (0h/1h ou 0h/3h)
+- [ ] Pesquisei esquizócitos na plaquetopenia com anemia e pseudoplaquetopenia na plaquetopenia isolada
+
+### 4. Urina & Integração
+- [ ] Não tratei bacteriúria assintomática fora das indicações da IDSA (gestante, procedimento urológico)
+- [ ] Correlacionei o laboratório com a clínica e recolhi amostra suspeita antes de tratar número isolado

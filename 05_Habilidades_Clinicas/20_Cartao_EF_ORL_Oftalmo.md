@@ -1,77 +1,76 @@
-# Exame ORL, Otoscopia, Orofaringe & Olho Vermelho no PA (HINTS + Fluoresceína)
+# Exame ORL e Olho Vermelho na Urgência
 **Atalho Rápido:** `;hab-orl` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exame Físico & Semiologia
-**Âncora:** Otoscopia (Tração Pavilhão: Adulto p/ Cima-Trás vs <3a p/ Baixo-Trás + Abaulamento MT) → Centor/McIsaac → Epistaxe (Plexo de Kiesselbach) → Olho Vermelho (5 Sinais de Alarme + Teste de Fluoresceína)
-
----
+**Âncora:** Via aérea e visão primeiro → Otoscopia apoiada → Orofaringe e pescoço → Controle da epistaxe → Pupilas, motilidade e fluoresceína
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Otoscopia Anatômica por Idade:** No adulto e criança ≥ 3 anos, tracionar o pavilhão auricular **para cima e para trás**; no lactente/criança < 3 anos, tracionar **para baixo e para trás** (retifica o conduto auditivo externo cartilaginoso).
-2. **Critério Ouro de Otite Média Aguda (OMA):** Hiperemia isolada da membrana timpânica (por choro ou febre) **NÃO é OMA** — o achado mais específico é o **abaulamento moderado/grave da membrana timpânica** ou otorreia aguda não causada por otite externa.
-3. **Orofaringe & Trismo (Abscesso Periamigdaliano):** Odinofagia unilateral intensa + **trismo** + voz de "batata quente" + desvio da úvula para o lado oposto + abaulamento do pilar amigdaliano anterior exigem **drenagem e ATB parenteral** (não é amigdalite simples!).
-4. **Olho Vermelho no PA — As 5 Bandeiras Vermelhas Oftalmológicas:** Dor ocular moderada/intensa, redução da acuidade visual, fotofobia real, hiperemia ciliar/pericerática (ao redor da íris) ou alteração pupilar (miose fixa na uveíte; midríase média fixa no glaucoma agudo de ângulo fechado).
 
----
+1. **Otalgia:** Abaulamento timpânico sugere OMA. Dor profunda em pessoa diabética ou edema retroauricular exige avaliação urgente.
+2. **Odinofagia com trismo, sialorreia ou estridor:** Priorize via aérea e acione ajuda antes de manipular a orofaringe.
+3. **Olho vermelho doloroso:** Meça a acuidade monocular. Avalie pupilas, motilidade e córnea. Em exposição química, comece pela irrigação.
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Otoscopia (Tração Pavilhão: Adulto p/ Cima-Trás vs <3a p/ Baixo-Trás + Abaulamento MT) → Centor/McIsaac → Epistaxe (Plexo de Kiesselbach) → Olho Vermelho (5 Sinais de Alarme + Teste de Fluoresceína)**
 
----
+> **Dor ocular intensa, fotofobia verdadeira ou visão reduzida exigem procurar ameaça à visão já na triagem.**
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-1. **OTOSCOPIA SEGURA (IMPEDINDO TRAUMA DE CONDUTO):**
-- Começar sempre pelo **ouvido assintomático** para calibrar o padrão normal do paciente.
-- Segurar o otoscópio como uma **caneta/lápis** apoiando o dedo mínimo ou ulnar na face/têmpora do paciente (se a criança mexer a cabeça, sua mão acompanha o movimento sem perfurar o tímpano!).
-- Avaliar: permeabilidade do CAE, edema/dor à tração do trago (Sinal do Trago positivo = **Otite Externa Aguda**), cor da MT (translúcida perolada vs opaca/hiperemiada), **triângulo luminoso** (anteroinferior), posição do cabo do martelo e integridade/abaulamento.
-2. **OROFARINGE, CAVIDADE ORAL E PESCOÇO:**
-- Abaixador de língua apenas nos **2/3 anteriores da língua** (tocar a base posterior desencadeia reflexo nauseoso). Pedir para dizer *"A-A-A"* (avalia elevação simétrica do véu palatino — IX e X pares).
-- **Escore de Centor Modificado (McIsaac) na Faringotonsilite:** (1) Exsudato tonsilar (+1), (2) Adenopatia cervical anterior dolorosa (+1), (3) Febre > 38°C (+1), (4) Ausência de tosse (+1), (5) Idade: 3–14a (+1), 15–44a (0), ≥ 45a (-1).
-3. **RINOSCOPIA ANTERIOR E MANEJO DA EPISTAXE:**
-- **90% das epistaxes são anteriores** no **Plexo de Kiesselbach (Área de Little)** no septo nasal anteroinferior.
-- **Conduta Imediata:** Paciente sentado inclinado **para a frente** (nunca para trás — evita deglutir e aspirar sangue!), assoar coágulos, aplicar algodão embebido em vasoconstritor (oximetazolina/adrenalina) + lidocaína e realizar **compressão bidigital firme das asas nasais contra o septo por 10 a 15 minutos ininterruptos no relógio**.
-4. **EXAME DO OLHO VERMELHO E TESTE DE FLUORESCEÍNA:**
-- **1º Passo:** Testar **Acuidade Visual** de cada olho separadamente (com os óculos do paciente) antes de pingar qualquer colírio.
-- **2º Passo:** Inspeção das pálpebras (eversão da pálpebra superior à procura de corpo estranho subtarsal!), padrão da hiperemia (difusa tarsal = conjuntivite vs pericerática/ciliar = ceratite/uveíte/glaucoma) e reflexo fotomotor.
-- **3º Passo (Teste de Fluoresceína):** Instilar 1 gota de colírio anestésico (proximetacaína) apenas para o exame, tocar fita de fluoresceína no fórnice inferior, lavar excesso com SF 0,9% e iluminar com luz azul de cobalto (ou filtro azul do oftalmoscópio): **lesão que cora em verde brilhante = Desepitelização / Úlcera ou Abrasão Corneana** (se padrão dendrítico ramificado = **Ceratite Herpética** -> proibido corticoide!).
 
----
+1. OTOSCOPIA SEGURA:
+- **Posição e técnica:** Examine primeiro o lado assintomático, se possível. Segure o otoscópio como caneta, apoiando a mão na face. Tracione o pavilhão para cima e para trás na criança maior/adulto e para baixo e para trás no lactente/criança pequena. Inspecione conduto, membrana timpânica e região mastoidea.
+- **OMA versus OME:** OMA sugere abaulamento timpânico moderado/importante ou otorreia aguda sem otite externa. Abaulamento leve com otalgia recente ou eritema intenso também pode preencher critério na presença de efusão. OME é efusão sem inflamação aguda, com nível líquido, membrana retraída/opaca ou mobilidade reduzida. Hiperemia isolada tem baixa especificidade.
+- **Otite externa e complicações:** Dor ao trago e edema do conduto sugerem otite externa. Dor profunda desproporcional, granulação ou pares cranianos alterados em diabetes/imunossupressão sugerem otite externa necrosante (maligna). Edema retroauricular, protrusão do pavilhão ou flutuação sugerem mastoidite. Acione ORL urgente. [CDC — OMA](https://www.cdc.gov/antibiotic-use/hcp/clinical-care/pediatric-outpatient.html)
+
+2. OROFARINGE, PESCOÇO E VIA AÉREA:
+- **Faringotonsilite sem alarme:** Examine apenas se via aérea estável. Observe simetria do palato e úvula, tonsilas e linfonodos. McIsaac: +1 por febre >38 °C, ausência de tosse, exsudato/edema tonsilar e adenopatia cervical anterior dolorosa. Idade 3–14 anos +1, 15–44 zero, ≥45 −1. Use o escore para decidir testagem conforme protocolo. Em crianças a partir de 3 anos, considere confirmação por cultura após teste rápido negativo conforme diretriz. [IDSA](https://www.idsociety.org/practice-guideline/streptococcal-pharyngitis2/) · [CDC](https://www.cdc.gov/group-a-strep/hcp/clinical-guidance/strep-throat.html)
+- **Espaços profundos e epiglotite:** Trismo, voz em batata quente e desvio contralateral da úvula sugerem abscesso peritonsilar. Febre, torcicolo, dor à extensão cervical e sialorreia sugerem retrofaríngeo. Sialorreia, estridor, posição de tripé e incapacidade de engolir sugerem epiglotite. Mantenha posição de conforto e acione ORL/anestesia. Evite abaixador, agitação e deslocamento para exames com via aérea ameaçada.
+
+3. RINOSCOPIA E EPISTAXE:
+- **Ação inicial:** Se estável, sente com tronco à frente, comprima asas nasais por 10–15 min sem soltar, deixe cuspir sangue. Aspire coágulos sob visão conforme tolerância e avalie foco anterior.
+- **Persistência:** Considere vasoconstritor tópico conforme contraindicações. Cauterize apenas foco anterior identificado quando indicado ou use tampão anterior. Sangramento para orofaringe apesar das medidas, instabilidade ou falha de controle pede suporte ABCDE e ORL. Documente tampão, cuidados e retirada. [AAO-HNS](https://www.entnet.org/quality-practice/quality-products/clinical-practice-guidelines/nosebleed-epistaxis/)
+
+4. OLHO VERMELHO DE URGÊNCIA:
+- **Sequência do exame:** Em queimadura química, irrigue imediatamente. Nos demais, meça acuidade visual em cada olho com correção habitual, investigue trauma, cirurgia, lentes de contato e fotofobia. Compare pupilas e reflexos, pesquise defeito aferente, motilidade, dor ao mover e proptose. Examine córnea com fluoresceína e luz azul, se seguro. Meça pressão intraocular se indicado e sem suspeita de globo aberto. Se suspeitar de globo aberto, proteja com escudo rígido sem pressão e acione oftalmo.
+- **Glaucoma de ângulo fechado:** Dor intensa, halos, visão reduzida, náusea, córnea turva e pupila média pouco reativa. Acione oftalmo imediatamente e inicie redução da pressão conforme protocolo.
+- **Úlcera e herpes:** Infiltrado corneano com defeito à fluoresceína, sobretudo em usuário de lente, sugere ceratite infecciosa/úlcera. Dendrito sugere ceratite herpética. Suspenda lentes, encaminhe com urgência para tratamento específico e evite corticoide tópico sem avaliação especializada.
+- **Uveíte anterior:** Fotofobia consensual, hiperemia ciliar, miose ou pupila irregular e células/flare à lâmpada de fenda sugerem uveíte. Acione oftalmo no mesmo dia. [Exame do olho vermelho — RCH](https://www.rch.org.au/clinicalguide/guideline_index/Acute_red_eye/)
+- **Celulite orbitária versus pré-septal:** Dor ou limitação à motilidade, diplopia, proptose, queda visual ou defeito pupilar aferente sugerem orbitária. Solicite avaliação imediata com oftalmo/ORL, imagem e antibiótico EV conforme protocolo. Pré-septal tende a manter visão, motilidade indolor e posição do globo. Se edema impedir exame, mantenha suspeita de comprometimento orbitário. [RCH](https://www.rch.org.au/clinicalguide/guideline_index/Periorbital_and_orbital_cellulitis/)
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Dor retroauricular + apagamento do sulco retroauricular + deslocamento do pavilhão auricular para frente e para baixo ("orelha de abano aguda"):** Diagnóstico clínico de **Mastoidite Aguda** complicada — internação hospitalar, TC de mastoides e Ceftriaxona EV!
-- **Celulite Orbitária (Pós-Septal) vs Periorbitária (Pré-Septal):** Presença de **proptose ocular, dor ou limitação à movimentação ocular extrínseca (oftalmoplegia), diplopia ou queda da acuidade visual** configura **Celulite Orbitária Pós-Septal** (risco de trombose de seio cavernoso e cegueira!).
-- **Olho vermelho com dor intensa + náuseas/vômitos + visão de halos coloridos + córnea turva ("vidro fosco") + pupila em médio-midríase fixa e globo ocular pétreo à palpação bidigital:** **Glaucoma Agudo de Ângulo Fechado** — emergência oftalmológica imediata (Manitol EV + Acetazolamida VO + Timolol/Pilocarpina colírio)!
 
----
+- **Dor otológica profunda com granulação ou edema retroauricular com orelha protrusa:** Suspeite de otite externa necrosante ou mastoidite. Acione ORL urgente.
+- **Estridor, sialorreia, trismo ou voz em batata quente com assimetria de palato:** Possível epiglotite ou infecção profunda. Priorize equipe de via aérea e ORL.
+- **Sangue contínuo na orofaringe com hipoperfusão ou dispneia:** Epistaxe grave, possivelmente posterior. Proteja a via aérea, reanime e acione ORL.
+- **Queda de acuidade com dor, halos, pupila anormal, opacidade corneana ou fotofobia intensa:** Suspeite de glaucoma, ceratite ou uveíte. Providencie avaliação oftalmológica urgente.
+- **Proptose, dor aos movimentos ou déficit pupilar aferente:** Suspeita de celulite orbitária. Acione tratamento hospitalar e avaliação com imagem.
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
+
 ```text
-EXAME OTORRINOLARINGOLÓGICO E OFTALMOLÓGICO DIRIGIDO:
-- Otoscopia: Pavilhão auricular e região mastoidea sem sinais flogísticos; Sinal do Trago [negativo / positivo à direita / positivo à esquerda]. Conduto auditivo externo (CAE) [pérvio e sem secreções / edemaciado com otorreia]. Membrana timpânica [íntegra, translúcida, sem abaulamento e com triângulo luminoso preservado bilateralmente / hiperemiada, opaca e abaulada à direita / esquerda].
-- Orofaringe e Rinoscopia: Lábios e mucosa oral corados e hidratados, ausência de trismo. Úvula centrada, pilares amigdalianos simétricos, tonsilas palatinas [eutróficas sem exsudato / hiperemiadas e hipertrofiadas com exsudato purulento]. Rinoscopia anterior com mucosa [normocorada / hiperemiada e edemaciada / sangramento ativo em área de Kiesselbach controlado com compressão]. Pescoço sem linfonodomegalias dolorosas ou rigidez.
-- Exame Ocular Dirigido: Acuidade visual [preservada bilateralmente / reduzida em OD / OE]. Pálpebras sem edema ou corpo estranho subtarsal à eversão. Conjuntiva com [hiperemia tarsal difusa + secreção mucopurulenta / hiperemia pericerática]. Córnea [transparente com teste de fluoresceína negativo / com abrasão epitelial corando à fluoresceína]. Pupilas isocóricas e fotorreagentes, motricidade ocular extrínseca preservada e indolor (ausência de proptose).
+Hora [ ]. Lado e início dos sintomas, febre, trauma, lentes de contato e comorbidades [ ]. Sinais vitais e segurança da via aérea [ ].
+Otoscopia direita/esquerda, conduto, membrana, trago e mastoide [ ]. Voz, abertura oral, palato, úvula, secreções e pescoço [ ]. Fonte do sangramento, medidas, resposta e plano para tampão [ ].
+Acuidade visual de cada olho, pupilas e reflexos, motilidade, proptose, córnea/fluoresceína e pressão quando indicada [ ]. Hipótese, grave em aberto, conduta, contato com especialista e reavaliação [ ].
 ```
 
----
-
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Prescrever colírio anestésico (tetracaína/proximetacaína) para o paciente levar para casa:** O anestésico tópico inibe a cicatrização epitelial, abole o reflexo protetor de piscar e causa **perfuração corneana (ceratopatia tóxica grave)** em poucos dias.
-- **Prescrever colírio com corticoide (ex: Maxitrol / Dexametasona) em olho vermelho sem excluir Ceratite Herpética ou Úlcera Corneana com fluoresceína:** O corticoide multiplica a replicação do vírus Herpes Simplex na córnea, transformando uma úlcera dendrítica superficial em perfuração ocular e cegueira.
-- **Prescrever Amoxicilina para dor de garganta com coriza, tosse, rouquidão, conjuntivite ou úlceras orais:** Esses achados são assinaturas clássicas de **etiologia viral** (adenovírus, rinovírus, coxsackie); se for Mononucleose Infecciosa (EBV), a Amoxicilina desencadeia exantema maculopapular florido em 90% dos casos.
-- **Mandar o paciente com epistaxe inclinar a cabeça para trás ou colocar gelo na nuca:** Inclinar a cabeça para trás faz o sangue escorrer pela rinofaringe para o estômago (causando vômitos em borra de café) e via aérea; o correto é cabeça inclinada **para a frente** e compressão direta das asas nasais contra o septo por 10–15 minutos.
 
----
+- **Avançar o otoscópio com mão livre:** Movimentos podem lesar o conduto. Apoie a mão na face e introduza sob visão.
+- **Prescrever antibiótico porque o tímpano está vermelho:** Pode tratar OME ou hiperemia do choro. Procure abaulamento, efusão e sinais de inflamação aguda.
+- **Aplicar McIsaac antes de avaliar via aérea:** Pode atrasar suporte. Procure sinais de obstrução e infecção profunda antes de pontuar.
+- **Inclinar a cabeça para trás na epistaxe:** Esconde sangramento e favorece aspiração/deglutição. Incline para a frente e comprima as asas.
+- **Pingar corticoide empírico ou omitir acuidade:** Pode agravar ceratite e perder um dado basal. Meça a visão e investigue a córnea antes de definir tratamento.
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Otoscopia & Orofaringe
-- [ ] Examinei primeiro o ouvido são e segurei o otoscópio apoiando o dedo na face do paciente
-- [ ] Tracionei o pavilhão na direção correta para a idade (acima/atrás no adulto vs abaixo/atrás no < 3 anos)
-- [ ] Diferenciei Otite Externa (dor no trago/edema de CAE) de OMA real (abaulamento de MT)
-- [ ] [CRÍTICO] Avaliei simetria da úvula, ausência de trismo e calculei Centor/McIsaac antes de prescrever ATB
 
-### 2. Epistaxe & Olho Vermelho
-- [ ] Na epistaxe, posicionei sentado inclinado para a frente com compressão das asas nasais por 10–15 min
-- [ ] No olho vermelho, testei acuidade visual, motricidade ocular extrínseca e reatividade pupilar
-- [ ] Everti a pálpebra superior à procura de corpo estranho e realizei teste de fluoresceína na suspeita corneana
+### 1. Ouvido e orofaringe
 
-### 3. Upgrade Preceptor V2.0 (Travas de Segurança Oftalmo/ORL)
-- [ ] [CRÍTICO] Descartei as 5 Bandeiras Vermelhas do Olho Vermelho e NUNCA prescrevi colírio anestésico ou corticoide tópico para uso domiciliar
-- [ ] [CRÍTICO] Excluí complicações supurativas graves (Mastoidite Aguda retroauricular e Celulite Orbitária Pós-Septal com proptose/oftalmoplegia)
+- [ ] Apoiei o otoscópio e documentei conduto, tímpano e mastoide.
+- [ ] [CRÍTICO] Verifiquei sinais de via aérea ameaçada antes do exame oral.
+
+### 2. Epistaxe
+
+- [ ] [CRÍTICO] Reavaliei a via aérea, a perfusão e o sangramento após as medidas.
+- [ ] Documentei plano de revisão/retirada do tampão, quando usado.
+
+### 3. Olho vermelho
+
+- [ ] [CRÍTICO] Medi acuidade monocular e avaliei pupilas, motilidade e córnea conforme segurança.
+- [ ] Defini urgência, encaminhamento e prazo de reavaliação.

@@ -1,79 +1,111 @@
-# Exame do Abdome Agudo Cirúrgico
+# Exame do Abdome Agudo (I-A-P-P, LR Reais & Catástrofes Silenciosas)
 **Atalho Rápido:** `;hab-abd` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exame Físico & Semiologia
-**Âncora:** Ordem I-A-P-P → Sinal de Dunphy (Tosse LR+ 3.2) → Murphy / Rovsing / Psoas / Obturador → Carnett (Parede vs Víscera) → Abdome Vascular (Isquemia/AAA)
+**Âncora:** SSVV + β-hCG + analgesia → Inspeção → Ausculta → Percussão suave/tosse → Palpação longe da dor → Manobras dirigidas → Dor desproporcional? → AAA pulsátil?
 
 ---
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. 0. PREPARO & PERITONISMO SEM MÃO: Analgesia precoce NÃO mascara peritonite (reduz defesa voluntária e melhora acurácia!). Decúbito 0° + joelhos semifletidos + braços ao lado + expor xifoide até raiz das coxas. ANTES DE PALPAR: pergunte do "quebra-molas" na vinda ao PS e peça p/ TOSSIR apontando c/ 1 dedo onde dói (Sinal de Dunphy: LR+ 3,2 p/ peritonite parietal localizada!).
-2. 1. ALERTA VASCULAR (>50a, FA, aterosclerose): Dor lancinante DESPROPORCIONAL ao exame físico inocente (barriga flácida!) = Isquemia Mesentérica Aguda até prova em contrário (isquemia começa na mucosa antes de inflamar serosa/peritônio) | Dor abdominal/lombar + hipotensão + massa pulsátil expansiva supraumbilical (>3-5 cm) = AAA Roto!
+1. **β-hCG em Toda Mulher em Idade Fértil:** Antes de qualquer imagem, decisão cirúrgica ou alta — DIU, laqueadura ou "não tenho vida sexual" não excluem ectópica.
+2. **Analgesia Precoce é Segura:** Opioide/analgésico IV não mascara o diagnóstico nem atrasa a cirurgia; examinar com dor 9/10 gera defesa voluntária e falsos positivos.
+3. **Dor Desproporcional ao Exame = Isquemia Mesentérica:** Idoso, FA, vasculopata ou pós-IAM com dor intensa e abdome "flácido e pouco doloroso" → lactato e AngioTC, não "observar".
 
 ---
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Ordem I-A-P-P → Sinal de Dunphy (Tosse LR+ 3.2) → Murphy / Rovsing / Psoas / Obturador → Carnett (Parede vs Víscera) → Abdome Vascular (Isquemia/AAA)**
+> **Sinal isolado não fecha diagnóstico: Dor em FID LR+ ~8 > Rigidez involuntária LR+ ~4 > Migração periumbilical→FID LR+ ~3 > Murphy LR+ ~2,8 > Blumberg/Psoas LR+ ~2. Massa pulsátil alargada LR+ ~15 para AAA ≥ 5 cm. Some os achados num escore (Alvarado/AIR) — nunca decida por um só.**
 
 ---
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-0. PREPARO & PERITONISMO SEM MÃO: Analgesia precoce NÃO mascara peritonite (reduz defesa voluntária e melhora acurácia!). Decúbito 0° + joelhos semifletidos + braços ao lado + expor xifoide até raiz das coxas. ANTES DE PALPAR: pergunte do "quebra-molas" na vinda ao PS e peça p/ TOSSIR apontando c/ 1 dedo onde dói (Sinal de Dunphy: LR+ 3,2 p/ peritonite parietal localizada!).
-1. ALERTA VASCULAR (>50a, FA, aterosclerose): Dor lancinante DESPROPORCIONAL ao exame físico inocente (barriga flácida!) = Isquemia Mesentérica Aguda até prova em contrário (isquemia começa na mucosa antes de inflamar serosa/peritônio) | Dor abdominal/lombar + hipotensão + massa pulsátil expansiva supraumbilical (>3-5 cm) = AAA Roto!
-2. INSPEÇÃO & AUSCULTA (ANTES DE TOCAR): Cicatrizes (bridas = causa nº1 obstrução delgado!), distensão (simétrica vs pneumoperitônio/volvo), peristaltismo visível de luta (Kussmaul), Cullen (periumbilical) e Grey-Turner (flancos = retroperitônio/pancreatite necro-hemorrágica) | Ausculta (1 min contínuo; 2 min se silêncio): timbre metálico/luta (obstrução precoce), silêncio abdominal (íleo/peritonite avançada) e sopros (aorta/renais).
-3. PERCUSSÃO SUAVE (MINI-BLUMBERG HUMANIZADO): Percuta 4 quadrantes começando LONGE da dor. Dor à percussão leve já comprova irritação peritoneal (poupe o paciente de Blumberg agressivo!) | Sinal de Jobert (timpanismo na loja hepática D = pneumoperitônio por úlcera perfurada!) | Espaço de Traube (6º EIC E: maciço na esplenomegalia) | Macicez móvel nos flancos (ascite >= 500 mL) e Piparote.
-4. PALPAÇÃO & MANOBRAS (OLHAR SEMPRE NO ROSTO DO PACIENTE!):
-- Defesa voluntária (cede na expiração/flexão de joelhos) vs Rigidez em Tábua (espasmo reflexo involuntário contínuo da parede; LR+ 3,9 p/ abdome cirúrgico!) | Sinal de Carnett (cruzar braços e elevar cabeça/ombros contraindo reto abdominal: dor piora = parede/hematoma da bainha; dor alivia = visceral protegida pelo músculo).
-- Blumberg (McBurney: dor MAIOR na retirada súbita que estira o peritônio parietal somático) | Rovsing (comprime FIE -> dor na FID por deslocamento retrógrado de gás no cólon) | Psoas (DLE + hiperextensão passiva coxa D: Espec >90% p/ apêndice RETROCECAL) | Obturador (flexão 90° quadril/joelho + rotação interna coxa D: Espec >90% p/ apêndice PÉLVICO) | Murphy (ponto cístico + inspiração profunda -> PARADA súbita da inspiração quando vesícula inflamada bate nos dedos; LR+ 3,0) | Giordano (punho-percussão costovertebral).
-5. EXTREMOS OBRIGATÓRIOS & TRAVAS CIRÚRGICAS:
-- Palpar anéis herniários Inguinais (ACIMA) e Femorais (ABAIXO do ligamento inguinal, medial aos vasos femorais) com tosse/Valsalva | Mulher em idade fértil: Beta-hCG MANDATÓRIO + avaliar Sinal de Chandelier (dor extrema à mobilização cervical = DIP) | Temperatura axilo-retal (Sinal de Lenander: diferença > 1°C sugere pelviperitonite) | Toque retal seletivo (HDB/melena, ampola vazia vs fecaloma, abaulamento/grito de Douglas).
-- TRAVAS DE SEGURANÇA: Jobert/Tábua = PROIBIDO pedir EDA (ar sob pressão agrava perfuração!) | Obstrução = PROIBIDO prescrever procinético (metoclopramida) ou laxante!
+1. ANTES DE TOCAR (PORTA, SSVV E SEGURANÇA):
+- **Ectoscopia:** Imóvel e com medo de se mexer = peritonite; inquieto e trocando de posição = cólica (renal/biliar/intestinal).
+- **SSVV e Índice de Choque:** FC/PAS ≥ 0,9 com dor abdominal = hemorragia (ectópica rota, AAA roto) ou sepse abdominal até prova em contrário.
+- **β-hCG Obrigatório em Idade Fértil:** Urinário rápido na porta; positivo + dor/sangramento = ectópica até USG provar gestação tópica.
+- **Analgesia Precoce Segura:** Dipirona/opioide IV titulado antes do exame detalhado (não reduz acurácia diagnóstica).
+- **Posição:** Decúbito dorsal 0°, joelhos semifletidos, braços ao lado do corpo, abdome exposto do apêndice xifoide às regiões inguinais.
+
+2. INSPEÇÃO E AUSCULTA (ANTES DE PALPAR):
+- **Inspeção:** Distensão, cicatrizes (bridas), hérnias (umbilical/inguinal/incisional com tosse), equimose em flanco (Grey Turner) ou periumbilical (Cullen) = pancreatite/hemorragia retroperitoneal, ondas peristálticas visíveis.
+- **Ausculta por 1 min em 1 ponto:** RHA aumentados metálicos = obstrução mecânica inicial; silêncio = íleo/peritonite tardia; sopro abdominal = aneurisma/estenose de artéria renal.
+
+3. PERCUSSÃO SUAVE E TESTE DA TOSSE (IRRITAÇÃO PERITONEAL SEM CRUELDADE):
+- **Dor à Tosse (Dunphy) ou ao Pular/Sacudir o Leito:** Irritação peritoneal com desconforto mínimo — faça ANTES de qualquer descompressão.
+- **Percussão Suave Dolorosa:** Equivalente mais preciso e menos agressivo que o Blumberg.
+- **Timpanismo e Macicez:** Hipertimpanismo difuso = distensão/obstrução; perda da macicez hepática = pneumoperitônio; macicez móvel/piparote = ascite.
+
+4. PALPAÇÃO (LONGE DA DOR → PERTO, OLHANDO O ROSTO):
+- **Superficial nos 4 Quadrantes:** Começar no quadrante oposto à dor; distrair o paciente; diferenciar defesa voluntária de rigidez involuntária (LR+ ~4 para apendicite; "abdome em tábua" = perfuração).
+- **Profunda:** Massas, visceromegalias, plastrão.
+- **Massa Pulsátil Alargada (LR+ ~15 para AAA ≥ 5 cm):** Palpação bimanual supraumbilical medindo a largura lateral; circunferência > 100 cm limita a sensibilidade — se suspeita, POCUS/AngioTC.
+- **Sinal de Carnett:** Dor que piora ao contrair o reto abdominal (levantar a cabeça) = parede abdominal; que melhora = víscera.
+
+5. MANOBRAS DIRIGIDAS PELA HIPÓTESE:
+- **Apendicite:** Dor em FID (LR+ ~8; ausência LR− ~0,2), migração periumbilical → FID (LR+ ~3), Rovsing, Psoas (LR+ ~2,4) e Obturador (apêndice retrocecal/pélvico) → escore de Alvarado/AIR.
+- **Colecistite:** Murphy (parada inspiratória à palpação do ponto cístico; LR+ ~2,8, atenuado em idoso/diabético) + febre + leucocitose → USG.
+- **Pancreatite:** Dor epigástrica em faixa com irradiação dorsal, sinais de Cullen/Grey Turner → lipase.
+- **Giordano e Punho-Percussão:** Pielonefrite, litíase obstrutiva infectada.
+- **Regiões Inguinocrurais e Genitais:** Hérnia encarcerada (dor + irredutível), torção testicular (dor escrotal súbita, testículo horizontalizado, cremastérico ausente).
+
+6. EXAMES FINAIS E INTEGRAÇÃO:
+- **Toque Retal (quando muda conduta):** Melena/sangue, fecaloma, abaulamento de Douglas.
+- **Exame Ginecológico na Dor Pélvica:** Especular antes do toque; mobilização dolorosa do colo, massa anexial, grito de Douglas (ver `;hab-go`).
+- **Populações de Exame Enganoso:** Idoso, diabético, imunossuprimido, corticoide, gestante (apêndice desloca para cima) e cirrótico — limiar baixo para imagem.
 
 ---
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Cair na armadilha da Isquemia Mesentérica Aguda:** Achar que a barriga "flácida e sem Blumberg" descarta urgência cirúrgica num idoso com FA e dor abdominal excruciante (na fase precoce só há necrose mucosa, sem irritação peritoneal!).
-- **Não expor e palpar abaixo do ligamento inguinal:** Deixar passar uma hérnia femoral encarcerada/estrangulada (muito comum em mulheres idosas magras) diagnosticando erroneamente como "GECA ou constipação".
-- **Fazer Blumberg vigoroso em paciente que já teve Dunphy ou percussão dolorosa francamente positivos:** Causa dor lancinante desnecessária e destrói a confiança do paciente no restante do exame.
+- **Dor Abdominal Intensa Desproporcional ao Exame em Idoso/FA/Vasculopata:** Isquemia mesentérica aguda; lactato, AngioTC de abdome e cirurgia vascular imediata — lactato normal não exclui.
+- **Dor Abdominal/Lombar + Hipotensão + Massa Pulsátil:** AAA roto; hipotensão permissiva, 2 acessos calibrosos, tipagem, cirurgia vascular sem esperar TC se instável.
+- **β-hCG Positivo + Dor Pélvica + Índice de Choque ≥ 0,9:** Gestação ectópica rota; sala vermelha, reserva de sangue, GO de urgência.
+- **Rigidez Abdominal em Tábua com Sinais de Sepse:** Perfusão de víscera oca/peritonite difusa; RX de tórax em pé (pneumoperitônio), ATB de largo espectro e cirurgia.
+- **Vômitos Fecaloides/Distensão com Ausência de Flatos e Febre/Taquicardia:** Obstrução com sofrimento de alça (estrangulamento); SNG aberta, jejum, hidratação e cirurgia.
 
 ---
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
 ```text
-EXAME DO ABDOME AGUDO (ORDEM I-A-P-P):
-- Ectoscopia & Sinais Indiretos: Paciente em decúbito dorsal horizontal, sinal de Dunphy (dor localizada à tosse) [negativo/positivo em FID].
-- Inspeção: Abdome [plano/distendido], cicatrizes cirúrgicas [ausentes/presentes em...], sem peristaltismo de luta visível ou equimoses retroperitoneais (Cullen e Grey-Turner ausentes). Regiões inguinais e femorais sem abaulamentos à manobra de Valsalva.
-- Ausculta: RHA [presentes e normoativos / aumentados metálicos / diminuídos] nos 4 quadrantes. Ausência de sopros em aorta abdominal ou artérias renais.
-- Percussão: Timpanismo fisiológico difuso, espaço de Traube livre, macicez hepática preservada (Sinal de Jobert negativo). Percussão dolorosa localizada [ausente/presente em...]. Pesquisa de macicez móvel negativa. Punho-percussão lombar (Giordano) negativa bilateralmente.
-- Palpação & Manobras Especiais: Abdome [flácido / com defesa voluntária / com rigidez involuntária], dor à palpação profunda em [ ]. Sinais de Blumberg, Rovsing, Psoas, Obturador e Murphy [negativos/positivos]. Sinal de Carnett negativo. Aorta abdominal não ectasiada à palpação profunda.
+EXAME DO ABDOME AGUDO:
+- SSVV: PA [ ]x[ ] mmHg | FC [ ] bpm | Índice de Choque [ ] | FR [ ] irpm | Tax [ ]°C | Dor [ ]/10 (antes) → [ ]/10 (após analgesia às [ ] h).
+- β-hCG: [ ] (mulher em idade fértil) | Não se aplica: [ ].
+- Inspeção: [ ]. Cicatrizes [ ]. Hérnias [ ]. Equimoses (Cullen/Grey Turner) [ ].
+- Ausculta: RHA [ ]. Sopro abdominal [ ].
+- Percussão: [ ]. Dor à percussão suave [ ]. Dor à tosse [ ]. Macicez hepática [ ].
+- Palpação: [ ] (dor localizada em [ ]). Defesa [ ] (voluntária/involuntária). Rigidez [ ]. Massas [ ]. Massa pulsátil [ ]. Carnett [ ].
+- Manobras: Blumberg [ ] | Rovsing [ ] | Psoas [ ] | Obturador [ ] | Murphy [ ] | Giordano [ ].
+- Dor proporcional ao exame físico: [ ].
+- Inguinocrural/genital: [ ]. Toque retal: [ ] / não realizado por [ ].
+- Escore: Alvarado [ ] / AIR [ ] (se suspeita de apendicite).
+- Impressão: [ ]. Conduta: [ ]. Reavaliação seriada programada em [ ] h.
 ```
 
 ---
 
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Cair na armadilha da Isquemia Mesentérica Aguda:** Achar que a barriga "flácida e sem Blumberg" descarta urgência cirúrgica num idoso com FA e dor abdominal excruciante (na fase precoce só há necrose mucosa, sem irritação peritoneal!).
-- **Não expor e palpar abaixo do ligamento inguinal:** Deixar passar uma hérnia femoral encarcerada/estrangulada (muito comum em mulheres idosas magras) diagnosticando erroneamente como "GECA ou constipação".
-- **Fazer Blumberg vigoroso em paciente que já teve Dunphy ou percussão dolorosa francamente positivos:** Causa dor lancinante desnecessária e destrói a confiança do paciente no restante do exame.
-- **Chamar qualquer dor no hipocôndrio direito de Sinal de Murphy:** O Murphy verdadeiro exige **interrupção súbita da inspiração profunda**; lembre-se também de que idosos e diabéticos podem ter colecistite gangrenosa com Murphy falso-negativo por denervação visceral.
-- **Esquecer Beta-hCG em dor de fossa ilíaca ou hipogástrio feminino:** Gravidez ectópica rota imita perfeitamente apendicite aguda e evolui para choque hemorrágico.
+- **Negar Analgesia "para Não Mascarar":** Mito refutado; dor não tratada gera defesa voluntária, exame impreciso e paciente hostil — analgesie e examine depois.
+- **Fazer Blumberg Brutal Antes da Tosse/Percussão:** Causa dor desnecessária e defesa que contamina o resto do exame; teste irritação peritoneal pelo método menos agressivo primeiro.
+- **Fechar Apendicite (ou Excluí-la) por um Único Sinal:** Blumberg/Psoas têm LR+ ~2; some dor em FID, migração, rigidez, febre e laboratório num escore.
+- **Palpar Começando Pelo Ponto Doloroso:** O paciente contrai todo o abdome e o resto do exame fica inútil; comece pelo quadrante oposto, olhando o rosto.
+- **Dar Alta com "Abdome Flácido e Indolor" Sem Reavaliação:** Apendicite e obstrução evoluem em horas; programe reexame seriado e oriente sinais de retorno por escrito.
 
 ---
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Preparo, Inspeção & Ausculta
-- [ ] Garanti analgesia/conforto, decúbito 0° horizontal com joelhos fletidos e exposição até a raiz das coxas
-- [ ] [CRÍTICO] Perguntei onde doía antes de tocar para começar pelo quadrante mais distante
-- [ ] Inspecionei cicatrizes (bridas), distensão, hérnias visíveis e equimoses (Cullen / Grey-Turner)
-- [ ] [CRÍTICO] Auscultei os 4 quadrantes ANTES de percutir ou palpar (e contei 2 min antes de declarar silêncio)
+### 1. Antes de Tocar
+- [ ] [CRÍTICO] Solicitei/confirmei β-hCG em mulher em idade fértil antes de imagem, decisão ou alta
+- [ ] Calculei o índice de choque e reconheci instabilidade antes do exame segmentar
+- [ ] Prescrevi analgesia precoce e registrei a dor antes e depois
 
-### 2. Percussão, Palpação & Manobras Dirigidas
-- [ ] Percuti suavemente buscando dor localizada, Sinal de Jobert (pneumoperitônio) e macicez móvel/piparote se ascite
-- [ ] Palpei com mão plana olhando para o rosto do paciente, diferenciando defesa voluntária de rigidez/tábua (e Carnett se dúvida)
-- [ ] Executei corretamente as manobras dirigidas pertinentes (Blumberg, Rovsing, Psoas, Obturador, Murphy e Giordano)
+### 2. Sequência I-A-P-P
+- [ ] Inspecionei com abdome totalmente exposto e auscultei antes de palpar
+- [ ] Testei irritação peritoneal com tosse/percussão suave antes do Blumberg
+- [ ] Palpei do quadrante oposto até a dor, olhando o rosto, e diferenciei defesa voluntária de rigidez
+- [ ] Pesquisei massa pulsátil em idoso/tabagista/hipertenso com dor abdominal ou lombar
 
-### 3. Orifícios, Toque & Segurança Cirúrgica
-- [ ] [CRÍTICO] Examinei ativamente todas as cicatrizes e orifícios herniários inguinais E femorais (com tosse/Valsalva)
-- [ ] [CRÍTICO] Avaliei necessidade de toque retal (sangramento, obstrução, apendicite pélvica/Douglas, trauma) respeitando contraindicações
-- [ ] [CRÍTICO] Em mulher em idade fértil com dor abdominal baixa: solicitei Beta-hCG e considerei exame ginecológico (ectópica/DIP)
+### 3. Raciocínio & Catástrofes
+- [ ] [CRÍTICO] Avaliei se a dor era desproporcional ao exame (isquemia mesentérica) em paciente de risco
+- [ ] Combinei os achados num escore (Alvarado/AIR) em vez de decidir por um sinal isolado
+- [ ] Examinei regiões inguinocrurais/genitais e indiquei toque retal/ginecológico quando mudava conduta
 
-### 4. Upgrade Preceptor V2.0 (Dunphy, Carnett & Vascular)
-- [ ] [CRÍTICO] Iniciei pelo Sinal de Dunphy (dor na FID à tosse, LR+ 3.2) antes de palpar e testei o Sinal de Carnett para diferenciar parede abdominal de peritônio
-- [ ] [CRÍTICO] Descartei Abdome Agudo Vascular (Isquemia Mesentérica com dor desproporcional ao exame + FA, e Rotura de AAA com massa pulsátil + hipotensão)
+### 4. Disposição Segura
+- [ ] Programei reavaliação seriada ou imagem quando o exame era inconclusivo em população de exame enganoso
+- [ ] Orientei sinais de retorno por escrito em caso de alta

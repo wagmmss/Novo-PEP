@@ -1,89 +1,116 @@
-# Método de Diagnóstico Diferencial à Beira-Leito (DDx & Anti-Viés)
+# Método de Diagnóstico Diferencial à Beira do Leito (3H, Bayes & Anti-Viés)
 **Atalho Rápido:** `;hab-ddx` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Raciocínio & Segurança Clínica
-**Âncora:** Qualificadores Semânticos → Problem Representation (1 Frase) → Matriz 3x3 (Provável + Worst-First/Fantasmas + VINDICATE/Drogas) → Bayes (LR+/LR-) + Pausa Cognitiva
+**Âncora:** Triagem → 3H em ≤ 60s → Qualificadores semânticos → One-liner → Illness scripts gêmeos → Pré-teste × LR → Limiar teste/terapêutico → Time-out 20s antes da alta
 
 ---
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. **Qualificadores Semânticos & One-Liner:** Traduzir queixas brutas em pares bipolares (hiperagudo vs agudo vs crônico; focal vs difuso) e montar a *Problem Representation* em 1 frase antes de gerar diferenciais.
-2. **Matriz Tripla + Antivíeis:** Listar sempre a mais provável + grande imitadora + **Worst-First (o que mata em 2h)** + aplicar Raciocínio Bayesiano (não pedir D-dímero em alta probabilidade).
+1. **Bloco `3H:` Antes da Primeira Pergunta (≤ 60s):** Provável (comum), Perigosa (grave tratável) e Não Pode Passar (letal em horas) — escrito a partir da triagem, antes de entrar no box.
+2. **Pergunte e Examine Só o que Discrimina:** Para cada par de scripts gêmeos, ache o discriminador de ouro (o achado que muda a conduta) e calcule mentalmente o efeito da LR.
+3. **Time-Out de 20s + Pergunta de Segurança Antes da Alta:** "Qual grave ainda está em aberto, e com qual dado objetivo eu o afastei?"
 
 ---
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Qualificadores Semânticos → Problem Representation (1 Frase) → Matriz 3x3 (Provável + Worst-First/Fantasmas + VINDICATE/Drogas) → Bayes (LR+/LR-) + Pausa Cognitiva**
+> **Odds pós = Odds pré × LR. Atalho de McGee (pré-teste 10–90%): LR+ 2/5/10 → +15/+30/+45%; LR− 0,5/0,2/0,1 → −15/−30/−45%. Abaixo do limiar de teste: não peça; entre os limiares: teste discriminador; acima do limiar terapêutico: trate já (Pauker-Kassirer).**
 
 ---
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-1. TRADUZIR DADOS BRUTOS EM QUALIFICADORES SEMÂNTICOS (Dual Process: Sistema 1 Intuitivo -> Sistema 2 Analítico):
-- Tempo: Hiperagudo (segundos = oclusão/ruptura vascular) | Agudo (horas/dias = infecção/inflamação/cristal) | Subagudo (semanas = autoimune/subagudo/TB/fungo) | Crônico (meses = degenerativo/neoplásico).
-- Distribuição: Mono vs Oligo vs Poliarticular | Focal vs Multifocal vs Difuso | Simétrico vs Assimétrico.
-- Gravidade Oculta: PAM < 65 mmHg | Índice de Choque (FC/PAS > 0,9) | qSOFA >= 2 (FR >= 22, PAS <= 100, Glasgow < 15).
-2. ENQUADRAMENTO CLÍNICO (Problem Representation em 1 Frase Cirúrgica):
-- Fórmula: [Quem é o hospedeiro + Terreno epidemiológico/imunológico] + [Curva temporal] + [Síndrome clínica central com qualificadores positivos e negativos discriminadores].
-- Exemplo: "Homem de 68 anos, tabagista e hipertenso, com dor torácica anterior hiperaguda rasgando irradiada para região interescapular, associada a assimetria de pulsos braquiais e sem supra de ST."
-3. MATRIZ DE DDx (PROIBIDO SAIR DO LEITO COM APENAS 1 HIPÓTESE!):
-- REGRA DO TRIPLO EIXO DE EMERGÊNCIA:
-* (1) A Mais Provável (Epidemiologia / Lei de Sutton: "o comum é o mais comum").
-* (2) A Grande Imitadora / Alternativa Plausível (que exige tratamento oposto!).
-* (3) A Catástrofe Tempo-Dependente (Worst-First / Must-Not-Miss: o que mata nas próximas 2 horas se eu der alta?).
-- EIXO ANATÔMICO (Dor Focal — De fora p/ dentro): Pele/Parede (herpes zoster, Carnett+) -> Serosa/Pleura/Peritônio -> Víscera/Parênquima -> Vaso (isquemia/aneurisma) -> Dor Referida (ex: IAM inferior/pneumonia basal doendo no epigástrio!).
-- REDE VINDICATE (Casos Sistêmicos / Febre de Origem Indeterminada / Encefalopatia):
-* V (Vascular) | I (Infeccioso/Inflamatório) | N (Neoplásico) | D (Degenerativo/Deficiência vitamínica) | I (Intoxicação/Iatrogênico/Medicamentoso — SEMPRE checar lista de remédios!) | C (Congênito) | A (Autoimune/Alérgico) | T (Traumático) | E (Endócrino/Eletrolítico/Metabólico).
-4. CONFRONTO DE ILLNESS SCRIPTS & RACIOCÍNIO BAYESIANO (Probabilidade Pré-Teste -> LR -> Pós-Teste):
-- Compare o quadro do paciente com o "Illness Script" de cada hipótese: (a) Condições predisponentes, (b) Insulto fisiopatológico, (c) Manifestações clínicas e (d) Achado rejeitador/confirmador (alta Razão de Verossimilhança LR+ ou LR-).
-- Limiar de Teste vs Limiar de Tratamento: Só peça exame complementar se o resultado puder cruzar o limiar terapêutico! (Ex: Wells baixo/moderado -> D-dímero; Wells alto para TEP -> AngioTC direto, pois D-dímero negativo não reduz a probabilidade pós-teste o suficiente!).
-5. PAUSA COGNITIVA ANTI-VIÉS (15 Segundos Antes de Fechar a Conduta):
-- "Qual dado da história, exame físico ou laboratório NÃO se explica pela minha hipótese nº 1?"
-- "Estou sendo vítima de Viés de Ancoragem (preso ao diagnóstico da triagem/ficha anterior), Fechamento Precoce ou Viés de Confirmação?"
+1. BLOCO 3H EM ≤ 60 SEGUNDOS (A PARTIR DA TRIAGEM):
+- **Provável:** Diagnóstico mais frequente para o terreno e a queixa (ex.: dor torácica → musculoesquelética/DRGE).
+- **Perigosa:** Grave, comum e tratável que exige investigação ativa (ex.: SCA sem supra, pneumonia).
+- **Não Pode Passar:** Letal em horas se perdido (ex.: IAMCSST, dissecção aórtica, TEP, pneumotórax hipertensivo, Boerhaave).
+- **Gatilhos para Desacelerar (Sistema 2):** Sinais vitais alterados, retorno em 72h, queixa que não fecha em um único script, terreno de risco (idoso, gestante, imunossuprimido, psiquiátrico), fim de plantão/superlotação.
+
+2. QUALIFICADORES SEMÂNTICOS → ONE-LINER (BORDAGE):
+- **Pares Binários:** Agudo/crônico, súbito/insidioso, contínuo/intermitente, unilateral/bilateral, localizado/difuso, esforço/repouso, primeiro episódio/recorrente.
+- **Estrutura do One-Liner:** Terreno + fatores de risco → curso temporal → síndrome com qualificadores.
+- **Exemplo Sênior:** "Homem de 58 anos, tabagista e diabético, com dor torácica súbita, contínua, em repouso há 2h, irradiada ao dorso, com assimetria de PA" — ativa o duelo dissecção vs. SCA.
+
+3. MATRIZ DE ILLNESS SCRIPTS DE PORTA (DISCRIMINADOR DE OURO):
+- **Dor Torácica:** ECG em ≤ 10 min; dor súbita rasgando + dorso + PA/pulsos assimétricos (ADD-RS); HEART score.
+- **Dor Abdominal:** β-hCG em idade fértil; dor desproporcional ao exame (isquemia mesentérica); "cólica renal" > 60 anos = AAA até excluir.
+- **Dispneia:** Pulmão limpo + hipoxemia/taquicardia = TEP; Kussmaul + HGT = cetoacidose; B3/TJV/refluxo = IC.
+- **Cefaleia:** Pico em < 1 min (trovoada), regra de Ottawa para HSA, SNOOP4, fundo de olho/pupilas, CO no inverno.
+- **Tontura/Síncope:** Síncope ao esforço ou deitado, ECG (QTc, Brugada, bloqueios); HINTS+ e marcha na vertigem contínua com nistagmo.
+- **Febre no Adulto:** NEWS2 ≥ 5, sinais meníngeos/alteração mental, quimioterapia recente (neutropenia), classificação de dengue.
+
+4. RACIOCÍNIO BAYESIANO À BEIRA DO LEITO:
+- **Estime o Pré-Teste:** Prevalência no terreno + gestalt + regra validada (Wells, HEART, ADD-RS, Alvarado) — nunca a memória do último plantão.
+- **Aplique a LR:** Use achados de LR+ ≥ 5 para confirmar e LR− ≤ 0,2 para afastar; LR 0,5–2 é ruído.
+- **Limiar de Teste:** Abaixo dele, o falso-positivo e a cascata iatrogênica superam o benefício (ex.: PERC negativo com gestalt < 15% → sem D-dímero).
+- **Limiar Terapêutico:** Muito baixo quando a doença é letal e o tratamento é seguro — ceftriaxona antes da TC/punção na suspeita de meningite; adrenalina IM na anafilaxia.
+- **Janela do Teste:** LR− só vale dentro da janela (troponina precoce exige seriação; TC > 6h da cefaleia em trovoada não exclui HSA).
+
+5. OS 7 VIESES & SEUS ANTÍDOTOS:
+- **Ancoragem:** "Quais 3 diagnósticos orgânicos explicam estes sinais vitais antes de aceitar o rótulo da triagem?"
+- **Fechamento Prematuro:** "Este achado explica TODOS os sintomas e sinais vitais? Se não, a busca continua."
+- **Disponibilidade:** "Qual é a probabilidade pré-teste real neste terreno?" — aplicar a regra validada.
+- **Confirmação:** "Qual achado fala CONTRA minha hipótese?" — procurá-lo primeiro.
+- **Framing/Psych-out:** Etilista, psiquiátrico ou "poliqueixoso" rebaixado exige HGT, TCE, sepse e eletrólitos antes de atribuir ao rótulo.
+- **Momentum Diagnóstico:** "Este diagnóstico herdado foi provado por qual critério?" — refazer o one-liner do zero.
+- **Teste Fora da Janela:** Checar o tempo desde o início dos sintomas antes de usar um negativo para afastar.
+
+6. TIME-OUT DE 20 SEGUNDOS + PERGUNTA DE SEGURANÇA (ANTES DA ALTA):
+- **1. Explicação Completa:** Minha hipótese explica todos os sintomas e sinais vitais?
+- **2. Não Pode Passar:** Qual era o letal e com qual dado objetivo eu o afastei?
+- **3. Sinais Vitais na Saída:** Estão normais agora?
+- **4. Retorno em 72h:** É retorno não programado? Se sim, reavaliar como caso novo.
+- **Pergunta de Segurança Explícita ao Paciente:** O que fazer, quando voltar e quem reavalia, com sinais de alarme por escrito.
 
 ---
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Fechamento Precoce (*Premature Closure*):** Parar de pensar assim que encontra a primeira explicação confortável (ex: achar piúria num idoso confuso e rotular como "ITU" sem ver que ele tem rigidez de nuca ou pneumonia hipoxêmica).
-- **Momentum Diagnóstico / Ancoragem na Ficha de Triagem:** Repetir o rótulo dado pelo colega anterior ("paciente DPOC exacerbado" ou "paciente psiquiátrico/poliqueixoso") sem reexaminar do zero — erro clássico que oculta TEP, IAM e sepse.
-- **Ignorar a Navalha de Hickam em Idosos e Imunossuprimidos:** A Navalha de Occam ("uma única doença explica tudo") falha frequentemente em pacientes complexos ou HIV+, que podem ter duas patologias agudas simultâneas.
+- **Sinais Vitais Anormais Sem Explicação pelo Diagnóstico Proposto:** Taquicardia, FR ≥ 24 ou hipotensão que "não cabem" na hipótese = diagnóstico ainda errado; reabrir o 3H e não dar alta.
+- **Retorno Não Programado em 72h:** Alto risco de erro diagnóstico prévio; reavaliar do zero com exame completo e discutir com o preceptor.
+- **Confusão Mental Aguda em Idoso:** Delirium é emergência orgânica (sepse, hipóxia, hipoglicemia, eletrólitos, fármacos, AVC); investigar antes de qualquer rótulo psiquiátrico.
+- **Dor Desproporcional ou que Muda de Caráter:** Isquemia mesentérica, dissecção, síndrome compartimental ou perfuração; reexame imediato e imagem.
+- **Paciente/Família Dizendo "Ele Não é Assim":** Mudança do basal relatada por quem conhece o paciente é sinal precoce de deterioração; escalar e monitorizar (NEWS2).
 
 ---
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
 ```text
-SÍNTESE DE RACIOCÍNIO CLÍNICO & DIAGNÓSTICO DIFERENCIAL (PEP):
-- Representação do Problema (Summary Statement): Paciente [idade/sexo], com antecedente de [comorbidades-chave], apresentando quadro [hiperagudo/agudo/subagudo/crônico] de [qualificadores semânticos principais], associado a [achados críticos do EF/Lab].
-- Hipótese Principal (Mais Provável): [Diagnóstico 1] — sustentado por [positivos pertinentes com alto LR+] e ausência de [negativos pertinentes].
-- Diagnósticos Diferenciais de Gravidade Excluídos/Em Investigação (Worst-First): [Diagnóstico Crítico A] e [Diagnóstico Crítico B] — estratificados por [critérios clínicos / exames solicitados].
-- Revisão de Causas Farmacológicas / Iatrogênicas (VINDICATE): Descartada toxicidade ou efeito adverso de medicações em uso.
+RACIOCÍNIO DIAGNÓSTICO:
+- One-liner: [ ] (terreno + curso temporal + síndrome com qualificadores).
+- 3H: Provável: [ ] | Perigosa: [ ] | Não pode passar: [ ].
+- Discriminadores avaliados: [ ] (achado / LR / interpretação).
+- Probabilidade pré-teste estimada: [ ] (regra utilizada: [ ]). Pós-teste: [ ].
+- Decisão por limiar: [ ] (abaixo do limiar de teste / testar / acima do limiar terapêutico — tratamento iniciado: [ ]).
+- Achados contra a hipótese principal: [ ].
+- Time-out pré-alta: Explica todos os sintomas/SSVV [ ]. Grave afastado: [ ] por [ ]. SSVV na saída: PA [ ]x[ ] mmHg, FC [ ] bpm, FR [ ] irpm, SpO2 [ ]%. Retorno em 72h [ ].
+- Incerteza remanescente: [ ]. Plano de reavaliação: [ ] em [ ] h por [ ].
+- Orientações de retorno entregues por escrito e compreendidas (teach-back): [ ].
 ```
 
 ---
 
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Fechamento Precoce (*Premature Closure*):** Parar de pensar assim que encontra a primeira explicação confortável (ex: achar piúria num idoso confuso e rotular como "ITU" sem ver que ele tem rigidez de nuca ou pneumonia hipoxêmica).
-- **Momentum Diagnóstico / Ancoragem na Ficha de Triagem:** Repetir o rótulo dado pelo colega anterior ("paciente DPOC exacerbado" ou "paciente psiquiátrico/poliqueixoso") sem reexaminar do zero — erro clássico que oculta TEP, IAM e sepse.
-- **Ignorar a Navalha de Hickam em Idosos e Imunossuprimidos:** A Navalha de Occam ("uma única doença explica tudo") falha frequentemente em pacientes complexos ou HIV+, que podem ter duas patologias agudas simultâneas.
-- **Pedir D-dímero em paciente com alta probabilidade pré-teste de TEP/TVP:** A sensibilidade não é 100%; um falso-negativo em alta probabilidade leva a óbito por embolia maciça — vá direto ao exame de imagem definitivo!
-- **Esquecer Iatrogenia/Medicamentos no DDx:** Metade das confusões mentais, quedas, bradicardias, distúrbios hidroeletrolíticos e insuficiências renais agudas no hospital são causadas pela própria prescrição médica.
+- **Começar a Anamnese Sem Hipóteses:** Coleta tudo e não discrimina nada; o 3H escrito antes de entrar no box direciona cada pergunta.
+- **One-Liner Vago ("Dor no Peito Há Algumas Horas"):** Não ativa nenhum script; sem qualificadores semânticos o preceptor não consegue raciocinar com você.
+- **Pedir Exame Abaixo do Limiar de Teste:** D-dímero em paciente PERC negativo gera falso-positivo, AngioTC desnecessária e radiação; aplique a regra antes de pedir.
+- **Esperar Confirmação Acima do Limiar Terapêutico:** Atrasar ATB na suspeita de meningite ou adrenalina na anafilaxia para "fechar diagnóstico" custa vidas.
+- **Usar Teste Negativo Fora da Janela para Afastar:** Troponina única com 40 min de dor ou TC tardia na trovoada não têm LR− suficiente; seriar ou usar o teste complementar.
 
 ---
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Enquadramento & Travas de Gravidade
-- [ ] Traduzi a história em qualificadores semânticos (tempo, padrão e terreno de risco)
-- [ ] Formulei o Problem Representation mental ou oral em 1 frase cirúrgica
-- [ ] [CRÍTICO] Chequei sinais objetivos de choque oculto ou sepse (PAM, Índice de Choque FC/PAS e qSOFA)
-- [ ] Respeitei a trava anti-alucinação (não assumi como negativa dado que não perguntei/examinei)
+### 1. Geração de Hipóteses
+- [ ] [CRÍTICO] Escrevi o bloco 3H (provável, perigosa, não pode passar) em ≤ 60s antes de entrar no box
+- [ ] Construí um one-liner com terreno, curso temporal e qualificadores semânticos
+- [ ] Identifiquei o discriminador de ouro entre os scripts gêmeos
 
-### 2. Geração de Diferenciais & Scripts
-- [ ] Listei pelo menos 3 hipóteses (provável, alternativa e catástrofe tempo-dependente)
-- [ ] Usei abordagem anatômica (dor localizada) ou VINDICATE (caso atípico/obscuro)
-- [ ] Busquei achados discriminadores à beira-leito comparando os Illness Scripts
+### 2. Decisão Quantitativa
+- [ ] Estimei a probabilidade pré-teste com regra validada, não por memória
+- [ ] Usei a LR dos achados para mover a probabilidade e decidi pelo limiar de teste/terapêutico
+- [ ] Iniciei tratamento sem esperar confirmação quando estava acima do limiar terapêutico
 
-### 3. Limiar de Exames & Higiene Cognitiva
-- [ ] [CRÍTICO] Pedi apenas exames que mudam a conduta (sem "pesca de arrastão" nem atrasar emergência)
-- [ ] Fiz a Pausa Anti-Viés buscando ativamente um dado discrepante contra minha 1ª hipótese
-- [ ] [CRÍTICO] Considerei SIFE e prevenção quaternária antes de fechar plano/alta
+### 3. Auditoria de Vieses
+- [ ] Procurei ativamente o achado que contradizia minha hipótese principal
+- [ ] Revisei o diagnóstico herdado da triagem ou do plantão anterior em vez de repeti-lo
+- [ ] Verifiquei se cada teste negativo estava dentro da sua janela diagnóstica
 
-### 4. Upgrade Preceptor V2.0 (Bayes & Pausa Cognitiva)
-- [ ] [CRÍTICO] Construí a Representação do Problema em 1 frase com qualificadores semânticos e separei o DDx em Mais Prováveis, Worst-First (Fantasmas) e VINDICATE/Drogas
-- [ ] [CRÍTICO] Executei a Pausa de Desaceleração Cognitiva ('O que neste caso NÃO se encaixa na minha hipótese favorita?') para blindar contra fechamento prematuro
+### 4. Segurança na Saída
+- [ ] [CRÍTICO] Fiz o time-out de 20s e respondi a pergunta de segurança antes da alta
+- [ ] Registrei a incerteza remanescente, o plano de reavaliação e as orientações de retorno por escrito

@@ -905,7 +905,7 @@ export function buildContextualAiPrompt(kind: PromptContextualKind, state: Centr
   const microHab = state.microHabitoSemanal || rodizio.microHabitoSugerido;
   const top3BlindSpots = (state.logbookEntries || [])
     .filter((e) => e.tipo === 'ponto_cego' && e.status !== 'resolvido')
-    .slice(-3)
+    .slice(0, 3)
     .map((e) => e.titulo);
   const blindSpotsSuffix =
     top3BlindSpots.length > 0
@@ -930,6 +930,80 @@ export function buildContextualAiPrompt(kind: PromptContextualKind, state: Centr
   }
 }
 
+export type ProcedureMasteryStage =
+  | 'pendente'
+  | 'exposicao'
+  | 'em_treino'
+  | 'supervisionado_3x'
+  | 'autonomo_3x';
+
+export interface ProcedureProgress {
+  obsCount: number;
+  auxCount: number;
+  supCount: number;
+  autCount: number;
+  /** Execuções reais com a mão na massa (Supervisionado + Autônomo). Avança a Regra 3x. */
+  execCount: number;
+  rule3xDone: boolean;
+  stage: ProcedureMasteryStage;
+  stageLabel: string;
+}
+
+export function getProceduresForHabId(habId: string): LogbookProcedureGoal[] {
+  if (!habId) return [];
+  return LOGBOOK_PROCEDIMENTOS_MATRIX.filter((p) => p.habId === habId);
+}
+
+export function computeProcedureProgress(
+  procId: string,
+  state: Pick<Central6AnoState, 'procAutonomyById' | 'logbookEntries'>
+): ProcedureProgress {
+  const auto = state.procAutonomyById?.[procId] || {
+    auxiliei: 0,
+    supervisionado: 0,
+    autonomo: 0,
+  };
+  const entries = (state.logbookEntries || []).filter(
+    (e) => e.tipo === 'procedimento' && e.gatilhoCorrecao === procId
+  );
+  const obsCount = entries.filter((e) => e.papel === 'Observou').length;
+  const auxCount = Math.max(0, Number(auto.auxiliei) || 0);
+  const supCount = Math.max(0, Number(auto.supervisionado) || 0);
+  const autCount = Math.max(0, Number(auto.autonomo) || 0);
+  const execCount = supCount + autCount;
+  const rule3xDone = execCount >= 3;
+
+  let stage: ProcedureMasteryStage;
+  let stageLabel: string;
+  if (rule3xDone && autCount >= 1) {
+    stage = 'autonomo_3x';
+    stageLabel = 'Autônomo ✓';
+  } else if (rule3xDone) {
+    stage = 'supervisionado_3x';
+    stageLabel = 'Supervisionado 3x';
+  } else if (execCount > 0) {
+    stage = 'em_treino';
+    stageLabel = `${execCount}/3`;
+  } else if (obsCount > 0 || auxCount > 0) {
+    stage = 'exposicao';
+    stageLabel = 'Exposição';
+  } else {
+    stage = 'pendente';
+    stageLabel = '0/3';
+  }
+
+  return {
+    obsCount,
+    auxCount,
+    supCount,
+    autCount,
+    execCount,
+    rule3xDone,
+    stage,
+    stageLabel,
+  };
+}
+
 export function registerProcedureExecution(
   state: Central6AnoState,
   procId: string,
@@ -938,19 +1012,25 @@ export function registerProcedureExecution(
   const prevCounts = state.procCountsById || {};
   const prevAuto = state.procAutonomyById || {};
   const curAuto = prevAuto[procId] || { auxiliei: 0, supervisionado: 0, autonomo: 0 };
+  const nextAuto = {
+    ...curAuto,
+    [autonomy]: (curAuto[autonomy] || 0) + 1,
+  };
+  // Regra 3x real: apenas execuções com a mão na massa (Supervisionado + Autônomo)
+  const countsToward3x = autonomy === 'supervisionado' || autonomy === 'autonomo';
+  const nextCount = countsToward3x
+    ? nextAuto.supervisionado + nextAuto.autonomo
+    : Math.max(0, Number(prevCounts[procId]) || 0);
 
   return {
     ...state,
     procCountsById: {
       ...prevCounts,
-      [procId]: (prevCounts[procId] || 0) + 1,
+      [procId]: nextCount,
     },
     procAutonomyById: {
       ...prevAuto,
-      [procId]: {
-        ...curAuto,
-        [autonomy]: (curAuto[autonomy] || 0) + 1,
-      },
+      [procId]: nextAuto,
     },
   };
 }

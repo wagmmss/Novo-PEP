@@ -1,96 +1,116 @@
-# Exame Neurológico Completo (6 Blocos + AVC/NIHSS & HINTS Plus)
+# Exame Neurológico de Urgência (Glasgow-P, NIHSS, HINTS+ & Meningismo)
 **Atalho Rápido:** `;hab-neuro` | **Meta de Tempo:** 30s Pré-Porta | **Categoria:** Exame Físico & Semiologia
-**Âncora:** Glicemia + Glasgow-P → Afasia (Broca/Wernicke) → VII Central vs Periférico (Testa) → HINTS Plus na Vertigem → Pronator Drift + Babinski + Romberg
+**Âncora:** HGT + UMVB → Glasgow-P → NIHSS rápido → Pares (VII: testa?) → Tontura contínua com nistagmo = HINTS+ e marcha → Força/drift/Babinski → Meningismo pela regra de Attia
 
 ---
 
 ## 🎯 1. O QUE NÃO ESQUECER (Visão de 5 Segundos)
-1. 0. REGRA DE OURO NA URGÊNCIA NEUROLÓGICA: Déficit focal súbito, coma ou convulsão = 1º HGT CAPILAR IMEDIATO (hipoglicemia imita AVC!) + Cravar hora do UMVB (Último Momento Visto Bem) + TC de Crânio Sem Contraste!
-2. 1. MENTE, LINGUAGEM & GLASGOW-P: Consciência (AO 1-4 + RV 1-5 + RM 1-6; subtrair Pupilas inativas 0-2 = Glasgow-P) | Atenção (soletrar MUNDO de trás p/ frente; se falhar = Delirium!) | Linguagem em 4 pilares: Fluência, Compreensão, Repetição e Nomeação (Broca/Frontal = não fluente, compreende, hemiparesia D | Wernicke/Temporal = fluente "salada de palavras", não compreende | Disartria = defeito puramente motor da articulação, linguagem intacta).
+1. **HGT Capilar + Hora do Último Momento Visto Bem:** Hipoglicemia imita AVC; o UMVB define a janela de trombólise (≤ 4,5h) e trombectomia (até 24h selecionados).
+2. **Tontura Contínua com Nistagmo = HINTS+ e Marcha, NUNCA Dix-Hallpike:** Dix-Hallpike é só para vertigem episódica posicional; na síndrome vestibular aguda contínua, `INFARCT`, hipoacusia nova ou incapacidade de ficar de pé sem apoio = AVC de fossa posterior.
+3. **Meningite Não Se Afasta por Kernig/Brudzinski Negativos:** Sensibilidade ~5–30%; ausência simultânea de febre, rigidez de nuca e alteração mental (Attia) é o que torna improvável.
 
 ---
 
 ## 🧠 2. MNEMÔNICO / REGRA DE OURO
-> **Glicemia + Glasgow-P → Afasia (Broca/Wernicke) → VII Central vs Periférico (Testa) → HINTS Plus na Vertigem → Pronator Drift + Babinski + Romberg**
+> **`INFARCT` = Impulse Normal · Fast-phase Alternating · Refixation on Cover Test — qualquer 1 sinal = central. HINTS+ soma hipoacusia súbita nova (AICA). Glasgow-P = Glasgow − pupilas não reativas (0, 1 ou 2). TC sem contraste normal NÃO exclui AVC isquêmico de fossa posterior.**
 
 ---
 
 ## 🛠️ 3. COREOGRAFIA / PASSO A PASSO TÉCNICO
-0. REGRA DE OURO NA URGÊNCIA NEUROLÓGICA: Déficit focal súbito, coma ou convulsão = 1º HGT CAPILAR IMEDIATO (hipoglicemia imita AVC!) + Cravar hora do UMVB (Último Momento Visto Bem) + TC de Crânio Sem Contraste!
-1. MENTE, LINGUAGEM & GLASGOW-P: Consciência (AO 1-4 + RV 1-5 + RM 1-6; subtrair Pupilas inativas 0-2 = Glasgow-P) | Atenção (soletrar MUNDO de trás p/ frente; se falhar = Delirium!) | Linguagem em 4 pilares: Fluência, Compreensão, Repetição e Nomeação (Broca/Frontal = não fluente, compreende, hemiparesia D | Wernicke/Temporal = fluente "salada de palavras", não compreende | Disartria = defeito puramente motor da articulação, linguagem intacta).
-2. 12 PARES CRANIANOS:
-- II (Óptico): Acuidade, Campos por confrontação (4 quadrantes) e Fotomotor aferente (Marcus Gunn / DPAR no swinging flashlight).
-- III, IV, VI (MOE em "H" — Fórmula LR6-SO4-R3): III par lesado = olho "down & out" + ptose + midríase (se midríase súbita dolorosa = aneurisma A. Comunicante Posterior!). VI par = olho não abduz (sinal falso localizatório de HIC!).
-- V (Trigêmeo): Sensib V1/V2/V3 (poupa ângulo da mandíbula = C2/C3!), reflexo córneo-palpebral e masseter.
-- VII (Facial — TESTAR A TESTA!): Paralisia CENTRAL (AVC supranuclear) POUPA a testa (inervação cortical bilateral do andar superior) e paralisa só canto da boca; Paralisia PERIFÉRICA (Bell / VII par) paralisa TODA a hemiface ipsilateral (não fecha olho -> Sinal de Bell + não enruga testa).
-- VIII & PROTOCOLO HINTS PLUS (Síndrome Vestibular Aguda contínua — mais sensível que RM nas primeiras 48h! Qualquer 1 sinal central = AVC de fossa posterior!):
-* HI (Head Impulse / Halmagyi): Sacada corretiva ao girar rápido = Neurite periférica; Impulso NORMAL (olho cravado no nariz) em paciente c/ nistagmo = AVC CENTRAL!
-* N (Nystagmus): Unidirecional horizontal que piora ao olhar p/ lado rápido = Periférico; Nistagmo vertical, torcional puro ou que MUDA DE DIREÇÃO no olhar = AVC CENTRAL!
-* TS (Test of Skew / Cover-Uncover): Desalinhamento vertical do olho ao destapar = AVC CENTRAL!
-* PLUS (+ Audição + Marcha): Surdez unilateral nova (infarto de AICA!) ou incapacidade de ficar em pé/andar sem apoio (ataxia grau 3) = AVC CENTRAL!
-- IX/X ("Aaah": véu sobe simétrico; na lesão, úvula desvia p/ LADO SÃO = Sinal da Cortina) | XI (Trapézio/ECM) | XII (Língua protrusa desvia p/ LADO LESADO).
-3. MOTRICIDADE & MANOBRAS DEFICITÁRIAS: Tônus (Espasticidade em "canivete" velocidade-dependente = 1º Neurônio/Piramidal | Rigidez em "roda denteada/cano de chumbo" = Extrapiramidal/Parkinson) -> Força MRC 0-5 comparativa D vs E -> Manobras subtis: Braços estendidos supinados olhos fechados por 20-30s (Deriva Pronadora = sinal mais sensível de lesão piramidal leve!), Mingazzini MMII (30s) e Barré.
-4. REFLEXOS (0 a 4+) & LIBERAÇÃO PIRAMIDAL: Bicipital (C5-C6), Estilorradial (C6), Tricipital (C7), Patelar (L3-L4), Aquileu (S1) [se ausentes: Manobra de Jendrassik!] -> Reflexo Cutâneo-Plantar (estímulo lateral -> arco medial: extensão lenta do hálux + abertura em leque = Sinal de Babinski -> lesão do trato corticoespinhal!) + Clônus aquileu + Sinal de Hoffmann.
-5. SENSIBILIDADE (Olhos fechados, distal -> proximal): Superficial (tátil/dolorosa/térmica = trato espinotalâmico) vs Profunda (Propriocepção segurando SEMPRE PELAS BORDAS LATERAIS do hálux + Vibração 128 Hz = funículo posterior) | Nível sensitivo medular: T4 (mamilos), T10 (umbigo), S2-S4 (anestesia em sela = Cauda Equina!).
-6. COORDENAÇÃO, ROMBERG, MARCHA & MENINGES: Índex-nariz, Diadococinesia, Calcanhar-joelho -> Romberg (olhos abertos e depois fechados: se cai de olhos abertos = Ataxia Cerebelar; se só cai ao fechar os olhos = Ataxia Sensitiva/Proprioceptiva!) -> Marcha (normal, tandem, calcanhares L4-L5, pontas S1) -> Sinais Meníngeos (sem trauma cervical!): Rigidez de nuca (flexão passiva queixo-esterno), Brudzinski (flete nuca -> flete joelhos) e Kernig (extensão do joelho c/ quadril a 90°).
+1. PORTA NEUROLÓGICA (ANTES DE QUALQUER ESCALA):
+- **HGT Capilar Imediato:** Déficit focal, coma, convulsão ou confusão; glicemia < 70 mg/dL = corrigir (G50% + tiamina se etilista/desnutrido) e reexaminar.
+- **UMVB (Último Momento Visto Bem):** Horário exato confirmado com testemunha; "acordou com o déficit" = UMVB é a hora em que foi dormir bem.
+- **X-ABCDE:** Via aérea protegida? (Glasgow ≤ 8 ou vômitos/aspiração), PA, sinais de HIC (Cushing: HAS + bradicardia + respiração irregular).
+- **Fluxo de AVC:** Déficit focal súbito com UMVB < 24h = acionar protocolo e TC/AngioTC sem esperar o exame completo.
+
+2. CONSCIÊNCIA — GLASGOW-P:
+- **Glasgow (3–15):** Abertura ocular 1–4 + Resposta verbal 1–5 + Resposta motora 1–6; estímulo doloroso central (pressão supraorbitária/trapézio) e registro por componente (ex.: O2 V2 M5).
+- **Reatividade Pupilar:** Subtrair 0 (ambas reagem), 1 (uma não reage) ou 2 (nenhuma reage) = Glasgow-P (1–15); melhor preditor prognóstico no TCE.
+- **Pupilas:** Midríase unilateral fixa com rebaixamento = herniação uncal (neurocirurgia agora); miose puntiforme = ponte ou opioide (naloxona).
+- **Atenção e Delirium:** Meses do ano de trás para frente; desatenção aguda flutuante = delirium (procurar causa orgânica).
+
+3. NIHSS RÁPIDO (SUSPEITA DE AVC — PONTUAR O QUE O PACIENTE FAZ, NÃO O QUE PODERIA FAZER):
+- **Itens:** 1a consciência, 1b perguntas (mês/idade), 1c comandos (abrir/fechar olhos, apertar mão) → 2 olhar conjugado → 3 campos visuais → 4 paralisia facial → 5 motor MMSS (10s) → 6 motor MMII (5s) → 7 ataxia apendicular → 8 sensibilidade → 9 linguagem (figura/frases) → 10 disartria → 11 extinção/negligência.
+- **Sinais de Oclusão de Grande Vaso:** Desvio do olhar conjugado, afasia global ou negligência + hemiparesia densa = AngioTC e avaliação de trombectomia.
+- **NIHSS Baixo Não é Benigno:** Afasia isolada, hemianopsia ou ataxia de tronco pontuam pouco e podem ser incapacitantes.
+
+4. PARES CRANIANOS DIRIGIDOS:
+- **II:** Confrontação nos 4 quadrantes, fotomotor e DPAR (lanterna alternante); fundoscopia se cefaleia (papiledema).
+- **III, IV, VI:** MOE em "H"; III com midríase dolorosa = aneurisma de comunicante posterior; VI bilateral = HIC (falso localizatório).
+- **VII (Teste a Testa):** Central (AVC) poupa o andar superior; periférico (Bell) acomete toda a hemiface (não fecha o olho, não enruga a testa).
+- **IX/X/XII:** Úvula desvia para o lado são; língua protrusa desvia para o lado lesado; disfagia = jejum até avaliação de deglutição.
+
+5. HINTS+ NA SÍNDROME VESTIBULAR AGUDA CONTÍNUA (VERTIGEM HÁ HORAS-DIAS + NISTAGMO PRESENTE AGORA):
+- **Critério de Entrada:** Vertigem contínua (não episódica), nistagmo espontâneo ou evocado pelo olhar no momento do exame, náusea, intolerância à marcha. Sem nistagmo ou episódica posicional = HINTS não se aplica (episódica posicional = Dix-Hallpike/rolamento supino).
+- **Head Impulse (sentado, fixando seu nariz, giro rápido de 10–20°):** Sacada corretiva = periférico (neurite); impulso NORMAL na vertigem contínua = CENTRAL.
+- **Nistagmo (olhar primário, D e E):** Unidirecional horizontal que aumenta ao olhar para o lado da fase rápida = periférico; muda de direção com o olhar, vertical ou torcional puro = CENTRAL.
+- **Test of Skew (cover test alternado):** Correção vertical ao destapar = CENTRAL.
+- **Plus — Audição:** Atrito de dedos/Weber; hipoacusia súbita nova = infarto de AICA (central mesmo com impulso alterado).
+- **Marcha Sem Apoio (obrigatória):** Não fica de pé/não anda sem apoio = central até prova em contrário, mesmo com HINTS "periférico".
+- **Desfecho:** Qualquer sinal central → fluxo de AVC, AngioTC/RM-DWI e regulação; só é periférico com impulso anormal + nistagmo unidirecional + skew ausente + audição preservada + marcha possível.
+
+6. MOTRICIDADE, REFLEXOS, COORDENAÇÃO & MENINGES:
+- **Deriva Pronadora (braços estendidos supinados, olhos fechados, 10–20s):** Sinal mais sensível de lesão piramidal leve; Mingazzini nos MMII.
+- **Força MRC 0–5 Comparativa e Tônus:** Espasticidade em canivete (piramidal) vs. rigidez em roda denteada (extrapiramidal).
+- **Reflexos e Babinski:** Bicipital, tricipital, patelar, aquileu 0–4+; cutâneo-plantar em extensão = lesão corticoespinhal; nível sensitivo + arreflexia + retenção = medula (choque medular).
+- **Coordenação:** Índex-nariz, calcanhar-joelho; ataxia de tronco (não senta sem apoio) = vermis cerebelar.
+- **Meningismo (sem trauma cervical):** Rigidez de nuca, Kernig e Brudzinski têm sensibilidade ~5–30% — negativos NÃO afastam. Regra de Attia: ausência simultânea de febre, rigidez de nuca e alteração do estado mental tem LR− ~0 (exceto idoso/imunossuprimido). Suspeita = hemoculturas + ATB + dexametasona sem atrasar por TC/LCR.
 
 ---
 
 ## 🚨 4. RED FLAGS (Sinais de Alarme)
-- **Confiar em NIHSS baixo (0–2) ou TC de crânio normal na vertigem aguda:** A TC perde > 80% dos AVCs isquêmicos de fossa posterior nas primeiras 24h; quem salva o paciente é o **HINTS Plus + incapacidade de deambular (ataxia de tronco)**!
-- **Achar que Head Impulse (Halmagyi) "normal" na vertigem aguda é tranquilizador:** Na síndrome vestibular aguda com nistagmo, o reflexo vestíbulo-ocular preservado (sem sacada corretiva) indica que o labirinto está íntegro e a lesão está no **tronco/cerebelo (AVC)**!
-- **Diagnosticar Paralisia de Bell sem mandar enrugar a testa:** Se o paciente consegue franzir a testa normalmente e só tem queda da rima labial, a lesão é **central (AVC)** e não periférica.
+- **Déficit Focal Súbito com UMVB < 24h:** AVC agudo; protocolo imediato, HGT, TC/AngioTC e avaliação de trombólise/trombectomia — tempo é cérebro.
+- **Vertigem Contínua com Impulso Cefálico Normal, Skew ou Incapacidade de Andar:** AVC de fossa posterior; não liberar como "labirintite", neuroimagem com RM-DWI/AngioTC e regulação.
+- **Febre + Cefaleia + Alteração Mental ou Petéquias:** Meningite bacteriana/meningococcemia; ATB e dexametasona em ≤ 1h, precaução respiratória, antes de TC/punção.
+- **Midríase Unilateral Fixa com Queda do Glasgow ou Tríade de Cushing:** Herniação cerebral; cabeceira 30°, IOT se Glasgow ≤ 8, salina hipertônica/manitol e neurocirurgia.
+- **Cefaleia Súbita "Pior da Vida" (pico em < 1 min):** Hemorragia subaracnoide; TC sem contraste em ≤ 6h, punção lombar se TC tardia/negativa com alta suspeita.
 
 ---
 
 ## 📝 5. COMO REGISTRAR NO PRONTUÁRIO (Texto Pronto)
 ```text
-EXAME NEUROLÓGICO DIRECIONADO (6 BLOCOS):
-- Nível de Consciência & Cognição: Glicemia capilar: [ ] mg/dL. ECG: 15 (O4 V5 M6) | Pupilas isocóricas e fotorreagentes (Glasgow-P: 15). Linguagem fluente, compreende, nomeia e repete sem afasia (Broca/Wernicke preservadas) e sem disartria.
-- Nervos Cranianos: Campos visuais preservados por confrontação; oculomotricidade extrínseca conjugada sem diplopia ou ptose (III, IV, VI). Sensibilidade facial simétrica (V). Mímica facial simétrica no andar superior e inferior (VII preservado). Audição simétrica (VIII). Véu palatino centrado e reflexo nauseoso preservado (IX, X). Força de ECOM/trapézio (XI) e protrusão lingual centrada (XII) normais. [Se vertigem aguda: HINTS Plus benigno — Head Impulse positivo corretivo, nistagmo unidirecional horizontal, Skew negativo e audição preservada].
-- Força & Tônus: Força muscular grau 5/5 (MRC) global e simétrica nos 4 membros. Pesquisa de Pronator Drift (Mingazzini) negativa por 10s. Tônus eutônico.
-- Reflexos: Reflexos profundos (bicipital, estilorradial, tricipital, patelar e aquileu) 2+/4+ simétricos. Reflexo cutâneo-plantar em flexão bilateral (Sinal de Babinski ausente).
-- Sensibilidade, Coordenação & Marcha: Sensibilidade tátil, térmica/dolorosa e proprioceptiva/vibratória (hálux) preservadas. Provas índex-nariz, calcanhar-joelho e diadococinesia normais (sem dismetria). Sinal de Romberg negativo; marcha atípica (calcanhares, pontas e tandem preservados). Sinais meníngeos (rigidez de nuca, Brudzinski e Kernig) ausentes.
+EXAME NEUROLÓGICO DE URGÊNCIA:
+- HGT [ ] mg/dL às [ ] h | UMVB: [ ] (fonte: [ ]) | PA [ ]x[ ] mmHg | FC [ ] bpm.
+- Glasgow [ ] (O [ ] V [ ] M [ ]) | Reatividade pupilar [ ] → Glasgow-P [ ] | Pupilas [ ] mm D / [ ] mm E, fotorreagentes [ ].
+- Atenção/orientação: [ ]. Linguagem: fluência [ ], compreensão [ ], repetição [ ], nomeação [ ]. Disartria [ ].
+- NIHSS: [ ] pontos (itens alterados: [ ]). Sinais de oclusão de grande vaso [ ].
+- Pares cranianos: Campos visuais [ ]. MOE [ ]. Facial [ ] (andar superior [ ] / inferior [ ]). Úvula/língua [ ].
+- HINTS+ (síndrome vestibular aguda contínua com nistagmo): Impulso cefálico D [ ] / E [ ] | Nistagmo [ ] (direção [ ], muda com o olhar [ ]) | Skew [ ] | Audição [ ] | Marcha sem apoio [ ] → Padrão [ ] (central/periférico). Dix-Hallpike: não indicado na vertigem contínua / [ ].
+- Motor: Força MSD [ ] MSE [ ] MID [ ] MIE [ ] (MRC) | Deriva pronadora [ ] | Mingazzini [ ] | Tônus [ ].
+- Reflexos: [ ]/4+ simétricos [ ] | Cutâneo-plantar D [ ] / E [ ] | Clônus [ ].
+- Sensibilidade: [ ] | Nível sensitivo [ ].
+- Coordenação: Índex-nariz [ ] | Calcanhar-joelho [ ] | Romberg [ ] | Marcha [ ].
+- Meningismo: Rigidez de nuca [ ] | Kernig [ ] | Brudzinski [ ] | Febre [ ] | Alteração mental [ ] (regra de Attia [ ]).
 ```
 
 ---
 
 ## ⚠️ 6. ARMADILHAS DO INTERNO (Erros Comuns na Prática)
-- **Confiar em NIHSS baixo (0–2) ou TC de crânio normal na vertigem aguda:** A TC perde > 80% dos AVCs isquêmicos de fossa posterior nas primeiras 24h; quem salva o paciente é o **HINTS Plus + incapacidade de deambular (ataxia de tronco)**!
-- **Achar que Head Impulse (Halmagyi) "normal" na vertigem aguda é tranquilizador:** Na síndrome vestibular aguda com nistagmo, o reflexo vestíbulo-ocular preservado (sem sacada corretiva) indica que o labirinto está íntegro e a lesão está no **tronco/cerebelo (AVC)**!
-- **Diagnosticar Paralisia de Bell sem mandar enrugar a testa:** Se o paciente consegue franzir a testa normalmente e só tem queda da rima labial, a lesão é **central (AVC)** e não periférica.
-- **Segurar o hálux por cima e por baixo na propriocepção:** O paciente adivinha a direção pela pressão na polpa digital mesmo sem propriocepção; segure sempre pelas **bordas laterais** do dedo.
-- **Chamar instabilidade de olhos abertos de "Romberg positivo":** O teste de Romberg avalia propriocepção (coluna dorsal) e só é positivo quando o paciente fica estável de olhos abertos e **cai ao fechar os olhos**; se já cai de olhos abertos, a ataxia é **cerebelar**.
+- **Fazer Dix-Hallpike na Vertigem Contínua:** Teste errado para a síndrome errada, além de provocar vômitos; na vertigem contínua com nistagmo, só HINTS+ e marcha.
+- **Interpretar Impulso Cefálico Normal como Tranquilizador:** Na vertigem contínua, VOR preservado significa labirinto íntegro e lesão central; é o achado mais perigoso do HINTS.
+- **Liberar com TC de Crânio Normal na Tontura Aguda:** TC sem contraste perde a maioria dos AVCs isquêmicos de fossa posterior nas primeiras horas; decida pelo exame (HINTS+ e marcha).
+- **Descartar Meningite Porque Kernig e Brudzinski Foram Negativos:** Sensibilidade muito baixa; use a regra de Attia e trate empiricamente se suspeita persistir.
+- **Calcular Glasgow com Estímulo Periférico ou Sem Registrar Componentes:** Estímulo no leito ungueal gera retirada reflexa e confunde M4/M5; use estímulo central e anote O/V/M separados.
 
 ---
 
 ## ✅ 7. CHECKLIST PÓS-ATENDIMENTO (Autoavaliação & Debriefing V2.0)
-### 1. Estado Mental, Linguagem & Glasgow
-- [ ] Avaliei nível de consciência e apliquei Escala de Coma de Glasgow com reatividade pupilar (Glasgow-P)
-- [ ] [CRÍTICO] Chequei orientação (autopsíquica/tempo/espaço), atenção e evocação recente (3 palavras)
-- [ ] Testei linguagem completa (fluência, compreensão, repetição, nomeação) diferenciando afasia de disartria
+### 1. Porta & Consciência
+- [ ] [CRÍTICO] Medi HGT capilar antes de qualquer escala e cravei o UMVB com fonte confiável
+- [ ] Calculei Glasgow por componentes com estímulo central e subtraí a reatividade pupilar (Glasgow-P)
+- [ ] Avaliei atenção (delirium) e linguagem separando afasia de disartria
 
-### 2. Os 12 Pares Cranianos
-- [ ] [CRÍTICO] Avaliei nervo óptico (acuidade, confrontação visual nos 4 quadrantes e reflexo fotomotor direto/consensual/Marcus Gunn)
-- [ ] Testei motilidade ocular extrínseca em "H" (III, IV, VI) buscando diplopia, ptose e nistagmo
-- [ ] Testei V (V1/V2/V3 + motor) e VII par (andar superior vs inferior — diferenciando paralisia central de periférica)
-- [ ] Avaliei VIII (audição/Weber-Rinne/HINTS se tontura), IX/X (elevação de palato/"Aaah"), XI (trapézio/ECM) e XII (língua em repouso e protrusão)
+### 2. AVC Agudo
+- [ ] Apliquei NIHSS rápido e procurei sinais de oclusão de grande vaso
+- [ ] Testei o andar superior da face para separar paralisia central de periférica
+- [ ] Pesquisei deriva pronadora, força comparativa e Babinski
 
-### 3. Motricidade, Reflexos & Piramidal
-- [ ] Inspecionei trofismo/fasciculações e testei tônus passivo lento e rápido (espasticidade vs rigidez)
-- [ ] Testei força muscular (MRC 0–5) proximal e distal comparando D vs E em MMSS e MMII
-- [ ] Executei manobras deficitárias (braços estendidos supinados com olhos fechados / Mingazzini / Barré)
-- [ ] Pesquisei os 5 reflexos profundos principais (bicipital, estilorradial, tricipital, patelar, aquileu) graduando 0–4+ (com Jendrassik se ausente)
-- [ ] Realizei reflexo cutâneo-plantar (Babinski) bilateral e pesquisei clônus aquileu quando indicado
+### 3. Tontura Aguda
+- [ ] [CRÍTICO] Confirmei síndrome vestibular aguda contínua com nistagmo antes de aplicar HINTS (e não fiz Dix-Hallpike)
+- [ ] [CRÍTICO] Completei HINTS+: impulso cefálico bilateral, nistagmo nas 3 posições, skew, audição e marcha sem apoio
+- [ ] Encaminhei qualquer sinal central para fluxo de AVC mesmo com TC normal
 
-### 4. Sensibilidade, Coordenação, Marcha & Meninges
-- [ ] Testei sensibilidade superficial (tátil/álgica/térmica) de distal para proximal com olhos fechados comparando D vs E
-- [ ] Testei sensibilidade profunda: propriocepção segurando pelas bordas laterais do hálux + vibração 128 Hz
-- [ ] Avaliei coordenação apendicular (índex-nariz, diadococinesia, calcanhar-joelho)
-- [ ] Executei Teste de Romberg com segurança (olhos abertos e depois fechados) e marcha (normal, tandem, ponta dos pés, calcanhares)
-- [ ] Pesquisei sinais meníngeos (rigidez de nuca, Brudzinski e Kernig) após descartar trauma cervical
-- [ ] [CRÍTICO] Na suspeita de AVC agudo: chequei HGT imediatamente, hora exata do UMVB e apliquei NIHSS completo
-
-### 6. Upgrade Preceptor V2.0 (HINTS Plus & Topografia)
-- [ ] [CRÍTICO] Na síndrome vestibular aguda contínua, apliquei o HINTS Plus completo (Head Impulse, Nistagmo, Test of Skew + Audição + Marcha) para excluir AVC de fossa posterior
-- [ ] [CRÍTICO] Diferenciei paralisia facial Central (poupa a testa) de Periférica/Bell (acomete toda a hemiface) e afasia de Broca vs Wernicke vs Disartria
+### 4. Meninges & Registro
+- [ ] Apliquei a regra de Attia (febre, rigidez de nuca, alteração mental) em vez de confiar em Kernig/Brudzinski
+- [ ] Iniciei ou indiquei ATB + dexametasona sem atrasar por TC/LCR quando havia suspeita de meningite bacteriana
+- [ ] Registrei os achados negativos pertinentes (HINTS periférico completo, ausência de meningismo)

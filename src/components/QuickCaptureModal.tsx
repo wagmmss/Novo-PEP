@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Check, X } from 'lucide-react';
-import { RODIZIOS_6ANO } from '../engine/central6ano.ts';
+import {
+  LOGBOOK_PROCEDIMENTOS_MATRIX,
+  RODIZIOS_6ANO,
+  getProceduresForHabId,
+} from '../engine/central6ano.ts';
 import { cockpitStore, type LogbookRole } from '../state/store.ts';
 import { detectPiiIssues } from '../utils/piiGuard.ts';
 
@@ -9,6 +13,8 @@ export interface QuickCaptureRequest {
   defaultTitle: string;
   defaultRodizio?: string;
   defaultNota?: string;
+  defaultProcId?: string;
+  defaultHabId?: string;
 }
 
 interface QuickCaptureModalProps {
@@ -33,13 +39,40 @@ export function QuickCaptureModal({
 }: QuickCaptureModalProps) {
   const [titulo, setTitulo] = useState('');
   const [rodizio, setRodizio] = useState(activeRodizioId);
+  const [selectedProcId, setSelectedProcId] = useState('');
   const [autonomy, setAutonomy] = useState<LogbookRole>('supervisionado');
   const [nota, setNota] = useState('');
 
+  const suggestedProcs = useMemo(
+    () => (request?.defaultHabId ? getProceduresForHabId(request.defaultHabId) : []),
+    [request?.defaultHabId]
+  );
+
+  const otherProcs = useMemo(() => {
+    const suggestedIds = new Set(suggestedProcs.map((p) => p.id));
+    return LOGBOOK_PROCEDIMENTOS_MATRIX.filter((p) => !suggestedIds.has(p.id));
+  }, [suggestedProcs]);
+
   useEffect(() => {
     if (!request) return;
-    setTitulo(request.defaultTitle);
-    setRodizio(request.defaultRodizio || activeRodizioId || RODIZIOS_6ANO[0]?.id || 'cm');
+
+    const initialProc =
+      (request.defaultProcId
+        ? LOGBOOK_PROCEDIMENTOS_MATRIX.find((p) => p.id === request.defaultProcId)
+        : null) ||
+      (request.kind === 'logbook' && request.defaultHabId
+        ? getProceduresForHabId(request.defaultHabId)[0] || null
+        : null);
+
+    setSelectedProcId(initialProc?.id || '');
+    setTitulo(initialProc ? initialProc.nome : request.defaultTitle);
+    setRodizio(
+      initialProc?.rodizioId ||
+        request.defaultRodizio ||
+        activeRodizioId ||
+        RODIZIOS_6ANO[0]?.id ||
+        'cm'
+    );
     setAutonomy('supervisionado');
     setNota(request.defaultNota || '');
 
@@ -59,6 +92,17 @@ export function QuickCaptureModal({
 
   const isLogbook = request.kind === 'logbook';
 
+  const handleSelectProc = (nextProcId: string) => {
+    setSelectedProcId(nextProcId);
+    const proc = LOGBOOK_PROCEDIMENTOS_MATRIX.find((p) => p.id === nextProcId);
+    if (proc) {
+      setTitulo(proc.nome);
+      setRodizio(proc.rodizioId);
+    } else if (request.defaultTitle) {
+      setTitulo(request.defaultTitle);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!titulo.trim()) return;
@@ -69,8 +113,13 @@ export function QuickCaptureModal({
         rodizio,
         autonomy,
         aprendizado: nota.trim(),
+        procId: selectedProcId || undefined,
       });
-      onSaved?.('Registrado no Logbook.');
+      onSaved?.(
+        selectedProcId
+          ? 'Registrado e vinculado ao Logbook 3x.'
+          : 'Registrado no Logbook (avulso).'
+      );
     } else {
       const res = cockpitStore.addQuickBlindSpotEntry({
         titulo: titulo.trim(),
@@ -115,6 +164,38 @@ export function QuickCaptureModal({
         </div>
 
         <div className="space-y-4 p-5">
+          {isLogbook && (
+            <div>
+              <label htmlFor="qc-proc" className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
+                Vincular ao Logbook 3x
+              </label>
+              <select
+                id="qc-proc"
+                value={selectedProcId}
+                onChange={(e) => handleSelectProc(e.target.value)}
+                className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+              >
+                {suggestedProcs.length > 0 && (
+                  <optgroup label="Procedimentos deste cartão">
+                    {suggestedProcs.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nome}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                <optgroup label={suggestedProcs.length > 0 ? 'Outros da matriz manual' : 'Procedimentos da matriz'}>
+                  {otherProcs.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome} ({p.rodizioNome})
+                    </option>
+                  ))}
+                </optgroup>
+                <option value="">Registro avulso (sem vínculo 3x)</option>
+              </select>
+            </div>
+          )}
+
           <div>
             <label htmlFor="qc-title" className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
               {isLogbook ? 'Procedimento ou caso' : 'Tema / dúvida clínica'}
@@ -123,7 +204,7 @@ export function QuickCaptureModal({
               id="qc-title"
               type="text"
               required
-              autoFocus
+              autoFocus={!isLogbook}
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
@@ -170,13 +251,16 @@ export function QuickCaptureModal({
                     </button>
                   ))}
                 </div>
+                <p className="mt-1 text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                  Supervisionado e Autônomo avançam a Regra 3x; Observou e Auxiliou contam como exposição.
+                </p>
               </div>
             )}
           </div>
 
           <div>
             <label htmlFor="qc-note" className="mb-1 block text-xs font-medium text-zinc-600 dark:text-[#9CA3AF]">
-              {isLogbook ? 'Aprendizado ou detalhe rápido (opcional)' : 'O que travou ou precisa revisar?'}
+              {isLogbook ? 'Ajuste técnico para a próxima vez (opcional)' : 'O que travou ou precisa revisar?'}
             </label>
             <textarea
               id="qc-note"
@@ -185,7 +269,7 @@ export function QuickCaptureModal({
               onChange={(e) => setNota(e.target.value)}
               placeholder={
                 isLogbook
-                  ? 'Ex.: punção em 1ª tentativa, ajuste de dose confirmado.'
+                  ? 'Ex.: punção em 1ª tentativa; manter ângulo de 30° na próxima.'
                   : 'Ex.: critério de internação ou dose de ataque na gestante (sem nome ou CPF).'
               }
               className="w-full resize-none rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
@@ -223,4 +307,3 @@ export function QuickCaptureModal({
     </div>
   );
 }
-

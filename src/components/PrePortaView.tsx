@@ -532,6 +532,7 @@ export function PrePortaView({
                   onOpenQuickCapture({
                     kind: 'logbook',
                     defaultTitle: activeHabDisplayTitle,
+                    defaultHabId: activeHab.id,
                   })
                 }
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.10] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/40 dark:hover:bg-[#1C2029] dark:hover:text-[#2DD4BF]"

@@ -54,6 +54,8 @@ import {
   UNIFIED_CURRICULUM_CATALOG,
   CURRICULUM_BANKS_CONFIG,
   FORMACAO_TEORICA_MODULOS,
+  computeProcedureProgress,
+  getProceduresForHabId,
   registerProcedureExecution,
   recordPrePortaExecution,
   buildContextualAiPrompt,
@@ -444,15 +446,51 @@ test('Mundo 2 Store: Logbook 3x (4 papéis + undo), Pontos Cegos anti-PII, Teori
   const firstProc = LOGBOOK_PROCEDIMENTOS_MATRIX[0];
   assert.ok(firstProc);
 
-  // Observou registra histórico sem inflar Regra 3x
-  cockpitStore.recordMatrixProcedure(firstProc.id, 'observou');
+  // Observou e Auxiliou registram exposição sem inflar Regra 3x real
+  const obsId = cockpitStore.recordMatrixProcedure(firstProc.id, 'observou');
+  assert.ok(obsId);
   assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id] || 0, 0);
+  const auxId = cockpitStore.recordMatrixProcedure(firstProc.id, 'auxiliei');
+  assert.ok(auxId);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id] || 0, 0);
+  assert.equal(
+    computeProcedureProgress(firstProc.id, cockpitStore.getSnapshot().central6Ano).stage,
+    'exposicao'
+  );
 
-  // Auxiliou, Supervisionado e Autônomo completam Regra 3x (3/3)
-  cockpitStore.recordMatrixProcedure(firstProc.id, 'auxiliei');
+  // Nota rápida pós-registro com sanitização anti-PII
+  const noteRes = cockpitStore.updateLogbookEntryNote(
+    auxId,
+    'Paciente Maria Silva CPF 111.222.333-44 — manter ângulo 30 graus'
+  );
+  assert.ok(noteRes.sanitizedCount >= 2);
+  const notedEntry = (cockpitStore.getSnapshot().central6Ano.logbookEntries || []).find(
+    (e) => e.id === auxId
+  );
+  assert.ok(notedEntry?.aprendizado.includes('ângulo 30 graus'));
+  assert.ok(!notedEntry?.aprendizado.includes('Maria Silva'));
+
+  // Supervisionado e Autônomo avançam a Regra 3x real (Escada de Autonomia)
   cockpitStore.recordMatrixProcedure(firstProc.id, 'supervisionado');
+  cockpitStore.recordMatrixProcedure(firstProc.id, 'supervisionado');
+  assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id], 2);
+  assert.equal(
+    computeProcedureProgress(firstProc.id, cockpitStore.getSnapshot().central6Ano).stage,
+    'em_treino'
+  );
+
+  cockpitStore.recordMatrixProcedure(firstProc.id, 'supervisionado');
+  assert.equal(
+    computeProcedureProgress(firstProc.id, cockpitStore.getSnapshot().central6Ano).stage,
+    'supervisionado_3x'
+  );
+
   cockpitStore.recordMatrixProcedure(firstProc.id, 'autonomo');
-  assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id], 3);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id], 4);
+  assert.equal(
+    computeProcedureProgress(firstProc.id, cockpitStore.getSnapshot().central6Ano).stage,
+    'autonomo_3x'
+  );
 
   // Remover uma execução ativa decrementa com segurança
   const latestExec = (cockpitStore.getSnapshot().central6Ano.logbookEntries || []).find(
@@ -460,7 +498,29 @@ test('Mundo 2 Store: Logbook 3x (4 papéis + undo), Pontos Cegos anti-PII, Teori
   );
   assert.ok(latestExec);
   cockpitStore.deleteLogbookEntry(latestExec.id);
-  assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id], 2);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.procCountsById?.[firstProc.id], 3);
+  assert.equal(
+    computeProcedureProgress(firstProc.id, cockpitStore.getSnapshot().central6Ano).stage,
+    'supervisionado_3x'
+  );
+
+  // Vínculo Pré-Porta -> QuickCaptureModal -> Logbook 3x
+  const hab19Procs = getProceduresForHabId('hab-19');
+  assert.ok(hab19Procs.some((p) => p.id === 'proc-svd'));
+  assert.ok(hab19Procs.some((p) => p.id === 'proc-paracentese'));
+  assert.ok(!LOGBOOK_PROCEDIMENTOS_MATRIX.some((p) => p.id === 'proc-cvc' || p.id === 'proc-efast' || p.id === 'proc-dreno-torax'));
+
+  cockpitStore.addQuickLogbookEntry({
+    titulo: 'Paracentese diagnóstica / alívio',
+    rodizio: 'cm',
+    autonomy: 'supervisionado',
+    aprendizado: 'Técnica em Z-track sem intercorrências',
+    procId: 'proc-paracentese',
+  });
+  assert.equal(
+    computeProcedureProgress('proc-paracentese', cockpitStore.getSnapshot().central6Ano).execCount,
+    1
+  );
 
   // Ponto Cego com sanitização anti-PII + toggle resolvido
   const blindRes = cockpitStore.addBlindSpotEntry({
@@ -526,7 +586,8 @@ test('Mundo 2 Store: Logbook 3x (4 papéis + undo), Pontos Cegos anti-PII, Teori
   cockpitStore.importBackupJson(JSON.stringify(exported));
   const after = cockpitStore.getSnapshot().central6Ano;
   assert.equal(after.teoriaStatusById?.['mod-01'], 'dominado');
-  assert.equal(after.procCountsById?.[firstProc.id], 2);
+  assert.equal(after.procCountsById?.[firstProc.id], 3);
+  assert.equal(after.procCountsById?.['proc-paracentese'], 1);
   assert.equal(after.curriculumEntries?.[catItem.id]?.proofStatus, 'pdf_pronto');
   assert.equal(after.curriculumEnamedConcept, 5);
   assert.ok((after.r1Milestones || []).some((m) => m.id === addedMs.id));

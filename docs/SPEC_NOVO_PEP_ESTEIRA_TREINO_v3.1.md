@@ -2,7 +2,7 @@
 
 > **Fonte única:** `docs/PLANO_CURSO_HABILIDADES_CLINICAS.md` (v3.1). Substitui `docs/arquivo/PLANO_IMPLEMENTACAO_NOVO_PEP_TREINO_CLINICO.md` (v3.0 / 16 queixas — nunca implementada; não há migração de dados).
 > **Escopo:** dados + regras puras. Sem UI. A simulação roda no ChatGPT/Gemini; o app decide o próximo passo, monta o prompt, registra o LOG e gerencia o `Não Pode Passar`.
-> **Conflito conhecido:** o §6 do plano congela o `Novo-PEP` até abr/2027. Implementar esta spec é decisão explícita do usuário e deve entrar no §9 (changelog) do plano.
+> **Desenvolvimento ativo nas férias:** a trava anterior de congelamento do `Novo-PEP` até abr/2027 foi retirada por decisão explícita do usuário em 22/nov/2026; evoluções cirúrgicas no app seguem liberadas durante as férias.
 > **Convenções:** datas `YYYY-MM-DD` (fuso local `America/Sao_Paulo`); semana = segunda a domingo, identificada pelo `YYYY-MM-DD` da segunda (`weekIso`); `#n` = ordem estável do catálogo; "hoje" = `todayIso` passado como parâmetro (nenhuma função lê o relógio).
 
 ---
