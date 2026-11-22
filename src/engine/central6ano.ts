@@ -4,6 +4,7 @@
 // ============================================================================
 
 import { FORMACAO_TEORICA_MODULOS, type TeoriaModuloItem } from '../data/formacao_teorica_data.ts';
+import { migrateTreinoClinicoState } from './treinoClinico.ts';
 import {
   CURRICULO_ITEMS_DATA,
   CURRICULUM_BANKS_CONFIG,
@@ -758,6 +759,7 @@ export function migrateCentral6AnoState(state: Partial<Central6AnoState>): Centr
     r1Milestones,
     curriculumEntries,
     curriculumEnamedConcept,
+    treinoClinico: migrateTreinoClinicoState(state.treinoClinico),
   };
 }
 

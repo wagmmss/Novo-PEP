@@ -275,6 +275,7 @@ export function App() {
           central6Ano={storeState.central6Ano}
           onOpenPrePorta={handleOpenPrePortaFromProtocol}
           initialModId={selectedTeoriaModId}
+          onNotify={notify}
         />
       )}
 

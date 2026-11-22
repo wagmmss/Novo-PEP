@@ -15,6 +15,23 @@ import {
 } from '../engine/central6ano.ts';
 import { sanitizePiiText } from '../utils/piiGuard.ts';
 import { reportPersistFailure } from './appHealth.ts';
+import {
+  applyNppTextEdit,
+  canDeleteLogEntry,
+  computeContingencia10Jan,
+  computeVeredito,
+  migrateTreinoClinicoState,
+  normalizeMecanismo,
+  validateLogEntry,
+  validateNppAdd,
+  validateNppCheck,
+} from '../engine/treinoClinico.ts';
+import type {
+  FonteTipo,
+  NaoPodePassarItem,
+  TreinoClinicoState,
+  TreinoLogEntry,
+} from '../data/treino_clinico_data.ts';
 
 export type ClinicalTheme = 'light' | 'dark';
 export type LogbookRole = 'observou' | ProcedureAutonomy;
@@ -626,6 +643,208 @@ class ClinicalCockpitStore {
       curriculumEntries: {
         ...(current.curriculumEntries || {}),
         [itemId]: nextEntry,
+      },
+    });
+  }
+
+  // ---- Ações da Esteira Contínua de Treino Clínico v3.1 ----
+  private getTreinoState(): TreinoClinicoState {
+    return migrateTreinoClinicoState(this.state.central6Ano.treinoClinico);
+  }
+
+  private setTreinoState(next: TreinoClinicoState): void {
+    this.setCentral6AnoState({
+      ...this.state.central6Ano,
+      treinoClinico: next,
+    });
+  }
+
+  public addTreinoLogEntry(
+    input: Omit<TreinoLogEntry, 'id' | 'criadoEm' | 'veredito'>
+  ): { ok: true; entry: TreinoLogEntry; warnings: string[] } | { ok: false; error: string } {
+    const treino = this.getTreinoState();
+    const cleanPemc =
+      input.pemc.kind === 'omissao'
+        ? { kind: 'omissao' as const, texto: sanitizePiiText(input.pemc.texto).sanitized.trim().slice(0, 160) }
+        : input.pemc;
+    const cleanScore =
+      input.score.kind === 'rubrica'
+        ? { ...input.score, ajuste: sanitizePiiText(input.score.ajuste).sanitized.trim().slice(0, 120) }
+        : input.score.kind === 'muletas'
+          ? { ...input.score, ajuste: sanitizePiiText(input.score.ajuste).sanitized.trim().slice(0, 120) }
+          : input.score;
+
+    const entry: TreinoLogEntry = {
+      ...input,
+      id: `tc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      criadoEm: new Date().toISOString(),
+      mecanismo: input.mecanismo ? normalizeMecanismo(input.mecanismo) : null,
+      pemc: cleanPemc,
+      score: cleanScore,
+      veredito: 'NA',
+    };
+    entry.veredito = computeVeredito(entry);
+
+    const validation = validateLogEntry(entry, treino.logs);
+    if (!validation.ok) {
+      return { ok: false, error: validation.errorMessage || 'Entrada de LOG inválida.' };
+    }
+
+    const nextLogs = [...treino.logs, entry];
+    let nextState: TreinoClinicoState = { ...treino, logs: nextLogs };
+    // Atualiza snapshot de contingência até 17/jan (congela em 18/jan)
+    if (entry.dateIso <= '2027-01-17') {
+      const snap = computeContingencia10Jan(nextState, entry.dateIso);
+      nextState = {
+        ...nextState,
+        contingencia10jan: snap,
+        metas: {
+          ...nextState.metas,
+          primeiraPassadaCedeu:
+            entry.dateIso >= '2027-01-10' ? snap.disparou : nextState.metas.primeiraPassadaCedeu,
+        },
+      };
+    }
+
+    this.setTreinoState(nextState);
+    return { ok: true, entry, warnings: validation.warnings };
+  }
+
+  public deleteTreinoLogEntry(logId: string): { ok: true } | { ok: false; error: string } {
+    const treino = this.getTreinoState();
+    const check = canDeleteLogEntry(logId, treino.naoPodePassar);
+    if (!check.ok) {
+      return { ok: false, error: check.errorMessage || 'Linha referenciada por Não Pode Passar.' };
+    }
+    this.setTreinoState({
+      ...treino,
+      logs: treino.logs.filter((l) => l.id !== logId),
+    });
+    return { ok: true };
+  }
+
+  public addTreinoNppItems(
+    items: Array<{ slug: string; texto: string; origemLogId: string }>
+  ): { ok: true } | { ok: false; error: string } {
+    const treino = this.getTreinoState();
+    const sanitized = items
+      .map((it) => ({
+        ...it,
+        texto: sanitizePiiText(it.texto).sanitized.replace(/\r?\n/g, ' ').trim().slice(0, 200),
+      }))
+      .filter((it) => it.texto.length > 0);
+    const val = validateNppAdd(sanitized, treino.naoPodePassar, treino.logs);
+    if (!val.ok) return { ok: false, error: val.errorMessage };
+
+    const now = new Date().toISOString();
+    const novos: NaoPodePassarItem[] = sanitized.map((it, idx) => ({
+      id: `npp-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+      slug: it.slug,
+      texto: it.texto,
+      checado: false,
+      origemLogId: it.origemLogId,
+      criadoEm: now,
+    }));
+    this.setTreinoState({
+      ...treino,
+      naoPodePassar: [...treino.naoPodePassar, ...novos],
+    });
+    return { ok: true };
+  }
+
+  public updateTreinoNppText(id: string, newText: string): void {
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      naoPodePassar: treino.naoPodePassar.map((it) =>
+        it.id === id ? applyNppTextEdit(it, newText) : it
+      ),
+    });
+  }
+
+  public checkTreinoNppItem(
+    id: string,
+    fonteTipo: FonteTipo,
+    fontePrimaria: string,
+    checadoEm: string
+  ): { ok: true } | { ok: false; error: string } {
+    const val = validateNppCheck({ fonteTipo, fontePrimaria, checadoEm });
+    if (!val.ok) return { ok: false, error: val.errorMessage };
+
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      naoPodePassar: treino.naoPodePassar.map((it) =>
+        it.id === id
+          ? {
+              ...it,
+              checado: true,
+              fonteTipo,
+              fontePrimaria: fontePrimaria.trim(),
+              checadoEm,
+            }
+          : it
+      ),
+    });
+    return { ok: true };
+  }
+
+  public uncheckTreinoNppItem(id: string): void {
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      naoPodePassar: treino.naoPodePassar.map((it) =>
+        it.id === id
+          ? { ...it, checado: false, fonteTipo: undefined, fontePrimaria: undefined, checadoEm: undefined }
+          : it
+      ),
+    });
+  }
+
+  public deleteTreinoNppItem(id: string): void {
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      naoPodePassar: treino.naoPodePassar.filter((it) => it.id !== id),
+    });
+  }
+
+  public markTreinoVisualDone(slug: string, dateIso: string): void {
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      visual: { ...treino.visual, [slug]: { feitoEm: dateIso } },
+    });
+  }
+
+  public markTreinoPilotoAuditado(dateIso: string): void {
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      piloto: { ...treino.piloto, auditoriaEm: dateIso },
+    });
+  }
+
+  public toggleTreinoRitualEf(weekIso: string): void {
+    const treino = this.getTreinoState();
+    const prev = Boolean(treino.rituais[weekIso]?.efFamiliar);
+    this.setTreinoState({
+      ...treino,
+      rituais: { ...treino.rituais, [weekIso]: { efFamiliar: !prev } },
+    });
+  }
+
+  public setTreinoInternatoFlag(
+    mapKey: keyof TreinoClinicoState['internato'],
+    key: string,
+    value: boolean
+  ): void {
+    const treino = this.getTreinoState();
+    this.setTreinoState({
+      ...treino,
+      internato: {
+        ...treino.internato,
+        [mapKey]: { ...treino.internato[mapKey], [key]: value },
       },
     });
   }

@@ -5,11 +5,13 @@ import { renderTeoriaMarkdownToHtml } from '../engine/diretrizes.ts';
 import { resolveLinksForTeoriaModule } from '../data/clinical_links.ts';
 import { HAB_PROTOCOLS } from '../data/protocolsRepo.ts';
 import { cockpitStore, type TeoriaModuleStatus } from '../state/store.ts';
+import { TreinoClinicoView } from './TreinoClinicoView.tsx';
 
 interface TeoriaViewProps {
   central6Ano: Central6AnoState;
   onOpenPrePorta: (habId: string) => void;
   initialModId?: string | null;
+  onNotify?: (msg: string) => void;
 }
 
 const STATUS_OPTIONS: Array<{ value: TeoriaModuleStatus; label: string }> = [
@@ -30,7 +32,8 @@ function stripLeadingH1(markdown: string): string {
   return String(markdown || '').replace(/^\s*#\s+[^\n]+\n+/, '');
 }
 
-export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId }: TeoriaViewProps) {
+export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId, onNotify }: TeoriaViewProps) {
+  const [subMode, setSubMode] = useState<'treino' | 'guias'>(initialModId ? 'guias' : 'treino');
   const [selectedModId, setSelectedModId] = useState<string>(
     initialModId || FORMACAO_TEORICA_MODULOS[0]?.id || 'mod-01'
   );
@@ -41,6 +44,7 @@ export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId }: Teoria
 
   useEffect(() => {
     if (initialModId && FORMACAO_TEORICA_MODULOS.some((m) => m.id === initialModId)) {
+      setSubMode('guias');
       setSelectedModId(initialModId);
       setMobileShowDetail(true);
     }
@@ -110,7 +114,49 @@ export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId }: Teoria
   const activeStatus: TeoriaModuleStatus = activeMod ? getStatus(activeMod.id) : 'nao_iniciado';
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
+      {/* Switch segmentado discreto: Treino Clínico (v3.1) | Guias Teóricos (7) */}
+      <div className="flex items-center justify-between border-b border-zinc-200/80 bg-[#FAFAFA] px-4 py-2 dark:border-white/[0.07] dark:bg-[#0F1115]">
+        <div
+          role="group"
+          aria-label="Modo da aba Treino e Teoria"
+          className="inline-flex items-center rounded-lg border border-zinc-200/80 bg-zinc-100/80 p-0.5 dark:border-white/[0.07] dark:bg-[#15181F]"
+        >
+          <button
+            type="button"
+            onClick={() => setSubMode('treino')}
+            aria-pressed={subMode === 'treino'}
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+              subMode === 'treino'
+                ? 'bg-white text-zinc-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-[#1C2029] dark:text-[#F3F4F6]'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+            }`}
+          >
+            Treino Clínico (v3.1)
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubMode('guias')}
+            aria-pressed={subMode === 'guias'}
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+              subMode === 'guias'
+                ? 'bg-white text-zinc-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-[#1C2029] dark:text-[#F3F4F6]'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+            }`}
+          >
+            Guias Teóricos ({FORMACAO_TEORICA_MODULOS.length})
+          </button>
+        </div>
+      </div>
+
+      {subMode === 'treino' ? (
+        <TreinoClinicoView
+          central6Ano={central6Ano}
+          onOpenPrePorta={onOpenPrePorta}
+          onNotify={onNotify || (() => {})}
+        />
+      ) : (
+      <div className="flex min-h-0 flex-1 overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Coluna Esquerda — Lista enxuta de módulos */}
       <aside
         aria-label="Módulos de formação teórica"
@@ -306,6 +352,8 @@ export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId }: Teoria
           </article>
         )}
       </main>
+      </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,8 @@
 // Mantém src/engine/central6ano.ts 100% lógica pura.
 // ============================================================================
 
+import type { TreinoClinicoState } from './treino_clinico_data.ts';
+
 export type WeeklyDayKey = 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab' | 'dom';
 
 export type ShiftType = 'manha' | 'tarde' | 'plantao_noturno' | 'folga';
@@ -246,6 +248,8 @@ export interface Central6AnoState {
   r1Milestones?: R1Milestone[];
   curriculumEntries?: Record<string, CurriculumEntryState>;
   curriculumEnamedConcept?: 3 | 4 | 5;
+  // ---- Esteira Contínua de Treino Clínico v3.1 ----
+  treinoClinico?: TreinoClinicoState;
 }
 
 export interface EnsaioMentalProcGuide {
