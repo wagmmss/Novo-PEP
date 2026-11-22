@@ -40,6 +40,8 @@ jobs:
         run: npm test
 
       - name: Build Production Bundle
+        env:
+          VITE_SYNC_URL: ${{ vars.VITE_SYNC_URL }}
         run: npm run build
 
       - name: Setup Pages

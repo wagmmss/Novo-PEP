@@ -54,14 +54,22 @@ import {
   UNIFIED_CURRICULUM_CATALOG,
   CURRICULUM_BANKS_CONFIG,
   FORMACAO_TEORICA_MODULOS,
+  analyzeWeeklySchedule,
+  buildDailyTimeline,
   computeProcedureProgress,
+  getEffectiveRitualDoneMap,
   getProceduresForHabId,
+  getRitualCycleKey,
   registerProcedureExecution,
   recordPrePortaExecution,
+  resolveExpectedRodizioForDate,
+  resolveFeriasSemanaForDate,
   buildContextualAiPrompt,
+  computeCurriculumRoiOpportunities,
   computeMilestoneCountdown,
   computeUnifiedCurriculumScores,
   migrateCentral6AnoState,
+  WAGNER_BASELINE_CURRICULUM_ENTRIES,
   type Central6AnoState,
   type CurriculumEntryState,
 } from '../src/engine/central6ano.ts';
@@ -820,6 +828,66 @@ test('Plano 6º Ano: persistência de rodízio, semana de férias, arquétipo de
     assert.equal(restored.feriasSemana, 'sem4');
     assert.equal(restored.arquetipoId, 'pos_plantao');
     assert.equal(restored.ritualDomingoDoneIds['rit-escala'], true);
+
+    // selectRodizio atualiza 70% e 30% e preserva microHabitoSemanal customizado
+    cockpitStore.updateCentralContext({ microHabitoSemanal: 'Meu micro-hábito customizado' });
+    cockpitStore.selectRodizio('go');
+    const afterGo = cockpitStore.getSnapshot().central6Ano;
+    assert.equal(afterGo.rodizioId, 'go');
+    assert.ok(afterGo.focoSemanalAncora70?.includes('Obstetrícia'));
+    assert.ok(afterGo.focoSemanalTrilha30?.includes('Endocrinologia'));
+    assert.equal(afterGo.microHabitoSemanal, 'Meu micro-hábito customizado');
+
+    // setWeeklyMarcha sincroniza bidirecionalmente com Esteira v3.1 (semanaPesadaByWeek)
+    cockpitStore.setWeeklyMarcha('2_pesada', '2027-02-03');
+    assert.equal(cockpitStore.getSnapshot().central6Ano.marchaId, '2_pesada');
+    assert.equal(
+      cockpitStore.getSnapshot().central6Ano.treinoClinico?.internato.semanaPesadaByWeek['2027-02-01'],
+      true
+    );
+    cockpitStore.setTreinoInternatoFlag('semanaPesadaByWeek', '2027-02-01', false);
+    assert.equal(cockpitStore.getSnapshot().central6Ano.marchaId, '3_normal');
+
+    // Ciclo semanal do Ritual de Domingo: vira limpo no sábado seguinte e grava última conclusão
+    assert.equal(getRitualCycleKey('2026-11-22'), '2026-11-21'); // domingo -> sábado anterior
+    assert.equal(getRitualCycleKey('2026-11-27'), '2026-11-21'); // sexta -> mesmo ciclo
+    assert.equal(getRitualCycleKey('2026-11-28'), '2026-11-28'); // sábado seguinte -> novo ciclo
+
+    cockpitStore.resetRitualDomingo('2026-11-22');
+    for (const id of ['rit-escala', 'rit-7030', 'rit-habito', 'rit-curriculo']) {
+      cockpitStore.toggleRitualDomingoItem(id, '2026-11-22');
+    }
+    const ritualSnap = cockpitStore.getSnapshot().central6Ano;
+    assert.equal(ritualSnap.ritualDomingoLastCompletedIso, '2026-11-22');
+    assert.equal(getEffectiveRitualDoneMap(ritualSnap, '2026-11-27')['rit-escala'], true);
+    assert.deepEqual(getEffectiveRitualDoneMap(ritualSnap, '2026-11-28'), {});
+
+    // Férias v3.1 & rodízio esperado por data
+    assert.equal(resolveFeriasSemanaForDate('2026-11-22'), null);
+    assert.equal(resolveFeriasSemanaForDate('2026-12-22'), 'sem4');
+    assert.equal(resolveFeriasSemanaForDate('2027-01-14'), 'sem7');
+    assert.equal(resolveExpectedRodizioForDate('2027-02-01').id, 'cirurgia');
+    assert.equal(resolveExpectedRodizioForDate('2027-10-15').id, 'sprint_r1');
+
+    // Pós-plantão noturno: descanso integral (0 Anki e zero revisão leve)
+    const sched = analyzeWeeklySchedule(
+      {
+        seg: ['plantao_noturno'],
+        ter: ['folga'],
+        qua: ['manha', 'tarde'],
+        qui: ['manha', 'tarde'],
+        sex: ['manha', 'tarde'],
+        sab: ['folga'],
+        dom: ['folga'],
+      },
+      'ter',
+      '3_normal'
+    );
+    assert.equal(sched.days.ter.isPosPlantao, true);
+    assert.equal(sched.days.ter.recommendedQuestions, 0);
+    assert.equal(sched.days.ter.recommendedAnkiCards, 0);
+    const posSteps = buildDailyTimeline(migrateCentral6AnoState({ arquetipoId: 'pos_plantao' }));
+    assert.ok(posSteps.every((s) => !/anki/i.test(s.titulo) && !/anki/i.test(s.detalhe)));
   } finally {
     (globalThis as Record<string, unknown>).window = originalWindow;
   }
@@ -1022,4 +1090,95 @@ test('Auditor de prescrição nos protocolos: 88/88 com seção Conduta, receita
     compiled.clinicalContext
   );
   assert.ok((audit.receita?.blockCount ?? 0) >= 1, 'Amoxicilina com alergia a penicilina deve bloquear');
+});
+
+test('R1 & Currículo (Editais 2027): baremas USP-SP/USP-RP/UNICAMP, Comprovado vs Projetado, bug proofCounts, equivalência em questões, ROI e inventário base', () => {
+  // 1) Soma dos blocos de cada banca fecha exatamente a escala máxima (100 / 10 / 100)
+  for (const bankId of ['usp_sp', 'usp_rp', 'unicamp'] as const) {
+    const cfg = CURRICULUM_BANKS_CONFIG[bankId];
+    const sumBlocks = Math.round(cfg.blocks.reduce((acc, b) => acc + b.maxPoints, 0) * 100) / 100;
+    assert.equal(sumBlocks, cfg.escalaMax, `Blocos de ${bankId} devem somar ${cfg.escalaMax} (obtido: ${sumBlocks})`);
+  }
+
+  // 2) Inventário base do Wagner: 12 itens preenchidos, 3 já com PDF pronto (SIICUSP, 2 eventos, Construindo Pontes 240h)
+  const ev = computeUnifiedCurriculumScores(WAGNER_BASELINE_CURRICULUM_ENTRIES, { enamedConcept: 5 });
+  assert.equal(ev.proofCounts.filledItems, 12);
+  assert.equal(ev.proofCounts.pdf_pronto, 3);
+  assert.equal(ev.proofCounts.em_andamento, 3);
+  assert.equal(ev.proofCounts.falta, 6);
+  assert.equal(
+    ev.proofCounts.pdf_pronto + ev.proofCounts.em_andamento + ev.proofCounts.falta,
+    ev.proofCounts.filledItems,
+    'Itens com value = 0 não devem inflar a contagem de pendências de PDF'
+  );
+
+  // 3) USP-SP 2027: IC 2 anos c/ bolsa (4) + 1 artigo vinculado (+4 = 8) + 1 artigo PubMed livre (10)
+  //    + Pós(15) + HU(12) + SUS(8) + 2 eventos(4) + SIICUSP(1) + Extensão 240h(5) + Psicologia(1) + Natação 1,5a(1)
+  //    = 65 bruto × 1,2 (ENAMED 5) = 78,0/100; e somente os 3 itens PDF pronto (4+1+5 = 10 × 1,2 = 12,0)
+  assert.equal(ev.banks.usp_sp.rawSubtotal, 65);
+  assert.equal(ev.banks.usp_sp.finalScore, 78);
+  assert.equal(ev.banks.usp_sp.confirmedScore, 12);
+  assert.equal(ev.banks.usp_sp.unconfirmedGap, 66);
+  assert.ok(ev.banks.usp_sp.equivalentFirstPhaseQuestions > 2.5 && ev.banks.usp_sp.equivalentFirstPhaseQuestions < 3.5);
+
+  // Não-duplicação USP-SP Item 5 vs Item 6: se tiver apenas 1 artigo PubMed e marcar como vinculado à IC,
+  // esse artigo não pode pontuar novamente no Item 6
+  const singleArticleIc = computeUnifiedCurriculumScores(
+    {
+      ic_com_bolsa: { value: 1, proofStatus: 'pdf_pronto' },
+      ic_artigo_vinculado: { value: 1, proofStatus: 'pdf_pronto' },
+      artigo_pubmed: { value: 1, proofStatus: 'pdf_pronto' },
+    },
+    { enamedConcept: 3 }
+  );
+  assert.equal(singleArticleIc.itemPointsByBank.ic_artigo_vinculado.usp_sp, 4);
+  assert.equal(singleArticleIc.itemPointsByBank.artigo_pubmed.usp_sp, 0);
+  assert.equal(singleArticleIc.banks.usp_sp.finalScore, 6);
+
+  // 4) USP-RP 2027: Histórico (HU 0,5 + Pós 0,5 + ENAMED 5 0,5 = 1,5), Assistencial (Liga 0,5 + Pontes 240h 1,0 = 1,5),
+  //    Científico (IC 1,4 + 2 artigos 2,0 + SIICUSP 0,1 = 3,5 -> teto 3,0), Ensino (2 eventos = 0,6), Estudantil (0) -> 6,6/10
+  assert.equal(ev.banks.usp_rp.enamedBonusPoints, 0.5);
+  assert.equal(ev.banks.usp_rp.finalScore, 6.6);
+  assert.equal(ev.banks.usp_rp.confirmedScore, 1.7);
+  // ENAMED 3 reduz bônus histórico USP-RP de 0,5 -> 0,3
+  const evEnamed3 = computeUnifiedCurriculumScores(WAGNER_BASELINE_CURRICULUM_ENTRIES, { enamedConcept: 3 });
+  assert.equal(evEnamed3.banks.usp_rp.enamedBonusPoints, 0.3);
+  assert.equal(evEnamed3.banks.usp_rp.finalScore, 6.4);
+
+  // 5) UNICAMP 2027: Pós(15) + HU(10) + IC(20) + Artigos(15) + SIICUSP 5b(2) + Liga Dir(5) + Pontes(5) + Natação(1) = 73/100
+  assert.equal(ev.banks.unicamp.finalScore, 73);
+  assert.equal(ev.banks.unicamp.confirmedScore, 7);
+
+  // 6) ROI respeita tetos: como bloco Científico da USP-RP já está no teto 3,0/3,0,
+  //    nenhuma oportunidade científica deve reportar delta positivo na USP-RP
+  const roi = computeCurriculumRoiOpportunities(WAGNER_BASELINE_CURRICULUM_ENTRIES, {
+    enamedConcept: 5,
+    limit: 5,
+  });
+  assert.ok(roi.length >= 3, 'Deve retornar alavancas reais de ROI');
+  for (const opp of roi) {
+    assert.ok(opp.combinedFinalPtsDelta > 0);
+    if (opp.itemId === 'congresso_oral' || opp.itemId === 'congresso_poster') {
+      assert.equal(opp.deltaByBank.usp_rp, 0, 'Bloco científico USP-RP já está no teto 3,0');
+    }
+  }
+
+  // 7) Migração automática de chave legada (inst_docentes_cr -> inst_sus_rede) e persistência de sub-aba + inventário no store
+  const migrated = migrateCentral6AnoState({
+    curriculumEntries: {
+      inst_docentes_cr: { value: 1, proofStatus: 'pdf_pronto', notes: 'Declaração antiga' },
+    },
+    r1SubTab: 'r1',
+  });
+  assert.equal(migrated.curriculumEntries?.inst_sus_rede?.value, 1);
+  assert.equal(migrated.curriculumEntries?.inst_sus_rede?.proofStatus, 'pdf_pronto');
+  assert.equal(migrated.r1SubTab, 'r1');
+
+  cockpitStore.setCentral6AnoState(migrateCentral6AnoState({}));
+  cockpitStore.setR1SubTab('r1');
+  assert.equal(cockpitStore.getSnapshot().central6Ano.r1SubTab, 'r1');
+  const applied = cockpitStore.applyBaselineCurriculumInventory('merge');
+  assert.equal(applied.updatedCount, 12);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.curriculumEntries?.outra_graduacao_pos?.value, 1);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.curriculumEntries?.extensao_voluntariado?.value, 240);
 });

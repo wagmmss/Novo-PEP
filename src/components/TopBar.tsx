@@ -1,5 +1,6 @@
-import { Moon, Search, Settings, Sun } from 'lucide-react';
+import { AlertTriangle, Cloud, CloudOff, Moon, RefreshCw, Search, Settings, Sun } from 'lucide-react';
 import type { ClinicalTheme } from '../state/store.ts';
+import type { CloudSyncStatus } from '../state/cloudSync.ts';
 
 export type AppWorld = 'beira-leito' | 'sexto-ano';
 export type BeiraLeitoTab = 'protocolos' | 'pre-porta';
@@ -10,6 +11,7 @@ interface TopBarProps {
   beiraLeitoTab: BeiraLeitoTab;
   sextoAnoTab: SextoAnoTab;
   theme: ClinicalTheme;
+  syncStatus?: CloudSyncStatus;
   onChangeWorld: (world: AppWorld) => void;
   onChangeBeiraLeitoTab: (tab: BeiraLeitoTab) => void;
   onChangeSextoAnoTab: (tab: SextoAnoTab) => void;
@@ -34,6 +36,7 @@ export function TopBar({
   beiraLeitoTab,
   sextoAnoTab,
   theme,
+  syncStatus = 'disconnected',
   onChangeWorld,
   onChangeBeiraLeitoTab,
   onChangeSextoAnoTab,
@@ -162,8 +165,52 @@ export function TopBar({
           <button
             type="button"
             onClick={onOpenSettings}
+            aria-label="Sincronização na nuvem"
+            title={
+              syncStatus === 'synced'
+                ? 'Nuvem sincronizada'
+                : syncStatus === 'syncing'
+                  ? 'Sincronizando com a nuvem...'
+                  : syncStatus === 'conflict'
+                    ? 'Conflito de sincronização — clique para resolver'
+                    : syncStatus === 'offline'
+                      ? 'Offline — salvando localmente'
+                      : syncStatus === 'error'
+                        ? 'Erro de sincronização — clique para ver'
+                        : 'Conectar sincronização na nuvem'
+            }
+            className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+              syncStatus === 'conflict'
+                ? 'bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-300'
+                : syncStatus === 'synced'
+                  ? 'text-[#0F766E] hover:bg-zinc-100 dark:text-[#2DD4BF] dark:hover:bg-[#1C2029]'
+                  : syncStatus === 'error'
+                    ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
+                    : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]'
+            }`}
+          >
+            {syncStatus === 'syncing' ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : syncStatus === 'conflict' ? (
+              <AlertTriangle className="h-4 w-4" />
+            ) : syncStatus === 'offline' ? (
+              <CloudOff className="h-4 w-4" />
+            ) : (
+              <Cloud className="h-4 w-4" />
+            )}
+            {syncStatus === 'synced' && (
+              <span
+                aria-hidden="true"
+                className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400"
+              />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenSettings}
             aria-label="Configurações e Backup"
-            title="Backup JSON (Exportar / Importar)"
+            title="Configurações, Nuvem e Backup JSON"
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
           >
             <Settings className="h-4 w-4" />

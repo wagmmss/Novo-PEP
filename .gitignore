@@ -5,6 +5,8 @@ __pycache__/
 
 # Environments
 .env
+.dev.vars
+.wrangler/
 .venv
 env/
 venv/

@@ -33,6 +33,7 @@ export interface R1Milestone {
 
 export type CurriculumBankId = 'usp_sp' | 'usp_rp' | 'unicamp';
 export type ProofStatus = 'falta' | 'em_andamento' | 'pdf_pronto';
+export type CurriculumEffortLevel = 'baixo' | 'medio' | 'alto';
 export type CurriculumCategoryId =
   | 'institucional'
   | 'cientifico'
@@ -52,6 +53,10 @@ export interface CurriculumBankConfig {
   sigla: string;
   escalaMax: number;
   pesoNotaFinal: string;
+  psiquiatriaPesos: string;
+  pesoCurriculoPct: number;
+  pesoPrimeiraFasePct: number;
+  questoesPrimeiraFase: number;
   editalRef: string;
   dicaEnvio: string;
   blocks: CurriculumBlockDef[];
@@ -61,7 +66,7 @@ export interface BankItemRule {
   blockId: string;
   perUnit: number;
   maxItemPoints: number;
-  /** Regra opcional por faixa (ex.: UNICAMP IC/Monitoria/Voluntariado) */
+  /** Regra opcional por faixa (ex.: UNICAMP IC/Monitoria/Voluntariado, USP-SP Monitoria/Extensão/Rep.) */
   tiers?: Array<{ minUnits: number; points: number }>;
   note: string;
 }
@@ -76,6 +81,12 @@ export interface CurriculumCatalogItem {
   step?: number;
   maxInput: number;
   defaultValue?: number;
+  /** Se false, não entra nas recomendações de ROI (ex.: estrutura da faculdade ou 2ª graduação). */
+  actionable?: boolean;
+  effortHint?: CurriculumEffortLevel;
+  /** Incremento realista simulado pelo motor de ROI (padrão = step ou 1). */
+  roiStep?: number;
+  roiActionLabel?: string;
   rules: Partial<Record<CurriculumBankId, BankItemRule>>;
 }
 
@@ -214,6 +225,8 @@ export interface Central6AnoState {
   autoSyncDiaSemana?: boolean;
   curriculoDoneIds: Record<string, boolean>;
   ritualDomingoDoneIds: Record<string, boolean>;
+  ritualDomingoCycleIso?: string;
+  ritualDomingoLastCompletedIso?: string;
   teoriaStatusById?: Record<string, 'nao_iniciado' | 'estudado' | 'dominado'>;
   teoriaExercisesDone?: Record<string, boolean>;
   teoriaExercisesNotes?: Record<string, string>;
@@ -250,6 +263,7 @@ export interface Central6AnoState {
   r1Milestones?: R1Milestone[];
   curriculumEntries?: Record<string, CurriculumEntryState>;
   curriculumEnamedConcept?: 3 | 4 | 5;
+  r1SubTab?: 'plano' | 'r1';
   // ---- Esteira Contínua de Treino Clínico v3.1 ----
   treinoClinico?: TreinoClinicoState;
 }
@@ -309,44 +323,52 @@ export const DEFAULT_WEEKLY_SCHEDULE: WeeklyScheduleMap = {
 export const DEFAULT_R1_MILESTONES: R1Milestone[] = [
   {
     id: 'ms-curriculo',
-    titulo: 'Fechamento do Dossiê Curricular R1',
+    titulo: 'Corte do Dossiê Curricular (Fim de Atividades Novas)',
     dateIso: '2027-06-30',
     categoria: 'curriculo',
-    nota: 'Certificados frente/verso, DOI e histórico consolidados antes dos editais',
+    nota: 'Certificados frente/verso, chancela CCEx, DOI e declarações da FMRP fechados antes da reta final',
   },
   {
     id: 'ms-ciclo1',
-    titulo: 'Fim do 1º Ciclo Teórico (5 Grandes Áreas)',
+    titulo: 'Fim do 1º Ciclo Teórico do 6º Ano (5 Grandes Áreas)',
     dateIso: '2027-08-31',
     categoria: 'estudo',
-    nota: 'Base completa para virar chave para provas na íntegra',
+    nota: 'Base sólida fechada ainda no 6º ano para manter revisão leve durante o ano de trabalho em 2028',
   },
   {
     id: 'ms-formatura',
     titulo: 'Formatura Medicina (FMRP-USP)',
     dateIso: '2027-11-30',
     categoria: 'graduacao',
-    nota: 'Conclusão do internato e colação de grau',
+    nota: 'Conclusão do internato, CRM e início do ciclo de trabalho (quitar dívida + reserva)',
+  },
+  {
+    id: 'ms-editais-2028',
+    titulo: 'Publicação dos Editais & Inscrições R1 (Psiquiatria)',
+    dateIso: '2028-09-15',
+    categoria: 'curriculo',
+    nota: 'Conferir retificações de barema 2029 (USP-SP, USP-RP, UNICAMP) e revisar PDFs antes do upload',
   },
   {
     id: 'ms-provas-r1',
-    titulo: 'Provas R1 — USP-SP / USP-RP / UNICAMP',
+    titulo: 'Provas R1 Psiquiatria — USP-SP / USP-RP / UNICAMP',
     dateIso: '2028-11-15',
     categoria: 'prova',
-    nota: '1ª Fase teórica + 2ª Fase prática/curricular',
+    nota: '1ª Fase teórica + 2ª Fase prática (USP-RP) + upload do currículo',
   },
   {
     id: 'ms-ingresso-r1',
-    titulo: 'Ingresso na Residência Médica (R1)',
+    titulo: 'Ingresso na Residência Médica (R1 Psiquiatria)',
     dateIso: '2029-03-01',
     categoria: 'ingresso',
-    nota: 'Início oficial do R1',
+    nota: 'Início oficial do R1 (meta mar/2029)',
   },
 ];
 
 // ============================================================================
-// MATRIZ UNIFICADA DE CURRÍCULO — USP-SP (0–100), USP-RP (0–10), UNICAMP (0–100)
-// Baseada nos editais recentes 2025/2026 de Acesso Direto (FUVEST, HC-FMRP, FCM).
+// MATRIZ UNIFICADA DE CURRÍCULO — EDITAIS OFICIAIS INGRESSO 2027
+// USP-SP (0–100 × ENAMED) · USP-RP (0–10 c/ ENAMED) · UNICAMP (0–100)
+// Auditada pelos editais COREME/FM 02/2026 (USP-SP), HCFMRP 2027 e FCM 2026/27.
 // ============================================================================
 
 export const CURRICULUM_BANKS_CONFIG: Record<CurriculumBankId, CurriculumBankConfig> = {
@@ -356,22 +378,27 @@ export const CURRICULUM_BANKS_CONFIG: Record<CurriculumBankId, CurriculumBankCon
     sigla: 'USP-SP',
     escalaMax: 100,
     pesoNotaFinal: '10% (Peso 1 · 0–100)',
-    editalRef: 'Barema FUVEST 2025/2026 (13 blocos + fator ENAMED até teto 100)',
-    dicaEnvio: 'PDF individual por comprovante na Área do Candidato FUVEST (frente e verso legível).',
+    psiquiatriaPesos: '90% 1ª Fase (120q) · 10% Currículo',
+    pesoCurriculoPct: 10,
+    pesoPrimeiraFasePct: 90,
+    questoesPrimeiraFase: 120,
+    editalRef: 'Edital COREME/FM nº 02/2026 (Ingresso 2027): 13 blocos = 100 pts × Fator ENAMED (1,0×/1,1×/1,2×, teto 100).',
+    dicaEnvio:
+      'PDF individual por item na Área do Candidato FUVEST (frente e verso legíveis no mesmo PDF). Extensão exige chancela da CCEx/Diretoria; Ligas foram retiradas do Item 10 em 2027.',
     blocks: [
-      { id: 'inst_pos', label: 'Faculdade c/ Pós CAPES', maxPoints: 15 },
-      { id: 'inst_hu', label: 'Hospital de Ensino', maxPoints: 12 },
-      { id: 'inst_doc', label: 'Corpo Docente Stricto Sensu', maxPoints: 8 },
-      { id: 'monitoria', label: 'Monitoria Oficial', maxPoints: 4 },
-      { id: 'ic', label: 'Iniciação Científica', maxPoints: 14 },
-      { id: 'publicacao', label: 'Publicação Científica', maxPoints: 10 },
-      { id: 'org_eventos', label: 'Org./Part. Congressos', maxPoints: 5 },
-      { id: 'oral', label: 'Apresentação Oral', maxPoints: 8 },
-      { id: 'poster', label: 'Pôster (Autor Principal)', maxPoints: 4 },
-      { id: 'extensao', label: 'Extensão Universitária', maxPoints: 5 },
-      { id: 'aprimoramento', label: 'Aprimoramento / Estágios', maxPoints: 8 },
-      { id: 'suporte_vida', label: 'Cursos Suporte de Vida', maxPoints: 4 },
-      { id: 'rep_estudantil', label: 'Representação Estudantil', maxPoints: 3 },
+      { id: 'inst_pos', label: '1. Pós CAPES / Sucupira', maxPoints: 15 },
+      { id: 'inst_hu', label: '2. Hospital de Ensino', maxPoints: 12 },
+      { id: 'inst_sus', label: '3. Rede SUS 1º/2º/3º', maxPoints: 8 },
+      { id: 'monitoria', label: '4. Monitoria Oficial', maxPoints: 3 },
+      { id: 'ic', label: '5. Iniciação Científica', maxPoints: 12 },
+      { id: 'publicacao', label: '6. Publicação (fora da IC)', maxPoints: 10 },
+      { id: 'org_eventos', label: '7. Org. Congressos/Eventos', maxPoints: 6 },
+      { id: 'oral', label: '8. Oral (1º Autor)', maxPoints: 8 },
+      { id: 'poster', label: '9. Pôster (1º Autor)', maxPoints: 6 },
+      { id: 'extensao', label: '10. Extensão Acadêmica', maxPoints: 5 },
+      { id: 'aprimoramento', label: '11. Aprimoramento / 2ª Grad.', maxPoints: 8 },
+      { id: 'suporte_vida', label: '12. Suporte de Vida', maxPoints: 4 },
+      { id: 'rep_estudantil', label: '13. Rep. Estudantil & Esporte', maxPoints: 3 },
     ],
   },
   usp_rp: {
@@ -380,14 +407,19 @@ export const CURRICULUM_BANKS_CONFIG: Record<CurriculumBankId, CurriculumBankCon
     sigla: 'USP-RP',
     escalaMax: 10,
     pesoNotaFinal: '10% (Peso 1 · 0–10)',
-    editalRef: 'Barema HC-FMRP 2025/2026 (5 eixos = 10,0 pontos)',
-    dicaEnvio: 'Upload digitalizado com timbre, carga horária e assinaturas no portal HCRP após 1ª fase.',
+    psiquiatriaPesos: '50% 1ª Fase (100q) · 40% Prática · 10% Currículo',
+    pesoCurriculoPct: 10,
+    pesoPrimeiraFasePct: 50,
+    questoesPrimeiraFase: 100,
+    editalRef: 'Edital HC-FMRP Ingresso 2027 (Psiquiatria: 3 fases · 5 eixos = 10,0 pts; ENAMED até 0,5 pt no Histórico).',
+    dicaEnvio:
+      'Upload no portal HCRP após 1ª fase com timbre, período/carga horária e assinaturas. Sem ACLS/esporte tabelados; Teste de Progresso entra em Ensino.',
     blocks: [
-      { id: 'historico', label: 'Histórico & Formação', maxPoints: 1.5 },
-      { id: 'assistencial', label: 'Assistencial Extracurricular', maxPoints: 2.0 },
-      { id: 'cientifico', label: 'Atividades Científicas', maxPoints: 3.0 },
-      { id: 'ensino', label: 'Ensino Extracurricular', maxPoints: 1.5 },
-      { id: 'estudantil', label: 'Atividades Estudantis', maxPoints: 2.0 },
+      { id: 'historico', label: '1. Histórico & ENAMED', maxPoints: 1.5 },
+      { id: 'assistencial', label: '2. Assistencial Extra', maxPoints: 2.0 },
+      { id: 'cientifico', label: '3. Atividades Científicas', maxPoints: 3.0 },
+      { id: 'ensino', label: '4. Ensino & Provas', maxPoints: 1.5 },
+      { id: 'estudantil', label: '5. Atividades Estudantis', maxPoints: 2.0 },
     ],
   },
   unicamp: {
@@ -396,75 +428,94 @@ export const CURRICULUM_BANKS_CONFIG: Record<CurriculumBankId, CurriculumBankCon
     sigla: 'UNICAMP',
     escalaMax: 100,
     pesoNotaFinal: '10% (Peso 10 · 0–100)',
-    editalRef: 'Barema FCM/UNICAMP 2025/2026 (11 blocos = 100 pontos)',
-    dicaEnvio: 'PDF único (≤ 5 MB) seguindo rigorosamente a ordem dos itens da tabela do edital FCM.',
+    psiquiatriaPesos: '90% Discursiva (100q) · 10% Currículo',
+    pesoCurriculoPct: 10,
+    pesoPrimeiraFasePct: 90,
+    questoesPrimeiraFase: 100,
+    editalRef: 'Edital FCM/UNICAMP 2026/2027 (Acesso Direto: 11 blocos = 100 pts).',
+    dicaEnvio:
+      'PDF único ≤ 5 MB contendo formulário FCM + Lattes + comprovantes rigorosamente na ordem dos 11 itens. Não enviar dentro do prazo elimina do processo.',
     blocks: [
-      { id: 'pos_fac', label: 'Pós-Grad. na Faculdade', maxPoints: 15 },
-      { id: 'hu', label: 'Hospital de Ensino', maxPoints: 10 },
-      { id: 'ic', label: 'Iniciação Científica', maxPoints: 20 },
-      { id: 'artigos', label: 'Artigo Científico Completo', maxPoints: 15 },
-      { id: 'congresso', label: 'Trabalho em Congresso', maxPoints: 10 },
-      { id: 'liga', label: 'Liga Acadêmica', maxPoints: 5 },
-      { id: 'aprimoramento', label: 'Aprimoramento & Cursos', maxPoints: 5 },
-      { id: 'monitoria', label: 'Monitoria / PAD', maxPoints: 5 },
-      { id: 'extensao', label: 'Extensão / Voluntariado', maxPoints: 5 },
-      { id: 'rep_colegiado', label: 'Colegiados Institucionais', maxPoints: 5 },
-      { id: 'rep_discente', label: 'Entidades Discentes / Esporte', maxPoints: 5 },
+      { id: 'pos_fac', label: '1. Pós CAPES na Faculdade', maxPoints: 15 },
+      { id: 'hu', label: '2. Hospital de Ensino', maxPoints: 10 },
+      { id: 'ic', label: '3. Iniciação Científica', maxPoints: 20 },
+      { id: 'artigos', label: '4. Artigos Completos', maxPoints: 15 },
+      { id: 'congresso', label: '5. Trabalhos em Congresso', maxPoints: 10 },
+      { id: 'liga', label: '6. Liga Acadêmica', maxPoints: 5 },
+      { id: 'aprimoramento', label: '7. Cursos & Suporte Vida', maxPoints: 5 },
+      { id: 'monitoria', label: '8. Monitoria / PAD', maxPoints: 5 },
+      { id: 'extensao', label: '9. Voluntariado Social', maxPoints: 5 },
+      { id: 'rep_colegiado', label: '10. Colegiados Institucionais', maxPoints: 5 },
+      { id: 'rep_discente', label: '11. CA / Atlética / Esporte', maxPoints: 5 },
     ],
   },
 };
 
 export const CURRICULUM_CATEGORIES_META: Record<CurriculumCategoryId, { label: string }> = {
-  institucional: { label: 'Institucional & Histórico' },
+  institucional: { label: 'Institucional & Formação' },
   cientifico: { label: 'Pesquisa, Artigos & Congressos' },
   ensino_ligas: { label: 'Monitoria, Ligas & Eventos' },
-  assistencial_cursos: { label: 'Estágios, Voluntariado & Suporte de Vida' },
-  representacao: { label: 'Representação Discente & Provas' },
+  assistencial_cursos: { label: 'Extensão, Estágios & Cursos' },
+  representacao: { label: 'Representação, Esporte & Provas' },
 };
 
 /**
- * Catálogo único de itens equivalentes:
- * Marcar ou preencher 1 item pontua automaticamente nas 3 bancas respeitando
- * pesos, faixas, limites por subitem e tetos por bloco e por banca.
+ * Catálogo unificado auditado pelos editais oficiais 2027 (USP-SP, USP-RP, UNICAMP).
+ * Preencher 1 vez calcula simultaneamente nas 3 bancas respeitando tetos de bloco,
+ * multiplicador/bônus ENAMED e regra de não-duplicação IC vs. Artigo na USP-SP.
  */
 export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
-  // 1. INSTITUCIONAL & HISTÓRICO
+  // 1. INSTITUCIONAL & FORMAÇÃO
   {
     id: 'inst_pos_capes',
     categoria: 'institucional',
     titulo: 'Faculdade com Pós-Graduação Stricto Sensu (Doutorado CAPES)',
-    descricao: 'Declaração institucional de programas Medicina I/II/III ou Saúde Coletiva credenciados (ex.: FMRP-USP).',
+    descricao: 'Declaração oficial da CPG listando programas Medicina I/II/III credenciados (≥ 5 programas / Sucupira).',
     inputType: 'boolean',
     maxInput: 1,
+    actionable: false,
     rules: {
-      usp_sp: { blockId: 'inst_pos', perUnit: 15, maxItemPoints: 15, note: 'Item 1: até 15 pts' },
-      usp_rp: { blockId: 'historico', perUnit: 0.5, maxItemPoints: 0.5, note: 'Histórico/Instituição: 0,5 pt' },
-      unicamp: { blockId: 'pos_fac', perUnit: 15, maxItemPoints: 15, note: 'Item 1a: Doutorado = 15 pts' },
+      usp_sp: { blockId: 'inst_pos', perUnit: 15, maxItemPoints: 15, note: 'Item 1 (2027): Pós CAPES/Sucupira até 15 pts' },
+      usp_rp: { blockId: 'historico', perUnit: 0.5, maxItemPoints: 0.5, note: 'Item 1: ≥ 5 programas CAPES = 0,5 pt (+ ENAMED até 0,5)' },
+      unicamp: { blockId: 'pos_fac', perUnit: 15, maxItemPoints: 15, note: 'Item 1a: Doutorado stricto sensu = 15 pts' },
     },
   },
   {
     id: 'inst_hu_proprio',
     categoria: 'institucional',
-    titulo: 'Hospital de Ensino Próprio / Formalmente Conveniado (SUS 1º/2º/3º)',
-    descricao: 'Comprovação oficial da Comissão de Graduação de hospital universitário próprio.',
+    titulo: 'Hospital de Ensino Próprio (HU / HCRP)',
+    descricao: 'Termo emitido pelo Serviço Acadêmico / Comissão de Graduação comprovando hospital universitário próprio.',
     inputType: 'boolean',
     maxInput: 1,
+    actionable: false,
     rules: {
-      usp_sp: { blockId: 'inst_hu', perUnit: 12, maxItemPoints: 12, note: 'Item 2: HU próprio = 12 pts' },
-      usp_rp: { blockId: 'historico', perUnit: 0.5, maxItemPoints: 0.5, note: 'HU próprio: 0,5 pt' },
+      usp_sp: { blockId: 'inst_hu', perUnit: 12, maxItemPoints: 12, note: 'Item 2a: Hospital de ensino próprio = 12 pts' },
+      usp_rp: { blockId: 'historico', perUnit: 0.5, maxItemPoints: 0.5, note: 'Item 1: HU próprio = 0,5 pt (soma c/ CAPES + ENAMED = 1,5)' },
       unicamp: { blockId: 'hu', perUnit: 10, maxItemPoints: 10, note: 'Item 2a: HU próprio = 10 pts' },
     },
   },
   {
-    id: 'inst_docentes_cr',
+    id: 'inst_sus_rede',
     categoria: 'institucional',
-    titulo: 'Corpo Docente Stricto Sensu + Bom Rendimento no Histórico Escolar',
-    descricao: 'Declaração docente CAPES (USP-SP) e histórico escolar oficial com bom CR/média ponderada (USP-RP).',
+    titulo: 'Centro Assistencial Próprio SUS (Primário, Secundário e Terciário)',
+    descricao: 'Declaração do Serviço Acadêmico com nome, endereço e telefone dos locais da rede SUS 1º/2º/3º (Portaria 4.279).',
     inputType: 'boolean',
     maxInput: 1,
+    actionable: false,
     rules: {
-      usp_sp: { blockId: 'inst_doc', perUnit: 8, maxItemPoints: 8, note: 'Item 3: até 8 pts' },
-      usp_rp: { blockId: 'historico', perUnit: 0.5, maxItemPoints: 0.5, note: 'Desempenho CR: até 0,5 pt' },
+      usp_sp: { blockId: 'inst_sus', perUnit: 8, maxItemPoints: 8, note: 'Item 3a: Rede SUS 1º, 2º e 3º níveis = 8 pts' },
+    },
+  },
+  {
+    id: 'outra_graduacao_pos',
+    categoria: 'institucional',
+    titulo: 'Outro Curso Universitário Concluído (ex.: Psicologia)',
+    descricao: 'Diploma de graduação prévia reconhecida pelo MEC (Item 11d USP-SP). Mestrado (4) / Doutorado (8) entram no mesmo bloco.',
+    inputType: 'boolean',
+    maxInput: 1,
+    actionable: false,
+    rules: {
+      usp_sp: { blockId: 'aprimoramento', perUnit: 1, maxItemPoints: 1, note: 'Item 11d: Outro curso universitário concluído = 1 pt (bloco teto 8)' },
     },
   },
 
@@ -473,23 +524,27 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
     id: 'ic_com_bolsa',
     categoria: 'cientifico',
     titulo: 'Iniciação Científica COM Bolsa (FAPESP / CNPq / PIBIC)',
-    descricao: 'Informe em anos concluídos (1 ano = 2 semestres; 2 anos = >2 semestres). Exige declaração + agência.',
+    descricao: 'Informe em anos concluídos (1 ano = 2 semestres). Exige declaração institucional + agência de fomento e carga horária.',
     inputType: 'number',
     unitLabel: 'anos',
     step: 0.5,
     maxInput: 4,
+    actionable: true,
+    effortHint: 'alto',
+    roiStep: 1,
+    roiActionLabel: 'Concluir +1 ano de IC com bolsa',
     rules: {
       usp_sp: {
         blockId: 'ic',
-        perUnit: 7,
-        maxItemPoints: 14,
-        note: 'Item 5: 7 pts/ano c/ bolsa (teto 14)',
+        perUnit: 2,
+        maxItemPoints: 4,
+        note: 'Item 5b: 2 pts/projeto (2 sem) s/ artigo; sobe p/ 6 pts/projeto (teto 12) com artigo vinculado à IC',
       },
       usp_rp: {
         blockId: 'cientifico',
         perUnit: 0.7,
         maxItemPoints: 1.4,
-        note: 'Científico: 0,7/ano (teto 1,4)',
+        note: 'Item 3: 0,7 pt/ano (mín. 1 ano; teto 1,4)',
       },
       unicamp: {
         blockId: 'ic',
@@ -499,7 +554,7 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
           { minUnits: 1.5, points: 20 },
           { minUnits: 0.5, points: 15 },
         ],
-        note: 'Item 3a: >2 sem = 20 pts; até 2 sem = 15 pts',
+        note: 'Item 3a: > 2 sem = 20 pts; até 2 sem = 15 pts',
       },
     },
   },
@@ -507,14 +562,28 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
     id: 'ic_sem_bolsa',
     categoria: 'cientifico',
     titulo: 'Iniciação Científica SEM Bolsa (Institucional Oficial)',
-    descricao: 'Vigência oficial institucional sem fomento (em anos). Soma no mesmo bloco de IC respeitando o teto.',
+    descricao: 'Vigência institucional oficial sem fomento (em anos) com carga horária e assinatura do orientador/instituição.',
     inputType: 'number',
     unitLabel: 'anos',
     step: 0.5,
     maxInput: 4,
+    actionable: true,
+    effortHint: 'alto',
+    roiStep: 1,
+    roiActionLabel: 'Concluir +1 ano de IC sem bolsa',
     rules: {
-      usp_sp: { blockId: 'ic', perUnit: 4, maxItemPoints: 8, note: 'Item 5: sem bolsa até 8 pts (bloco teto 14)' },
-      usp_rp: { blockId: 'cientifico', perUnit: 0.4, maxItemPoints: 0.8, note: 'Científico: 0,4/ano (teto 0,8)' },
+      usp_sp: {
+        blockId: 'ic',
+        perUnit: 1,
+        maxItemPoints: 2,
+        note: 'Item 5: 1 pt/projeto s/ artigo; sobe p/ 4 pts/projeto (teto 8) se tiver artigo vinculado',
+      },
+      usp_rp: {
+        blockId: 'cientifico',
+        perUnit: 0.5,
+        maxItemPoints: 1.0,
+        note: 'Item 3: 0,5 pt/ano sem bolsa (teto 1,0)',
+      },
       unicamp: {
         blockId: 'ic',
         perUnit: 5,
@@ -523,7 +592,29 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
           { minUnits: 1.5, points: 10 },
           { minUnits: 0.5, points: 5 },
         ],
-        note: 'Item 3b: >2 sem = 10 pts; até 2 sem = 5 pts',
+        note: 'Item 3b: > 2 sem = 10 pts; até 2 sem = 5 pts',
+      },
+    },
+  },
+  {
+    id: 'ic_artigo_vinculado',
+    categoria: 'cientifico',
+    titulo: 'Projetos de IC com Artigo Aceito / Publicado (Bônus USP-SP)',
+    descricao: 'Quantos dos seus artigos abaixo derivam diretamente de projetos de IC. Na USP-SP eleva o projeto de 2→6 pts (e desconta do Item 6).',
+    inputType: 'number',
+    unitLabel: 'projetos',
+    step: 1,
+    maxInput: 2,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 1,
+    roiActionLabel: 'Publicar artigo derivado do 2º projeto de IC',
+    rules: {
+      usp_sp: {
+        blockId: 'ic',
+        perUnit: 4,
+        maxItemPoints: 8,
+        note: 'Item 5a: +4 pts/proj c/ bolsa (total 6/proj) ou +3 pts s/ bolsa; artigo usado aqui não repete no Item 6',
       },
     },
   },
@@ -531,60 +622,170 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
     id: 'artigo_pubmed',
     categoria: 'cientifico',
     titulo: 'Artigo Científico Completo Publicado / Aceito (PubMed / JCR)',
-    descricao: 'Cópia do artigo ou aceite oficial + DOI obrigatório. Resumos em anais não pontuam como artigo.',
+    descricao: 'Informe o TOTAL de artigos PubMed (incluindo o da IC). Anexar cópia completa + DOI. Resumos em anais não contam.',
     inputType: 'number',
     unitLabel: 'artigos',
     step: 1,
     maxInput: 6,
+    actionable: true,
+    effortHint: 'alto',
+    roiStep: 1,
+    roiActionLabel: 'Publicar +1 artigo completo indexado no PubMed',
     rules: {
-      usp_sp: { blockId: 'publicacao', perUnit: 10, maxItemPoints: 10, note: 'Item 6: 10 pts (PubMed, teto 10)' },
-      usp_rp: { blockId: 'cientifico', perUnit: 1.0, maxItemPoints: 3.0, note: 'Científico: 1,0/artigo c/ DOI (bloco teto 3,0)' },
-      unicamp: { blockId: 'artigos', perUnit: 10, maxItemPoints: 15, note: 'Item 4a: 10 pts/artigo PubMed (teto 15)' },
+      usp_sp: {
+        blockId: 'publicacao',
+        perUnit: 10,
+        maxItemPoints: 10,
+        note: 'Item 6a: 10 pts (máx 1 artigo DIFERENTE do usado na IC)',
+      },
+      usp_rp: {
+        blockId: 'cientifico',
+        perUnit: 1.0,
+        maxItemPoints: 3.0,
+        note: 'Item 3: 1,0 pt/artigo c/ DOI (bloco teto 3,0)',
+      },
+      unicamp: {
+        blockId: 'artigos',
+        perUnit: 10,
+        maxItemPoints: 15,
+        note: 'Item 4a: 10 pts/artigo PubMed c/ DOI (teto 15)',
+      },
     },
   },
   {
     id: 'artigo_scielo',
     categoria: 'cientifico',
     titulo: 'Artigo Científico Completo Publicado / Aceito (SciELO / LILACS)',
-    descricao: 'Artigo completo indexado em SciELO/LILACS com DOI ou link oficial.',
+    descricao: 'Artigo completo indexado em SciELO/LILACS/Scopus com DOI. Na USP-RP vale 1,0 pt igual PubMed.',
     inputType: 'number',
     unitLabel: 'artigos',
     step: 1,
     maxInput: 6,
+    actionable: true,
+    effortHint: 'alto',
+    roiStep: 1,
+    roiActionLabel: 'Publicar +1 artigo completo SciELO/LILACS',
     rules: {
-      usp_sp: { blockId: 'publicacao', perUnit: 5, maxItemPoints: 10, note: 'Item 6: 5 pts/artigo SciELO (teto 10)' },
-      usp_rp: { blockId: 'cientifico', perUnit: 0.7, maxItemPoints: 2.1, note: 'Científico: 0,7/artigo SciELO' },
-      unicamp: { blockId: 'artigos', perUnit: 5, maxItemPoints: 15, note: 'Item 4b: 5 pts/artigo SciELO (teto 15)' },
+      usp_sp: {
+        blockId: 'publicacao',
+        perUnit: 8,
+        maxItemPoints: 8,
+        note: 'Item 6b: 8 pts (máx 1 artigo DIFERENTE do usado na IC)',
+      },
+      usp_rp: {
+        blockId: 'cientifico',
+        perUnit: 1.0,
+        maxItemPoints: 3.0,
+        note: 'Item 3: 1,0 pt/artigo SciELO/LILACS/Scopus c/ DOI (teto 3,0)',
+      },
+      unicamp: {
+        blockId: 'artigos',
+        perUnit: 5,
+        maxItemPoints: 15,
+        note: 'Item 4b: 5 pts/artigo SciELO (teto 15)',
+      },
     },
   },
   {
     id: 'congresso_oral',
     categoria: 'cientifico',
-    titulo: 'Apresentação ORAL em Congresso Médico (Nacional / Internacional)',
-    descricao: 'Certificado indicando apresentação oral e autoria (1º autor ou coautor).',
+    titulo: 'Apresentação ORAL em Congresso de Sociedade (Nacional / Int.)',
+    descricao: 'Certificado especificando apresentação oral e 1º autor (exigido na USP-SP). Na UNICAMP vale autor ou coautor.',
     inputType: 'number',
     unitLabel: 'trabalhos',
     step: 1,
-    maxInput: 6,
+    maxInput: 4,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 1,
+    roiActionLabel: 'Apresentar 1 trabalho ORAL (1º autor) em congresso de sociedade',
     rules: {
-      usp_sp: { blockId: 'oral', perUnit: 4, maxItemPoints: 8, note: 'Item 8: 4 pts/oral (teto 8)' },
-      usp_rp: { blockId: 'cientifico', perUnit: 0.5, maxItemPoints: 1.0, note: 'Científico: 0,5/oral (teto 1,0)' },
-      unicamp: { blockId: 'congresso', perUnit: 10, maxItemPoints: 10, note: 'Item 5a.1: Oral Sociedade = 10 pts (teto 10)' },
+      usp_sp: {
+        blockId: 'oral',
+        perUnit: 7,
+        maxItemPoints: 8,
+        note: 'Item 8: 1º autor oral Nacional = 7 pts (Int. = 8 pts; teto bloco 8)',
+      },
+      usp_rp: {
+        blockId: 'cientifico',
+        perUnit: 0.5,
+        maxItemPoints: 1.0,
+        note: 'Item 3: 0,5 pt/apresentação oral (teto 1,0)',
+      },
+      unicamp: {
+        blockId: 'congresso',
+        perUnit: 10,
+        maxItemPoints: 10,
+        note: 'Item 5a.1: Oral em Congresso de Sociedade = 10 pts (teto 10)',
+      },
     },
   },
   {
     id: 'congresso_poster',
     categoria: 'cientifico',
-    titulo: 'Apresentação de PÔSTER em Congresso (Autor Principal / Coautor)',
-    descricao: 'Certificado oficial do congresso contendo título do trabalho e lista de autores.',
+    titulo: 'Pôster em Congresso de Sociedade Médica (1º Autor)',
+    descricao: 'Certificado de congresso de sociedade nacional/internacional indicando 1º autor (USP-SP exige 1º autor; USP-RP 1º/2º).',
     inputType: 'number',
     unitLabel: 'pôsteres',
     step: 1,
     maxInput: 6,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Apresentar 1 pôster (1º autor) em congresso nacional de sociedade',
     rules: {
-      usp_sp: { blockId: 'poster', perUnit: 2, maxItemPoints: 4, note: 'Item 9: 2 pts/pôster 1º autor (teto 4)' },
-      usp_rp: { blockId: 'cientifico', perUnit: 0.25, maxItemPoints: 0.75, note: 'Científico: 0,25/pôster' },
-      unicamp: { blockId: 'congresso', perUnit: 6, maxItemPoints: 10, note: 'Item 5a.2: Pôster Sociedade = 6 pts (bloco teto 10)' },
+      usp_sp: {
+        blockId: 'poster',
+        perUnit: 4,
+        maxItemPoints: 6,
+        note: 'Item 9b: 1º autor Nacional = 4 pts (Int. = 6 pts; teto bloco 6)',
+      },
+      usp_rp: {
+        blockId: 'cientifico',
+        perUnit: 0.15,
+        maxItemPoints: 0.6,
+        note: 'Item 3: Pôster 1º/2º autor (Reg 0,1 / Nac 0,15 / Int 0,3 · teto 0,6)',
+      },
+      unicamp: {
+        blockId: 'congresso',
+        perUnit: 6,
+        maxItemPoints: 10,
+        note: 'Item 5a.2: Pôster em Sociedade = 6 pts (bloco teto 10)',
+      },
+    },
+  },
+  {
+    id: 'congresso_academico',
+    categoria: 'cientifico',
+    titulo: 'Trabalho em Evento Acadêmico Local / Regional (ex.: SIICUSP)',
+    descricao: 'Jornadas, simpósios acadêmicos ou SIICUSP como 1º autor. Atenção: certificado deve especificar oral vs. pôster.',
+    inputType: 'number',
+    unitLabel: 'trabalhos',
+    step: 1,
+    maxInput: 4,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Apresentar trabalho em simpósio/jornada acadêmica (1º autor)',
+    rules: {
+      usp_sp: {
+        blockId: 'poster',
+        perUnit: 1,
+        maxItemPoints: 1,
+        note: 'Item 9c: 1º autor pôster evento acadêmico = 1 pt (se oral comprovado: Item 8i = 2 pts)',
+      },
+      usp_rp: {
+        blockId: 'cientifico',
+        perUnit: 0.1,
+        maxItemPoints: 0.6,
+        note: 'Item 3: Pôster regional 1º/2º autor = 0,1 pt (oral = 0,5 pt)',
+      },
+      unicamp: {
+        blockId: 'congresso',
+        perUnit: 2,
+        maxItemPoints: 10,
+        note: 'Item 5b: Congresso acadêmico local/regional (oral ou pôster) = 2 pts',
+      },
     },
   },
 
@@ -593,14 +794,37 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
     id: 'monitoria_oficial',
     categoria: 'ensino_ligas',
     titulo: 'Monitoria Acadêmica Oficial / PAD (em semestres)',
-    descricao: 'Certificado institucional ou histórico escolar com disciplina, período e carga horária.',
+    descricao: 'Certificado institucional com período e carga horária (USP-SP: 64h/128h/192h; USP-RP exige bolsa por ≥ 1 ano).',
     inputType: 'number',
     unitLabel: 'semestres',
     step: 1,
     maxInput: 6,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 2,
+    roiActionLabel: 'Fazer 2 semestres de monitoria oficial (c/ bolsa se possível)',
     rules: {
-      usp_sp: { blockId: 'monitoria', perUnit: 2, maxItemPoints: 4, note: 'Item 4: 2 pts/semestre (teto 4)' },
-      usp_rp: { blockId: 'ensino', perUnit: 0.5, maxItemPoints: 1.0, note: 'Ensino: 0,5/semestre ou ano (teto 1,0)' },
+      usp_sp: {
+        blockId: 'monitoria',
+        perUnit: 1,
+        maxItemPoints: 3,
+        tiers: [
+          { minUnits: 3, points: 3 },
+          { minUnits: 2, points: 2 },
+          { minUnits: 1, points: 1 },
+        ],
+        note: 'Item 4: >2 sem (≥192h)=3; 2 sem (≥128h)=2; 1 sem (≥64h)=1',
+      },
+      usp_rp: {
+        blockId: 'ensino',
+        perUnit: 0.5,
+        maxItemPoints: 1.0,
+        tiers: [
+          { minUnits: 4, points: 1.0 },
+          { minUnits: 2, points: 0.5 },
+        ],
+        note: 'Item 4: Monitoria COM bolsa ≥1 ano (2 sem) = 0,5 pt/ano (teto 1,0)',
+      },
       unicamp: {
         blockId: 'monitoria',
         perUnit: 2,
@@ -609,7 +833,7 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
           { minUnits: 3, points: 5 },
           { minUnits: 1, points: 2 },
         ],
-        note: 'Item 8: >2 sem = 5 pts; até 2 sem = 2 pts',
+        note: 'Item 8: > 2 sem = 5 pts; até 2 sem = 2 pts',
       },
     },
   },
@@ -617,83 +841,86 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
     id: 'liga_diretoria',
     categoria: 'ensino_ligas',
     titulo: 'Liga Acadêmica — Diretoria (≥ 1 ano / 2 semestres)',
-    descricao: 'Certificado oficial timbrado assinado pelo docente coordenador da liga.',
+    descricao: 'Certificado timbrado pelo coordenador da liga. Nota: USP-SP 2027 retirou ligas do Item 10 (agora é extensão).',
     inputType: 'boolean',
     maxInput: 1,
+    actionable: true,
+    effortHint: 'medio',
+    roiActionLabel: 'Completar 1 ano de diretoria em liga acadêmica',
     rules: {
-      usp_rp: { blockId: 'assistencial', perUnit: 1.0, maxItemPoints: 1.0, note: 'Assistencial: Liga ≥1 ano (teto 1,0)' },
-      unicamp: { blockId: 'liga', perUnit: 5, maxItemPoints: 5, note: 'Item 6a: Diretoria = 5 pts (teto 5)' },
+      usp_rp: { blockId: 'assistencial', perUnit: 0.5, maxItemPoints: 0.5, note: 'Item 2: 0,5 pt por ano de liga (sem bônus por diretoria; máx 1,0)' },
+      unicamp: { blockId: 'liga', perUnit: 5, maxItemPoints: 5, note: 'Item 6a: Diretoria de liga = 5 pts (teto 5)' },
     },
   },
   {
     id: 'liga_membro',
     categoria: 'ensino_ligas',
-    titulo: 'Liga Acadêmica — Membro Ativo / Ligante (em anos)',
-    descricao: 'Participação ativa comprovada em liga acadêmica reconhecida (sem diretoria).',
+    titulo: 'Liga Acadêmica — Anos adicionais como Membro / Ligante',
+    descricao: 'Anos como ligante (ou 2º ano de liga para fechar o teto 1,0 pt na USP-RP). Relatório de atividades se houver assistência.',
     inputType: 'number',
     unitLabel: 'anos',
     step: 1,
     maxInput: 4,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Completar +1 ano em liga acadêmica (fecha teto USP-RP)',
     rules: {
-      usp_rp: { blockId: 'assistencial', perUnit: 0.5, maxItemPoints: 1.0, note: 'Assistencial: 0,5/ano (teto 1,0)' },
+      usp_rp: { blockId: 'assistencial', perUnit: 0.5, maxItemPoints: 1.0, note: 'Item 2: 0,5 pt/ano de liga (teto conjunto liga = 1,0)' },
       unicamp: { blockId: 'liga', perUnit: 2, maxItemPoints: 4, note: 'Item 6b: Membro = 2 pts (bloco teto 5)' },
     },
   },
   {
     id: 'org_evento',
     categoria: 'ensino_ligas',
-    titulo: 'Organização de Congressos / Simpósios / Jornadas Médicas',
-    descricao: 'Certificado de comissão organizadora de eventos científicos, jornadas ou cursos.',
+    titulo: 'Organização de Eventos Científicos (Ligas / DA / Extensão)',
+    descricao: 'Comissão organizadora de jornadas, aulas abertas ou simpósios acadêmicos (ex.: LAPQ, Simpósio Pontes).',
     inputType: 'number',
     unitLabel: 'eventos',
     step: 1,
-    maxInput: 5,
+    maxInput: 4,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Organizar +1 evento científico acadêmico',
     rules: {
-      usp_sp: { blockId: 'org_eventos', perUnit: 2.5, maxItemPoints: 5, note: 'Item 7: 2,5 pts/evento (teto 5)' },
-      usp_rp: { blockId: 'ensino', perUnit: 0.25, maxItemPoints: 0.5, note: 'Ensino/Eventos: 0,25/evento (teto 0,5)' },
+      usp_sp: { blockId: 'org_eventos', perUnit: 2, maxItemPoints: 4, note: 'Item 7b: 2 pts/evento acadêmico (máx 2 atividades = 4 pts)' },
+      usp_rp: { blockId: 'ensino', perUnit: 0.3, maxItemPoints: 0.6, note: 'Item 4: 0,3 pt/evento científico (teto 0,6)' },
+    },
+  },
+  {
+    id: 'org_evento_sociedade',
+    categoria: 'ensino_ligas',
+    titulo: 'Organização de Congresso de Sociedade Médica (Estadual / Nac.)',
+    descricao: 'Comissão organizadora de congresso promovido por entidade profissional de classe (USP-SP Item 7a).',
+    inputType: 'number',
+    unitLabel: 'eventos',
+    step: 1,
+    maxInput: 2,
+    actionable: true,
+    effortHint: 'alto',
+    roiStep: 1,
+    roiActionLabel: 'Participar da comissão organizadora de congresso de sociedade',
+    rules: {
+      usp_sp: { blockId: 'org_eventos', perUnit: 4, maxItemPoints: 4, note: 'Item 7a: 4 pts (máx 1 atividade; bloco teto 6)' },
+      usp_rp: { blockId: 'ensino', perUnit: 0.3, maxItemPoints: 0.6, note: 'Item 4: 0,3 pt/evento (teto 0,6)' },
     },
   },
 
-  // 4. ASSISTENCIAL, ESTÁGIOS & CURSOS
-  {
-    id: 'cursos_suporte_vida',
-    categoria: 'assistencial_cursos',
-    titulo: 'Cursos de Suporte de Vida Válidos (ACLS / ATLS / PALS / BLS)',
-    descricao: 'Certificação dentro da validade no ano da inscrição (ou cursos ECG/VM/USG > 12h na UNICAMP).',
-    inputType: 'number',
-    unitLabel: 'cursos',
-    step: 1,
-    maxInput: 4,
-    rules: {
-      usp_sp: { blockId: 'suporte_vida', perUnit: 2, maxItemPoints: 4, note: 'Item 12: 2 pts/curso válido (teto 4)' },
-      usp_rp: { blockId: 'assistencial', perUnit: 0.25, maxItemPoints: 0.5, note: 'Assistencial: até 0,5 pt' },
-      unicamp: { blockId: 'aprimoramento', perUnit: 2, maxItemPoints: 5, note: 'Item 7: 2 pts/suporte de vida (teto 5)' },
-    },
-  },
-  {
-    id: 'estagio_extracurricular',
-    categoria: 'assistencial_cursos',
-    titulo: 'Estágio / Plantão Extracurricular Voluntário (blocos de 120h)',
-    descricao: 'Fora da grade obrigatória do internato, com declaração de carga horária e serviço.',
-    inputType: 'number',
-    unitLabel: 'blocos (120h)',
-    step: 1,
-    maxInput: 4,
-    rules: {
-      usp_sp: { blockId: 'aprimoramento', perUnit: 4, maxItemPoints: 8, note: 'Item 11: 4 pts/estágio oficial (teto 8)' },
-      usp_rp: { blockId: 'assistencial', perUnit: 0.5, maxItemPoints: 1.0, note: 'Assistencial: 0,5/120h (teto 1,0)' },
-      unicamp: { blockId: 'aprimoramento', perUnit: 2.5, maxItemPoints: 5, note: 'Item 7: Estágio extra (bloco teto 5)' },
-    },
-  },
+  // 4. EXTENSÃO, ESTÁGIOS & CURSOS
   {
     id: 'extensao_voluntariado',
     categoria: 'assistencial_cursos',
-    titulo: 'Extensão Universitária / Trabalho Voluntário Social (em horas)',
-    descricao: 'Projetos de extensão não obrigatórios (ex.: campanhas, expedições, ações sociais). Não inclui ligas.',
+    titulo: 'Extensão Universitária Acadêmica / Voluntariado Social (horas)',
+    descricao: 'Projetos de extensão não curriculares e voluntariado social (exceto ligas). USP-SP exige chancela da CCEx/Diretoria.',
     inputType: 'number',
     unitLabel: 'horas',
     step: 24,
     maxInput: 240,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 48,
+    roiActionLabel: 'Acumular +48h em extensão/voluntariado oficial',
     rules: {
       usp_sp: {
         blockId: 'extensao',
@@ -703,17 +930,17 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
           { minUnits: 96, points: 5 },
           { minUnits: 48, points: 2.5 },
         ],
-        note: 'Item 10: ≥96h = 5 pts; 48–96h = 2,5 pts',
+        note: 'Item 10 (2027): Extensão acadêmica (sem ligas) c/ aval CCEx/Diretoria — até 5 pts',
       },
       usp_rp: {
         blockId: 'assistencial',
-        perUnit: 0.005,
-        maxItemPoints: 0.5,
+        perUnit: 0.004,
+        maxItemPoints: 1.0,
         tiers: [
-          { minUnits: 96, points: 0.5 },
-          { minUnits: 48, points: 0.25 },
+          { minUnits: 240, points: 1.0 },
+          { minUnits: 120, points: 0.5 },
         ],
-        note: 'Assistencial: ≥96h = 0,5 pt',
+        note: 'Item 2: Voluntariado social 0,5 pt por bloco de 120h (teto 1,0)',
       },
       unicamp: {
         blockId: 'extensao',
@@ -723,81 +950,266 @@ export const UNIFIED_CURRICULUM_CATALOG: CurriculumCatalogItem[] = [
           { minUnits: 97, points: 5 },
           { minUnits: 48, points: 2 },
         ],
-        note: 'Item 9: >96h = 5 pts; 48–96h = 2 pts',
+        note: 'Item 9: Voluntariado social > 96h = 5 pts; 48–96h = 2 pts',
       },
     },
   },
+  {
+    id: 'cursos_suporte_vida',
+    categoria: 'assistencial_cursos',
+    titulo: 'Cursos de Suporte de Vida Atualizados (ACLS / ATLS / PALS / BLS)',
+    descricao: 'Certificação dentro da validade na inscrição. Pontua na USP-SP e UNICAMP (não tabelado na USP-RP).',
+    inputType: 'number',
+    unitLabel: 'cursos',
+    step: 1,
+    maxInput: 4,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Fazer 1 curso de suporte de vida (ACLS/BLS/PALS)',
+    rules: {
+      usp_sp: { blockId: 'suporte_vida', perUnit: 2, maxItemPoints: 4, note: 'Item 12: 2 pts/curso atualizado (máx 2 = 4 pts)' },
+      unicamp: { blockId: 'aprimoramento', perUnit: 2, maxItemPoints: 5, note: 'Item 7b: 2 pts/curso suporte de vida (bloco teto 5)' },
+    },
+  },
+  {
+    id: 'cursos_aprimoramento_12h',
+    categoria: 'assistencial_cursos',
+    titulo: 'Cursos de ECG / Ventilação Mecânica / USG Beira-Leito (> 12h)',
+    descricao: 'Cursos concluídos na área da saúde com > 12h (não vale cursinho preparatório para residência).',
+    inputType: 'number',
+    unitLabel: 'cursos',
+    step: 1,
+    maxInput: 5,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Concluir 1 curso certificado > 12h (ECG/VM/USG)',
+    rules: {
+      unicamp: { blockId: 'aprimoramento', perUnit: 1, maxItemPoints: 5, note: 'Item 7a: 1 pt/curso > 12h (bloco teto 5)' },
+    },
+  },
+  {
+    id: 'estagio_extracurricular',
+    categoria: 'assistencial_cursos',
+    titulo: 'Plantão / Estágio Voluntário Extracurricular (blocos de 120h)',
+    descricao: 'Fora da grade obrigatória do internato com declaração de carga horária. Pontua apenas na USP-RP.',
+    inputType: 'number',
+    unitLabel: 'blocos (120h)',
+    step: 1,
+    maxInput: 4,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 1,
+    roiActionLabel: 'Cumprir 1 bloco de 120h de plantão voluntário extracurricular',
+    rules: {
+      usp_rp: { blockId: 'assistencial', perUnit: 0.5, maxItemPoints: 1.0, note: 'Item 2: 0,5 pt por 120h de plantão voluntário (teto 1,0)' },
+    },
+  },
 
-  // 5. REPRESENTAÇÃO ESTUDANTIL & PROVAS
+  // 5. REPRESENTAÇÃO, ESPORTE & PROVAS
   {
     id: 'rep_colegiado',
     categoria: 'representacao',
-    titulo: 'Representação Discente em Colegiados Institucionais (Congregação/CCG)',
-    descricao: 'Mínimo 1–2 semestres como representante oficial em órgãos colegiados da faculdade.',
-    inputType: 'boolean',
-    maxInput: 1,
+    titulo: 'Representação Discente em Colegiados Institucionais (anos)',
+    descricao: 'Congregação, Conselhos Departamentais, CCG ou Comissões de Avaliação/Reforma Curricular (assinado pela faculdade).',
+    inputType: 'number',
+    unitLabel: 'anos',
+    step: 1,
+    maxInput: 2,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Assumir 1 gestão (1 ano) como representante discente em colegiado',
     rules: {
-      usp_sp: { blockId: 'rep_estudantil', perUnit: 3, maxItemPoints: 3, note: 'Item 13: Colegiado = 3 pts (teto 3)' },
-      usp_rp: { blockId: 'estudantil', perUnit: 0.5, maxItemPoints: 0.5, note: 'Estudantil: 0,5 pt' },
-      unicamp: { blockId: 'rep_colegiado', perUnit: 5, maxItemPoints: 5, note: 'Item 10: Colegiado institucional = 5 pts' },
+      usp_sp: {
+        blockId: 'rep_estudantil',
+        perUnit: 1,
+        maxItemPoints: 3,
+        tiers: [
+          { minUnits: 2, points: 3 },
+          { minUnits: 1, points: 1 },
+        ],
+        note: 'Item 13: ≥ 2 anos = 3 pts; ≥ 1 ano = 1 pt (teto bloco 3)',
+      },
+      usp_rp: { blockId: 'estudantil', perUnit: 0.5, maxItemPoints: 1.0, note: 'Item 5: 0,5 pt/ano em colegiado oficial (teto 1,0)' },
+      unicamp: {
+        blockId: 'rep_colegiado',
+        perUnit: 5,
+        maxItemPoints: 5,
+        tiers: [{ minUnits: 1, points: 5 }],
+        note: 'Item 10: Colegiado institucional (mín. 1 sem) = 5 pts',
+      },
     },
   },
   {
     id: 'rep_ca_atletica',
     categoria: 'representacao',
-    titulo: 'Diretoria de Centro Acadêmico (CA/DA) ou Atlética (em gestões/anos)',
-    descricao: 'Gestão mínima de 2 semestres comprovada por ata/certificado da entidade ou faculdade.',
+    titulo: 'Diretoria de Centro Acadêmico (CARL/DA) ou Atlética (gestões/anos)',
+    descricao: 'Gestão mínima de 1 ano (2 semestres) comprovada por certificado institucional contendo período e cargo.',
     inputType: 'number',
-    unitLabel: 'gestões',
+    unitLabel: 'anos',
     step: 1,
     maxInput: 3,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 1,
+    roiActionLabel: 'Cumprir 1 gestão de CA ou Atlética',
     rules: {
-      usp_sp: { blockId: 'rep_estudantil', perUnit: 1.5, maxItemPoints: 3, note: 'Item 13: 1,5/gestão (teto 3)' },
-      usp_rp: { blockId: 'estudantil', perUnit: 0.5, maxItemPoints: 1.0, note: 'Estudantil: 0,5/ano (teto 1,0)' },
-      unicamp: { blockId: 'rep_discente', perUnit: 2, maxItemPoints: 4, note: 'Item 11: CA=2 / Atlética=2 (bloco teto 5)' },
+      usp_sp: {
+        blockId: 'rep_estudantil',
+        perUnit: 1,
+        maxItemPoints: 3,
+        tiers: [
+          { minUnits: 2, points: 3 },
+          { minUnits: 1, points: 1 },
+        ],
+        note: 'Item 13: ≥ 2 anos = 3 pts; ≥ 1 ano = 1 pt (compartilha teto 3)',
+      },
+      usp_rp: { blockId: 'estudantil', perUnit: 0.5, maxItemPoints: 1.0, note: 'Item 5: 0,5 pt/ano em CA/Atlética (teto 1,0)' },
+      unicamp: { blockId: 'rep_discente', perUnit: 2, maxItemPoints: 4, note: 'Item 11: CA = 2 pts / Atlética = 2 pts (bloco teto 5)' },
     },
   },
   {
     id: 'esporte_universitario',
     categoria: 'representacao',
-    titulo: 'Equipe Esportiva Universitária Oficial (≥ 2 semestres, ex.: Natação)',
-    descricao: 'Participação regular em equipe esportiva oficial da faculdade/atlética.',
-    inputType: 'boolean',
-    maxInput: 1,
+    titulo: 'Equipe Esportiva Universitária Oficial (ex.: Natação, em anos)',
+    descricao: 'Participação regular comprovada pela instituição/atlética com período e carga horária. Na USP-SP entra no Item 13!',
+    inputType: 'number',
+    unitLabel: 'anos',
+    step: 0.5,
+    maxInput: 4,
+    actionable: true,
+    effortHint: 'medio',
+    roiStep: 0.5,
+    roiActionLabel: 'Completar 2 anos de equipe esportiva universitária',
     rules: {
-      usp_rp: { blockId: 'estudantil', perUnit: 0.25, maxItemPoints: 0.25, note: 'Estudantil: 0,25 pt' },
-      unicamp: { blockId: 'rep_discente', perUnit: 1, maxItemPoints: 1, note: 'Item 11c: Equipe esportiva = 1 pt' },
+      usp_sp: {
+        blockId: 'rep_estudantil',
+        perUnit: 1,
+        maxItemPoints: 3,
+        tiers: [
+          { minUnits: 2, points: 3 },
+          { minUnits: 1, points: 1 },
+        ],
+        note: 'Item 13: Equipe esportiva ≥ 2 anos = 3 pts; ≥ 1 ano = 1 pt',
+      },
+      unicamp: {
+        blockId: 'rep_discente',
+        perUnit: 1,
+        maxItemPoints: 1,
+        tiers: [{ minUnits: 1, points: 1 }],
+        note: 'Item 11c: Equipe esportiva (≥ 2 sem) = 1 pt',
+      },
     },
   },
   {
     id: 'teste_progresso',
     categoria: 'representacao',
-    titulo: 'Teste de Progresso Institucional (nº de provas realizadas)',
-    descricao: 'Participação comprovada nas edições anuais do Teste de Progresso (ABEM/Núcleo).',
+    titulo: 'Provas Suprainstitucionais (Teste de Progresso / Habilidades / CRM)',
+    descricao: 'Participação comprovada nas edições anuais do Teste de Progresso (ABEM/Núcleo). Pontua em Ensino na USP-RP.',
     inputType: 'number',
     unitLabel: 'provas',
     step: 1,
     maxInput: 4,
+    actionable: true,
+    effortHint: 'baixo',
+    roiStep: 1,
+    roiActionLabel: 'Fazer +1 edição do Teste de Progresso (ABEM/Núcleo)',
     rules: {
-      usp_rp: { blockId: 'estudantil', perUnit: 0.5, maxItemPoints: 1.0, note: 'Estudantil: 0,5/prova (teto 1,0)' },
+      usp_rp: { blockId: 'ensino', perUnit: 0.5, maxItemPoints: 1.0, note: 'Item 4 (Ensino): 0,5 pt/prova não obrigatória (teto 1,0)' },
     },
   },
 ];
 
 /**
+ * Migração automática de chaves antigas da v2 para as chaves auditadas 2027.
+ */
+export const CURRICULUM_ID_MIGRATION_MAP: Record<string, string> = {
+  inst_docentes_cr: 'inst_sus_rede',
+};
+
+/**
+ * Inventário base conhecido do Wagner (O que eu já fiz.txt + 4 PDFs em Currículo/Certificados + Psicologia).
+ * Usado apenas quando o usuário aciona explicitamente "Carregar meu inventário".
+ */
+export const WAGNER_BASELINE_CURRICULUM_ENTRIES: Record<string, CurriculumEntryState> = {
+  inst_pos_capes: {
+    value: 1,
+    proofStatus: 'falta',
+    notes: 'FMRP-USP (> 5 programas Medicina I/II/III CAPES). Solicitar declaração na CPG/Serviço Acadêmico.',
+  },
+  inst_hu_proprio: {
+    value: 1,
+    proofStatus: 'falta',
+    notes: 'HCRP-USP próprio. Solicitar termo comprobatório no Serviço Acadêmico da FMRP.',
+  },
+  inst_sus_rede: {
+    value: 1,
+    proofStatus: 'falta',
+    notes: 'Rede assistencial FMRP (1º, 2º e 3º níveis SUS). Pedir declaração com endereços e telefones (Portaria 4.279).',
+  },
+  outra_graduacao_pos: {
+    value: 1,
+    proofStatus: 'falta',
+    notes: 'Graduação em Psicologia concluída (+1 pt garantido no Item 11d da USP-SP). Digitalizar diploma frente e verso.',
+  },
+  ic_com_bolsa: {
+    value: 2,
+    proofStatus: 'em_andamento',
+    notes: '2 anos de IC com bolsa (encerrando Jan/2027). Reunir comprovante da agência + carga horária e assinatura do orientador.',
+  },
+  ic_artigo_vinculado: {
+    value: 1,
+    proofStatus: 'em_andamento',
+    notes: '1 dos 2 artigos publicados deriva da IC (eleva projeto 1 de 2→6 pts na USP-SP sem repetir no Item 6).',
+  },
+  artigo_pubmed: {
+    value: 2,
+    proofStatus: 'em_andamento',
+    notes: '2 artigos publicados (1 da IC + 1 fora da IC). Confirmar indexação PubMed vs. SciELO e salvar PDF completo + DOI de ambos.',
+  },
+  congresso_academico: {
+    value: 1,
+    proofStatus: 'pdf_pronto',
+    notes: 'Certificados/Siicusp.pdf (33º SIICUSP 2025, 1º autor). Alerta: declaração não especifica oral vs. pôster — checar se cabe declaração complementar.',
+  },
+  liga_diretoria: {
+    value: 1,
+    proofStatus: 'falta',
+    notes: 'Diretoria de Liga Acadêmica (> 1 ano). Emitir certificado timbrado com datas, carga horária e assinatura do docente tutor.',
+  },
+  org_evento: {
+    value: 2,
+    proofStatus: 'pdf_pronto',
+    notes: 'Certificados prontos: Aula Aberta LAPQ 2026 (4h) + Simpósio Redução de Danos — Pontes (4h). Fecha teto 7b USP-SP e 0,6 USP-RP.',
+  },
+  extensao_voluntariado: {
+    value: 240,
+    proofStatus: 'pdf_pronto',
+    notes: 'Certificados/Construindo Pontes.pdf (Gestão set/2022–out/2023, 240h). Alerta USP-SP 2027: certificado está no CARL — validar se precisa chancela da CCEx/FMRP.',
+  },
+  esporte_universitario: {
+    value: 1.5,
+    proofStatus: 'falta',
+    notes: '1,5 ano na equipe de natação da faculdade (+1 pt USP-SP Item 13 e +1 pt UNICAMP Item 11c). Pedir certificado com período e carga horária.',
+  },
+};
+
+/**
  * Mapeamento de migração automática dos IDs legados (`curriculoDoneIds` da v1)
- * para o catálogo canônico unificado da v2 (preserva progresso salvo no localStorage).
+ * para o catálogo canônico unificado (preserva progresso salvo no localStorage).
  */
 export const LEGACY_CURRICULO_TO_UNIFIED_MAP: Record<string, Array<{ canonicalId: string; value: number }>> = {
   'curr-inst-fmrp': [
     { canonicalId: 'inst_pos_capes', value: 1 },
     { canonicalId: 'inst_hu_proprio', value: 1 },
-    { canonicalId: 'inst_docentes_cr', value: 1 },
+    { canonicalId: 'inst_sus_rede', value: 1 },
   ],
   'curr-ic-2anos': [{ canonicalId: 'ic_com_bolsa', value: 2 }],
   'curr-2-artigos': [{ canonicalId: 'artigo_pubmed', value: 2 }],
   'curr-liga': [{ canonicalId: 'liga_diretoria', value: 1 }],
-  'curr-natacao': [{ canonicalId: 'esporte_universitario', value: 1 }],
+  'curr-natacao': [{ canonicalId: 'esporte_universitario', value: 1.5 }],
   'curr-monitoria': [{ canonicalId: 'monitoria_oficial', value: 2 }],
   'curr-congresso': [{ canonicalId: 'congresso_oral', value: 1 }],
   'curr-org-evento': [{ canonicalId: 'org_evento', value: 1 }],
@@ -820,10 +1232,15 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     nome: 'Pré-Temporada de Férias (8 Semanas)',
     periodo: '30/11/2026 a 24/01/2027',
     areaBadge: 'cirurgia',
-    ancora70: 'Base Prática Cirurgia Geral + Anestesio/CTI + GO (Apostilas Medway + Questões)',
-    trilha30: 'Domínio dos 7 Módulos de Habilidades Médicas + Leitura Sistemática de Exames',
-    procedimentosAlvo: ['ECG em 10 passos', 'Gasometria (Winter/AG/Delta-Delta)', 'RX Tórax/Abdome & e-FAST', '3 Encontros OSCE em Dupla', '6 Gravações SNAPPS/SBAR'],
-    microHabitoSugerido: 'Anamnese guiada por hipóteses + One-liner com Qualificadores Semânticos',
+    ancora70: 'Base Prática Cirurgia Geral + Anestesio/CTI + GO (Medway + MedQuest)',
+    trilha30: 'Esteira Contínua v3.1 (20 queixas E1, 7 E3-Porta, 7 E4 + 9 Guias Teóricos)',
+    procedimentosAlvo: [
+      '1ª passada E1 (19/20 + baseline), E3-Porta (7/7) e E4 (7/7)',
+      '≥ 6 queixas E1 dominadas na Esteira v3.1',
+      'Blocos visuais obrigatórios (ECG + RX nas queixas #1, #4, #5 e #17)',
+      'Revisão de 15 min do LOG + Baseline Caso B em 24/01/2027',
+    ],
+    microHabitoSugerido: 'Anamnese guiada por 3 hipóteses (3H ≤ 60s) + apresentação oral ≤ 90s',
   },
   {
     id: 'cirurgia',
@@ -832,7 +1249,7 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     areaBadge: 'cirurgia',
     ancora70: 'Abdome agudo, Trauma/ATLS, Pré/Pós-operatório, Hérnias, Vias biliares e Onco-cirurgia',
     trilha30: 'Preventiva Bloco 1 (SUS, Atenção Primária, Vigilância e Indicadores)',
-    procedimentosAlvo: ['≥ 10 Suturas + Anestesia local', '≥ 3 SVD (M/F)', '≥ 2 SNG/SNE', 'Curativos complexos e retirada de drenos'],
+    procedimentosAlvo: ['Anestesia local + Sutura (Regra 3x)', 'Drenagem abscesso / CE superficial', 'Curativo complexo / retirada de dreno', 'SVD (M/F) e SNG/SNE'],
     microHabitoSugerido: 'Exame de Abdome Agudo guiado por hipóteses (LR+) + Passagem SBAR pós-op',
   },
   {
@@ -842,7 +1259,7 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     areaBadge: 'clinica',
     ancora70: 'Avaliação pré-anestésica, Via Aérea/IOT, Choque/Sepse/DVA, VM + Clínica Crítica (Cardio/Pneumo/Nefro/Gaso)',
     trilha30: 'Preventiva Bloco 2 (Estudos Epidemiológicos, Bioestatística e Testes Diagnósticos)',
-    procedimentosAlvo: ['≥ 10 Ventilações BVM (C-E)', '≥ 5 Laringoscopias/IOT', '≥ 5 Gasometrias arteriais/PAI', '≥ 2 Acessos Centrais USG-guiados'],
+    procedimentosAlvo: ['Ventilação BVM (C-E)', 'Laringoscopia / IOT', 'Punção para Gasometria Arterial'],
     microHabitoSugerido: 'ABCDE nos primeiros 5 min + Checklist das 7 Travas A-R-G-I-V-P-O no CTI',
   },
   {
@@ -852,7 +1269,7 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     areaBadge: 'go',
     ancora70: 'Obstetrícia de Alto Risco (DHEG/HELLP, Hemorragias, Partograma/CTG) + Gineco Endócrina, IST/DIP e Onco',
     trilha30: 'Clínica Médica Bloco 1 (Endocrinologia: DM/Tireoide + Reumatologia)',
-    procedimentosAlvo: ['≥ 10 Exames especulares/CCO', '≥ 10 Toques obstétricos', '≥ 3 Partos normais/Episiorrafias', 'Leitura sistemática de CTG/Partograma'],
+    procedimentosAlvo: ['Exame especular + coleta CCO', 'Toque obstétrico (dilatação/apagamento/plano)', 'Parto normal assistido / sutura perineal'],
     microHabitoSugerido: 'Anamnese acolhedora Calgary-Cambridge (ICE) + 4 Manobras de Leopold + SNAPPS',
   },
   {
@@ -862,7 +1279,7 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     areaBadge: 'cirurgia',
     ancora70: 'Olho vermelho, Glaucoma, Otites, Vertigem (HINTS), Epistaxe/IVAS + Neurologia (AVC, Cefaleias, Epilepsia)',
     trilha30: 'Pediatria Bloco 1 (Neonatologia: Reanimação, Icterícia, Sepse e Triagem Neonatal)',
-    procedimentosAlvo: ['≥ 10 Otoscopias', '≥ 5 Testes de Fluoresceína', 'Exame HINTS à beira do leito', 'Manejo de traqueostomia'],
+    procedimentosAlvo: ['Otoscopia limpa + remoção de cerume/CE', 'Avaliação de olho vermelho com Fluoresceína', 'Tamponamento nasal anterior'],
     microHabitoSugerido: 'Triagem neurológica rápida (HINTS/Pares Cranianos) + Otoscopia técnica',
   },
   {
@@ -872,7 +1289,7 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     areaBadge: 'preventiva',
     ancora70: 'Preventiva Completa + APS + Clínica Médica Ambulatorial (HAS, Dislipidemia, Asma/DPOC, Rastreamentos)',
     trilha30: 'Pediatria Bloco 2 (Puericultura, Aleitamento, DNPM, Vacinação e Crescimento)',
-    procedimentosAlvo: ['Consultas centradas na pessoa (ICE + Teach-Back)', 'Rastreamentos oportunistas', 'Fechamento 100% do Currículo R1 até 30/06'],
+    procedimentosAlvo: ['Consultas centradas na pessoa (ICE + Teach-Back)', 'Conciliação medicamentosa e rastreamentos', 'Fechamento do Dossiê Curricular R1 até 30/06/2027'],
     microHabitoSugerido: 'Explicação compartilhada (Ask-Tell-Ask + Teach-Back) e conciliação medicamentosa',
   },
   {
@@ -882,8 +1299,8 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     areaBadge: 'clinica',
     ancora70: 'Clínica Médica Pesada: Infectologia, Gastroenterologia/Hepatologia e Hematologia',
     trilha30: 'Pediatria Bloco 3 (Emergências Pediátricas, BVA, PAC, GECA/Desidratação e ITU)',
-    procedimentosAlvo: ['≥ 3 Paracenteses', '≥ 2 Toracocenteses', '≥ 2 Punções Lombares', 'Autonomia total de evolução e prescrição de enfermaria'],
-    microHabitoSugerido: 'Apresentação de visita pelo Pyramid Principle (60–90s) + Raciocínio Bayesiano',
+    procedimentosAlvo: ['Paracentese diagnóstica / alívio (supervisionada)', 'Toracocentese (supervisionada)', 'Punção Lombar (supervisionada)'],
+    microHabitoSugerido: 'Apresentação de visita pelo Pyramid Principle (≤ 90s) + 7 Travas na prescrição',
   },
   {
     id: 'ped',
@@ -891,8 +1308,8 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     periodo: '12/07 a 08/08/2027',
     areaBadge: 'pediatria',
     ancora70: 'Consolidação Total de Pediatria (Neonatologia, Puericultura, Infecto-Ped e Urgências)',
-    trilha30: 'Auditoria e Fechamento de Lacunas (<70% de acerto nas 5 grandes áreas)',
-    procedimentosAlvo: ['≥ 15 Otoscopias pediátricas anti-choro', '≥ 3 Salas de parto', 'Prescrição ponderal segura sem erro de diluição'],
+    trilha30: 'Auditoria e Fechamento de Lacunas (<80% de acerto nas 5 grandes áreas)',
+    procedimentosAlvo: ['Otoscopia pediátrica com contenção adequada', 'Passos iniciais + VPP neonatal em sala de parto'],
     microHabitoSugerido: 'Coreografia de Exame Físico Pediátrico (Ordem Anti-Choro + Triângulo de Avaliação)',
   },
   {
@@ -900,25 +1317,31 @@ export const RODIZIOS_6ANO: RodizioConfig[] = [
     nome: 'Meses 8–9 — Emergência & Trauma (2 meses)',
     periodo: '09/08 a 03/10/2027',
     areaBadge: 'cirurgia',
-    ancora70: 'Até 31/08: Fechar 100% do 1º ciclo | A partir de 01/09: 1 Prova na Íntegra/Semana + Revisão Cirúrgica de Erros',
-    trilha30: 'Treino Semanal de 2ª Fase (2–3 Estações OSCE CRMedway + Multimídia)',
-    procedimentosAlvo: ['≥ 10 e-FAST na Sala Vermelha', '≥ 5 SRI/IOT de emergência', 'Cardioversão/Desfibrilação', '≥ 2 Drenagens torácicas'],
+    ancora70: 'Até 31/08: Fechar 100% do 1º ciclo | A partir de 01/09: Provas antigas (USP-SP, USP-RP, UNICAMP) + revisão de lacunas',
+    trilha30: 'Esteira v3.1 (E4 Sala Vermelha + Regulação CROSS) + consolidação do Logbook 3x',
+    procedimentosAlvo: ['Cardioversão elétrica / Desfibrilação (manuseio prático)', 'Priorização de sala vermelha + SBAR sob pressão'],
     microHabitoSugerido: 'Liderança em Sala Vermelha (ABCDE + Comunicação em Alça Fechada + SBAR)',
   },
   {
     id: 'sprint_r1',
-    nome: 'Meses 10–12 — Sprint Final R1 & Provas Práticas',
-    periodo: 'Outubro a Dezembro de 2027',
+    nome: 'Meses 10–11 — Reta Final 6º Ano & Consolidação de Base',
+    periodo: 'Outubro a Novembro de 2027',
     areaBadge: 'preventiva',
-    ancora70: 'Provas Íntegras Cronometradas (USP-RP, USP-SP, UNICAMP, UNIFESP, ENARE) + Caderno de Erros',
-    trilha30: 'Simulados Práticos de 2ª Fase (OSCE em Dupla + Imagens Puras de Exames)',
-    procedimentosAlvo: ['Estações OSCE cronometradas (10 min)', 'Defesa oral de condutas sob pressão', 'Revisão de checklists de procedimentos'],
-    microHabitoSugerido: 'Execução impecável de checklist OSCE em 8 minutos sem esquecer travas de segurança',
+    ancora70: 'Provas antigas cronometradas (USP-SP, USP-RP, UNICAMP) como diagnóstico de base pré-2028 + fechamento de lacunas (<80%)',
+    trilha30: 'Transição para plantões 2028: Checklist "Posso Assumir Essa Escala?" (§8 CRM 2028) + revisão de prescrição e emergências',
+    procedimentosAlvo: [
+      'Revisão final das 7 Travas de prescrição e altas defensáveis (E3)',
+      'Domínio prático dos cenários críticos de porta e sala vermelha (E4)',
+      'Fechamento de pendências do internato e formatura FMRP-USP (nov/2027)',
+    ],
+    microHabitoSugerido: 'Conduta completa e prescrição segura com autonomia para assumir plantões em 2028',
   },
 ];
 
 export const FERIAS_SEMANAS: {
   id: string;
+  de: string;
+  ate: string;
   label: string;
   focoConteudo: string;
   focoExames: string;
@@ -927,107 +1350,123 @@ export const FERIAS_SEMANAS: {
 }[] = [
   {
     id: 'sem1',
+    de: '2026-11-30',
+    ate: '2026-12-06',
     label: 'Semana 1 (30/11 a 04/12) — Cirurgia: Abdome Agudo Inflamatório/Obstrutivo',
-    focoConteudo: 'Apendicite, colecistite, diverticulite, pancreatite, obstrução intestinal e hérnias (2h/dia)',
-    focoExames: 'ECG sistemático básico (10 passos) + RX de abdome agudo (níveis hidroaéreos, haustrações vs válvulas)',
-    focoHabilidade: 'Modo Rápido de Anamnese (5 min) + HDPE Abdominal + 3 Illness Scripts cirúrgicos + Pyramid Principle',
+    focoConteudo: 'Apendicite, colecistite, diverticulite, pancreatite, obstrução intestinal e hérnias (Medway + MedQuest)',
+    focoExames: 'Semana cheia v3.1 (~290 min Seg–Sex): 3 (D1+A) + 1 C + 1 B + bloco visual se houver queixa #1/#4/#5/#17',
+    focoHabilidade: 'Seg–Sex na Esteira v3.1 (Sáb/Dom 0 min de habilidades; foco em 3H ≤ 60s e 1ª passada E1)',
   },
   {
     id: 'sem2',
+    de: '2026-12-07',
+    ate: '2026-12-13',
     label: 'Semana 2 (07/12 a 11/12) — Cirurgia: Vascular/Perfurativo, Pós-Op & Trauma',
-    focoConteudo: 'Úlcera perfurada, isquemia mesentérica, complicações pós-op (febre dos 5 Ws, deiscência) e ATLS inicial (2h/dia)',
-    focoExames: 'Pneumoperitônio no RX + Janelas do e-FAST + Introdução aos 5 passos da Gasometria',
-    focoHabilidade: 'SBAR para intercorrência pós-op + ABCDE do trauma + 1º OSCE em Dupla na sexta-feira',
+    focoConteudo: 'Úlcera perfurada, isquemia mesentérica, complicações pós-op (5 Ws, deiscência) e ATLS inicial',
+    focoExames: 'Semana cheia v3.1 (~290 min Seg–Sex): 3 (D1+A) + 1 C + 1 B + 10 min exame físico em familiar (Qui)',
+    focoHabilidade: 'Avançar 1ª passada E1 + gravação semanal de 5 min (Qui) + checagem [CHECAR] em fonte primária',
   },
   {
     id: 'sem3',
+    de: '2026-12-14',
+    ate: '2026-12-20',
     label: 'Semana 3 (14/12 a 18/12) — Anestesio & CTI: Via Aérea, Choque, Sepse e DVA',
-    focoConteudo: 'Avaliação pré-anestésica (ASA, Mallampati, jejum), choque (4 tipos), sepse, noradrenalina/vasopressina e sedação (2h/dia)',
-    focoExames: 'Gasometria (Ânion Gap corrigido pela albumina + lactato) + ECG (isquemia e taquiarritmias)',
-    focoHabilidade: 'Avaliação de via aérea (LEMON/3-3-2) + SBAR de paciente instável no CTI + Raciocínio Bayesiano em sepse',
+    focoConteudo: 'Pré-anestésico (ASA, Mallampati, jejum), choque (4 tipos), sepse, noradrenalina/vasopressina e sedação',
+    focoExames: 'Semana cheia v3.1 (~290 min Seg–Sex): 3 (D1+A) + 1 C + 1 B + revisão de Não Pode Passar',
+    focoHabilidade: 'Priorizar D(1) para retestar queixas com falha recente e confirmar sequências em dias distintos',
   },
   {
     id: 'sem4',
-    label: 'Semana 4 (21/12 a 25/12) — Anestesio & CTI: VM Básica, DHE e IRA',
-    focoConteudo: 'Ventilação Mecânica (VCV/PCV, PEEP, driving pressure), distúrbios de Na+/K+/Ca2+, IRA e ACLS (2h/dia)',
-    focoExames: 'Gasometria com Delta-Delta + ECG eletrolítico (hiper/hipocalemia) + RX de tórax no CTI (tubo, congestão, pneumotórax)',
-    focoHabilidade: 'Apresentação de visita em CTI por sistemas (FAST HUG BID) + Protocolo SPIKES com familiar + Gravação de vídeo',
+    de: '2026-12-21',
+    ate: '2026-12-27',
+    label: 'Semana 4 (21/12 a 23/12 · Folga Natal 24–25/12) — Anestesio & CTI: VM, DHE e IRA',
+    focoConteudo: 'Ventilação Mecânica básica (VCV/PCV, PEEP, driving pressure), distúrbios Na+/K+/Ca2+, IRA e ACLS',
+    focoExames: 'Semana reduzida de Natal (Seg–Qua): 2 (D1+A) + 1 C (Qua 23/12) · Folga total 24–25/12',
+    focoHabilidade: 'Manter cadência curta sem acumular dívida no Natal; Sáb/Dom 0 min de habilidades',
   },
   {
     id: 'sem5',
-    label: 'Semana 5 (28/12 a 01/01) — Ginecologia: SUA, Dor Pélvica, IST/DIP e Rastreio',
-    focoConteudo: 'SUA (PALM-COEIN), gravidez ectópica, torção ovariana, DIP, úlceras/corrimentos e rastreio CA colo/mama (2h/dia)',
-    focoExames: 'Manutenção mista (1 ECG + 1 Gasometria ou 1 Imagem de urgência abdome-pelve)',
-    focoHabilidade: 'Anamnese ginecológica acolhedora (Calgary-Cambridge + ICE) + SNAPPS ambulatorial + Duelo Ectópica vs Torção vs Apendicite',
+    de: '2026-12-28',
+    ate: '2027-01-03',
+    label: 'Semana 5 (28/12 a 30/12 · Folga Ano-Novo 31/12–01/01) — Ginecologia: SUA, Dor Pélvica e IST/DIP',
+    focoConteudo: 'SUA (PALM-COEIN), gravidez ectópica, torção ovariana, DIP, úlceras/corrimentos e rastreio CA colo/mama',
+    focoExames: 'Semana reduzida de Ano-Novo (Seg–Qua): 2 (D1+A) + 1 B (Qua 30/12) · Folga total 31/12–01/01',
+    focoHabilidade: 'Prescrição segura (Prompt B) + limpeza de itens [CHECAR] pendentes antes de janeiro',
   },
   {
     id: 'sem6',
-    label: 'Semana 6 (04/01 a 08/01) — Obstetrícia: Pré-Natal, DHEG, Hemorragias e Parto',
-    focoConteudo: 'Pré-eclâmpsia/eclâmpsia/HELLP (MgSO4), DMG, DPP vs Placenta Prévia, HPP (4 Ts) e partograma (2h/dia)',
-    focoExames: 'Mix diário cronometrado (ECG + Gasometria + Leitura sistemática de CTG/Partograma)',
-    focoHabilidade: 'SBAR de emergência obstétrica (Eclâmpsia/HPP) + 2º OSCE em Dupla (GO + Cirurgia/CTI)',
+    de: '2027-01-04',
+    ate: '2027-01-10',
+    label: 'Semana 6 (04/01 a 08/01 · Check Contingência 10/01) — Obstetrícia: Pré-Natal, DHEG e HPP',
+    focoConteudo: 'Pré-eclâmpsia/eclâmpsia/HELLP (MgSO4), DMG, DPP vs Placenta Prévia, HPP (4 Ts) e partograma',
+    focoExames: 'Semana cheia v3.1 (~290 min Seg–Sex): 3 (D1+A) + 1 C + 1 B · Revisão de contingência em 10/01',
+    focoHabilidade: 'Consolidar queixas E1 em caminho de domínio (meta ≥ 6 dominadas até 24/01)',
   },
   {
     id: 'sem7',
-    label: 'Semana 7 (11/01 a 17/01/2027) — 🏖️ SEMANA LIVRE DE VIAGEM & DESCANSO TOTAL',
+    de: '2027-01-11',
+    ate: '2027-01-17',
+    label: 'Semana 7 (11/01 a 17/01/2027) — Viagem & Pausa Total',
     focoConteudo: 'ZERO estudo teórico novo. Descanso físico e mental planejado antes do 6º ano.',
-    focoExames: 'Pausa completa.',
+    focoExames: 'Pausa total na Esteira v3.1 (0 sessões).',
     focoHabilidade: 'Aproveitar a viagem (11 a 17/01) e recarregar bateria para iniciar Cirurgia em 25/01.',
     isFreeWeek: true,
   },
   {
     id: 'sem8',
-    label: 'Semana 8 (18/01 a 24/01) — Ponte Transversal & Simulados Finais Pré-6º Ano',
-    focoConteudo: 'Emergências clínicas (SCA, AVC, TEP, CAD) + noções de Oftalmo/ORL/CCP e MFC (2h/dia)',
-    focoExames: 'TC de Crânio sem contraste (Blood Can Be Very Bad) + Mix final cronometrado (ECG + Gaso + RX)',
-    focoHabilidade: '3º OSCE em Dupla + Gravação final de oratória comparada com a Semana 1',
+    de: '2027-01-18',
+    ate: '2027-01-24',
+    label: 'Semana 8 (18/01 a 24/01 · Baseline B em 24/01) — Ponte Pré-Internato',
+    focoConteudo: 'Emergências clínicas (SCA, AVC, TEP, CAD) + revisão leve de pontos fracos pré-Cirurgia',
+    focoExames: 'Semana cheia v3.1 (18–22/01): 3 (D1+A) + 1 C + 1 B · 24/01: Baseline Caso B + 15 min revisão LOG',
+    focoHabilidade: 'Fechar 1ª passada (19/20 E1, 7/7 E3-Porta, 7/7 E4) e destravar Fase Internato em 25/01',
   },
 ];
 
 export const MARCHAS_6ANO: Record<MarchaId, MarchaConfig> = {
   '4_sprint': {
     id: '4_sprint',
-    nome: 'Marcha 4 — Sprint Final R1 (Set–Dez)',
+    nome: 'Marcha 4 — Consolidação Intensiva',
     badge: '350+ q/sem',
     metaMin: 350,
     metaMax: 450,
     metaAlvo: 380,
     cicloDiaUtilMin: 90,
     fdsHorasDia: 5,
-    resumo: '1 Prova na Íntegra/Semana + Correção Cirúrgica + OSCE Semanal + Anki de Erros.',
+    resumo: 'Provas antigas cronometradas (USP-SP/USP-RP/UNICAMP) + revisão cirúrgica de erros.',
   },
   '3_normal': {
     id: '3_normal',
-    nome: 'Marcha 3 — Normal (Tração Máxima)',
-    badge: '200–250 q/sem',
+    nome: 'Marcha Normal',
+    badge: 'Semana regular',
     metaMin: 200,
     metaMax: 250,
     metaAlvo: 220,
     cicloDiaUtilMin: 90,
     fdsHorasDia: 4,
-    resumo: 'Ritmo padrão de semana regular: questões diárias + fim de semana focado + Anki nas janelas.',
+    resumo: 'Carga padrão do internato. Esteira v3.1 em ritmo normal (3 micro-doses + 1 caso completo) e blocos 70/30.',
   },
   '2_pesada': {
     id: '2_pesada',
-    nome: 'Marcha 2 — Semana Pesada (2+ Plantões)',
-    badge: '130–170 q/sem',
+    nome: 'Semana Pesada',
+    badge: '2+ plantões 12h',
     metaMin: 130,
     metaMax: 170,
     metaAlvo: 150,
     cicloDiaUtilMin: 40,
     fdsHorasDia: 4,
-    resumo: 'Blocos enxutos nos dias sem pós-plantão + proteção total do sono.',
+    resumo: 'Ativa modo Semana Pesada na Esteira v3.1 (piso: 1 micro-dose + [SERVIÇO]). Estudo enxuto e sono protegido.',
   },
   '1_sobrevivencia': {
     id: '1_sobrevivencia',
-    nome: 'Marcha 1 — Sobrevivência (Semana Caótica)',
-    badge: '60–100 q/sem',
+    nome: 'Sobrevivência',
+    badge: 'Semana caótica',
     metaMin: 60,
     metaMax: 100,
     metaAlvo: 80,
     cicloDiaUtilMin: 0,
     fdsHorasDia: 2.5,
-    resumo: 'Manutenção mínima de Anki nos dias úteis + bloco curto no fim de semana. Zero culpa.',
+    resumo: 'Ativa modo Semana Pesada na Esteira v3.1. Zero teoria nova nos dias úteis; foco em sobreviver bem e proteger sono.',
   },
 };
 
@@ -1271,19 +1710,19 @@ export const CURRICULO_ITEMS_DATA: Array<{
 export const RITUAL_DOMINGO_DATA: Array<{ id: string; text: string }> = [
   {
     id: 'rit-escala',
-    text: '1. Preencher a grade real de turnos (Manhã, Tarde, Plantão Noturno, Folga) na Visão Hoje.',
+    text: 'Definir a Marcha da semana conforme plantões e carga real do internato (sincroniza a Esteira v3.1).',
   },
   {
     id: 'rit-7030',
-    text: '2. Definir os subtemas da semana: 70% Rodízio-Âncora + 30% Trilha R1.',
+    text: 'Confirmar ou ajustar os subtemas da semana: 70% Rodízio-Âncora + 30% Trilha Paralela.',
   },
   {
     id: 'rit-habito',
-    text: '3. Revisar os Pontos Cegos abertos em Evolução & Prática e atualizar o Logbook.',
+    text: 'Revisar pendências clínicas: itens [CHECAR] na Esteira, Pontos Cegos abertos e Logbook 3x.',
   },
   {
     id: 'rit-curriculo',
-    text: '4. Conferir 1 pendência de comprovante PDF na matriz R1 & Currículo.',
+    text: 'Avançar 1 pendência de comprovante na matriz R1 & Currículo (corte 30/06/2027).',
   },
 ];
 

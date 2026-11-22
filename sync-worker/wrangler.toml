@@ -1,0 +1,9 @@
+name = "novo-pep-sync"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+preview_urls = false
+
+[[kv_namespaces]]
+binding = "PEP_SYNC_KV"
+id = "ed0affbb279744eea9ca0f1a734b5e84"

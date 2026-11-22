@@ -26,11 +26,21 @@ function readInitialRoute(): AppRoute | null {
 }
 import type { ClinicalProtocolItem } from './data/clinical_data.ts';
 import { useCockpitStore, useThemeSync } from './hooks/useCockpitStore.ts';
+import { useCloudSync } from './hooks/useCloudSync.ts';
 import { cockpitStore } from './state/store.ts';
+import { cloudSync } from './state/cloudSync.ts';
 
 export function App() {
   const storeState = useCockpitStore();
+  const syncState = useCloudSync();
   useThemeSync(storeState.theme);
+
+  // Pull inicial silencioso se a sincronização na nuvem já estiver conectada
+  useEffect(() => {
+    if (cloudSync.getSnapshot().connected) {
+      void cloudSync.syncNow();
+    }
+  }, []);
 
   // Estado inicial lido da URL (#/p/<id>, #/hab/<id>, #/6ano/<aba>)
   const [initialRoute] = useState<AppRoute | null>(readInitialRoute);
@@ -218,6 +228,7 @@ export function App() {
         beiraLeitoTab={beiraLeitoTab}
         sextoAnoTab={sextoAnoTab}
         theme={storeState.theme}
+        syncStatus={syncState.status}
         onChangeWorld={setWorld}
         onChangeBeiraLeitoTab={setBeiraLeitoTab}
         onChangeSextoAnoTab={setSextoAnoTab}
@@ -280,7 +291,11 @@ export function App() {
       )}
 
       {world === 'sexto-ano' && sextoAnoTab === 'r1-curriculo' && (
-        <R1CurriculoView central6Ano={storeState.central6Ano} onNotify={notify} />
+        <R1CurriculoView
+          central6Ano={storeState.central6Ano}
+          onNavigateSextoAnoTab={setSextoAnoTab}
+          onNotify={notify}
+        />
       )}
 
       <CommandPalette

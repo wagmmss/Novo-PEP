@@ -5,14 +5,20 @@
 
 import {
   LOGBOOK_PROCEDIMENTOS_MATRIX,
+  RITUAL_DOMINGO_DATA,
+  RODIZIOS_6ANO,
+  getEffectiveRitualDoneMap,
+  getRitualCycleKey,
   migrateCentral6AnoState,
   registerProcedureExecution,
   getLocalTodayIso,
   type Central6AnoState,
   type CurriculumEntryState,
+  type MarchaId,
   type ProcedureAutonomy,
   type R1Milestone,
 } from '../engine/central6ano.ts';
+import { WAGNER_BASELINE_CURRICULUM_ENTRIES } from '../data/central6ano_data.ts';
 import { sanitizePiiText } from '../utils/piiGuard.ts';
 import { reportPersistFailure } from './appHealth.ts';
 import {
@@ -25,6 +31,7 @@ import {
   validateLogEntry,
   validateNppAdd,
   validateNppCheck,
+  weekIsoOf,
 } from '../engine/treinoClinico.ts';
 import type {
   FonteTipo,
@@ -355,7 +362,13 @@ class ClinicalCockpitStore {
     patch: Partial<
       Pick<
         Central6AnoState,
-        'rodizioId' | 'feriasSemana' | 'arquetipoId' | 'focoSemanalAncora70' | 'microHabitoSemanal'
+        | 'rodizioId'
+        | 'feriasSemana'
+        | 'arquetipoId'
+        | 'marchaId'
+        | 'focoSemanalAncora70'
+        | 'focoSemanalTrilha30'
+        | 'microHabitoSemanal'
       >
     >
   ): void {
@@ -365,23 +378,69 @@ class ClinicalCockpitStore {
     });
   }
 
-  public toggleRitualDomingoItem(itemId: string): void {
+  public selectRodizio(rodizioId: string): void {
+    const target = RODIZIOS_6ANO.find((r) => r.id === rodizioId);
+    if (!target) return;
     const current = this.state.central6Ano;
-    const prev = current.ritualDomingoDoneIds || {};
+    const prevRod = RODIZIOS_6ANO.find((r) => r.id === current.rodizioId);
+    const currentHabit = (current.microHabitoSemanal || '').trim();
+    const isDefaultHabit = !currentHabit || currentHabit === prevRod?.microHabitoSugerido;
+
     this.setCentral6AnoState({
       ...current,
-      ritualDomingoDoneIds: {
-        ...prev,
-        [itemId]: !prev[itemId],
+      rodizioId: target.id,
+      focoSemanalAncora70: target.ancora70,
+      focoSemanalTrilha30: target.trilha30,
+      microHabitoSemanal: isDefaultHabit ? target.microHabitoSugerido : current.microHabitoSemanal,
+    });
+  }
+
+  public setWeeklyMarcha(marchaId: MarchaId, todayIso = getLocalTodayIso()): void {
+    const current = this.state.central6Ano;
+    const treino = this.getTreinoState();
+    const weekIso = weekIsoOf(todayIso);
+    const isPesada = marchaId === '2_pesada' || marchaId === '1_sobrevivencia';
+
+    this.setCentral6AnoState({
+      ...current,
+      marchaId,
+      treinoClinico: {
+        ...treino,
+        internato: {
+          ...treino.internato,
+          semanaPesadaByWeek: {
+            ...treino.internato.semanaPesadaByWeek,
+            [weekIso]: isPesada,
+          },
+        },
       },
     });
   }
 
-  public resetRitualDomingo(): void {
+  public toggleRitualDomingoItem(itemId: string, todayIso = getLocalTodayIso()): void {
+    const current = this.state.central6Ano;
+    const cycleKey = getRitualCycleKey(todayIso);
+    const prev = getEffectiveRitualDoneMap(current, todayIso);
+    const nextDoneMap: Record<string, boolean> = {
+      ...prev,
+      [itemId]: !prev[itemId],
+    };
+    const allCompleted = RITUAL_DOMINGO_DATA.every((it) => Boolean(nextDoneMap[it.id]));
+
+    this.setCentral6AnoState({
+      ...current,
+      ritualDomingoDoneIds: nextDoneMap,
+      ritualDomingoCycleIso: cycleKey,
+      ritualDomingoLastCompletedIso: allCompleted ? todayIso : current.ritualDomingoLastCompletedIso,
+    });
+  }
+
+  public resetRitualDomingo(todayIso = getLocalTodayIso()): void {
     const current = this.state.central6Ano;
     this.setCentral6AnoState({
       ...current,
       ritualDomingoDoneIds: {},
+      ritualDomingoCycleIso: getRitualCycleKey(todayIso),
     });
   }
 
@@ -628,6 +687,13 @@ class ClinicalCockpitStore {
     });
   }
 
+  public setR1SubTab(tab: 'plano' | 'r1'): void {
+    this.setCentral6AnoState({
+      ...this.state.central6Ano,
+      r1SubTab: tab === 'r1' ? 'r1' : 'plano',
+    });
+  }
+
   public setCurriculumEnamedConcept(concept: 3 | 4 | 5): void {
     this.setCentral6AnoState({
       ...this.state.central6Ano,
@@ -646,10 +712,14 @@ class ClinicalCockpitStore {
         ? Math.max(0, patch.value)
         : existing.value;
 
+    const nextNotes =
+      patch.notes !== undefined ? patch.notes.trim() || undefined : existing.notes;
+
     const nextEntry: CurriculumEntryState = {
       ...existing,
       ...patch,
       value: nextValue,
+      notes: nextNotes,
     };
 
     this.setCentral6AnoState({
@@ -659,6 +729,48 @@ class ClinicalCockpitStore {
         [itemId]: nextEntry,
       },
     });
+  }
+
+  public applyBaselineCurriculumInventory(mode: 'merge' | 'replace' = 'merge'): { updatedCount: number } {
+    const current = this.state.central6Ano;
+    const prev = current.curriculumEntries || {};
+    const next: Record<string, CurriculumEntryState> = mode === 'replace' ? {} : { ...prev };
+    let updatedCount = 0;
+
+    for (const [itemId, base] of Object.entries(WAGNER_BASELINE_CURRICULUM_ENTRIES)) {
+      const existing = prev[itemId];
+      if (mode === 'replace' || !existing || (Number(existing.value) || 0) <= 0) {
+        next[itemId] = { ...base };
+        updatedCount += 1;
+      } else {
+        const mergedValue = Math.max(Number(existing.value) || 0, base.value);
+        const mergedStatus =
+          existing.proofStatus === 'pdf_pronto'
+            ? 'pdf_pronto'
+            : base.proofStatus === 'pdf_pronto'
+              ? 'pdf_pronto'
+              : existing.proofStatus || base.proofStatus;
+        const mergedNotes = existing.notes?.trim() ? existing.notes : base.notes;
+        if (
+          mergedValue !== existing.value ||
+          mergedStatus !== existing.proofStatus ||
+          mergedNotes !== existing.notes
+        ) {
+          next[itemId] = {
+            value: mergedValue,
+            proofStatus: mergedStatus,
+            notes: mergedNotes,
+          };
+          updatedCount += 1;
+        }
+      }
+    }
+
+    this.setCentral6AnoState({
+      ...current,
+      curriculumEntries: next,
+    });
+    return { updatedCount };
   }
 
   // ---- Ações da Esteira Contínua de Treino Clínico v3.1 ----
@@ -853,13 +965,29 @@ class ClinicalCockpitStore {
     key: string,
     value: boolean
   ): void {
+    const current = this.state.central6Ano;
     const treino = this.getTreinoState();
-    this.setTreinoState({
+    const nextTreino: TreinoClinicoState = {
       ...treino,
       internato: {
         ...treino.internato,
         [mapKey]: { ...treino.internato[mapKey], [key]: value },
       },
+    };
+
+    let nextMarchaId = current.marchaId;
+    if (mapKey === 'semanaPesadaByWeek') {
+      if (value && (current.marchaId === '3_normal' || current.marchaId === '4_sprint')) {
+        nextMarchaId = '2_pesada';
+      } else if (!value && (current.marchaId === '2_pesada' || current.marchaId === '1_sobrevivencia')) {
+        nextMarchaId = '3_normal';
+      }
+    }
+
+    this.setCentral6AnoState({
+      ...current,
+      marchaId: nextMarchaId,
+      treinoClinico: nextTreino,
     });
   }
 

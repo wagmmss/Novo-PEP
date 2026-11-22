@@ -9,6 +9,7 @@ import {
   CURRICULO_ITEMS_DATA,
   CURRICULUM_BANKS_CONFIG,
   CURRICULUM_CATEGORIES_META,
+  CURRICULUM_ID_MIGRATION_MAP,
   DEFAULT_R1_MILESTONES,
   DEFAULT_WEEKLY_SCHEDULE,
   ENSAIO_MENTAL_3MIN_PASSOS,
@@ -24,6 +25,7 @@ import {
   SHIFT_TYPE_META,
   TIMER_PRESETS,
   UNIFIED_CURRICULUM_CATALOG,
+  WAGNER_BASELINE_CURRICULUM_ENTRIES,
   WEEKLY_DAYS_ORDER,
   type BankItemRule,
   type Central6AnoState,
@@ -33,6 +35,7 @@ import {
   type CurriculumBlockDef,
   type CurriculumCatalogItem,
   type CurriculumCategoryId,
+  type CurriculumEffortLevel,
   type CurriculumEntryState,
   type DailyTaskCategory,
   type DailyTaskItem,
@@ -65,6 +68,7 @@ export {
   CURRICULO_ITEMS_DATA,
   CURRICULUM_BANKS_CONFIG,
   CURRICULUM_CATEGORIES_META,
+  CURRICULUM_ID_MIGRATION_MAP,
   DEFAULT_R1_MILESTONES,
   DEFAULT_WEEKLY_SCHEDULE,
   ENSAIO_MENTAL_3MIN_PASSOS,
@@ -81,6 +85,7 @@ export {
   SHIFT_TYPE_META,
   TIMER_PRESETS,
   UNIFIED_CURRICULUM_CATALOG,
+  WAGNER_BASELINE_CURRICULUM_ENTRIES,
   WEEKLY_DAYS_ORDER,
   type BankItemRule,
   type Central6AnoState,
@@ -90,6 +95,7 @@ export {
   type CurriculumBlockDef,
   type CurriculumCatalogItem,
   type CurriculumCategoryId,
+  type CurriculumEffortLevel,
   type CurriculumEntryState,
   type DailyTaskCategory,
   type DailyTaskItem,
@@ -247,8 +253,8 @@ export function analyzeWeeklySchedule(
     if (isPosPlantao) {
       loadMode = 'pos_plantao';
       baseQ = 0;
-      baseAnki = 20;
-      guidanceNote = 'Pós-Plantão automático: priorize sono de recuperação; no máximo Anki leve (≤ 15 min).';
+      baseAnki = 0;
+      guidanceNote = 'Pós-Plantão noturno: descanso integral — zero revisão leve e zero treino.';
     } else if (hasNight) {
       loadMode = 'plantao_noturno';
       baseQ = 10;
@@ -272,7 +278,7 @@ export function analyzeWeeklySchedule(
     }
 
     const recQ = isPosPlantao ? 0 : Math.max(5, Math.round((baseQ * mult) / 5) * 5);
-    const recAnki = isPosPlantao ? 20 : Math.max(15, Math.round((baseAnki * mult) / 5) * 5);
+    const recAnki = isPosPlantao ? 0 : Math.max(15, Math.round((baseAnki * mult) / 5) * 5);
 
     weeklyQ += recQ;
     weeklyAnki += recAnki;
@@ -467,7 +473,7 @@ export function computeMilestoneCountdown(
 }
 
 // ============================================================================
-// 4. MATRIZ UNIFICADA DE CURRÍCULO (USP-SP 0–100 · USP-RP 0–10 · UNICAMP 0–100)
+// 4. MATRIZ UNIFICADA DE CURRÍCULO — EDITAIS 2027 (USP-SP · USP-RP · UNICAMP)
 // ============================================================================
 
 export interface CurriculumBlockScore {
@@ -475,6 +481,7 @@ export interface CurriculumBlockScore {
   label: string;
   rawScore: number;
   cappedScore: number;
+  confirmedCappedScore: number;
   maxPoints: number;
   missingToCap: number;
   pct: number;
@@ -486,10 +493,19 @@ export interface BankScoreSummary {
   sigla: string;
   escalaMax: number;
   rawSubtotal: number;
+  confirmedRawSubtotal: number;
   multiplier: number;
+  enamedBonusPoints: number;
   finalScore: number;
+  confirmedScore: number;
+  unconfirmedGap: number;
   missingToMax: number;
   pct: number;
+  confirmedPct: number;
+  /** Pontos percentuais (0–100) que faltam na nota final de Psiquiatria devido ao currículo. */
+  finalGradeImpactMissing: number;
+  /** Quantas questões da 1ª fase equivalem ao que falta no currículo nesta banca. */
+  equivalentFirstPhaseQuestions: number;
   blocks: CurriculumBlockScore[];
 }
 
@@ -497,12 +513,31 @@ export interface UnifiedCurriculumEvaluation {
   banks: Record<CurriculumBankId, BankScoreSummary>;
   itemPointsByBank: Record<string, Record<CurriculumBankId, number>>;
   proofCounts: {
+    /** Apenas itens preenchidos (value > 0) com PDF comprovado. */
     pdf_pronto: number;
+    /** Apenas itens preenchidos (value > 0) em andamento. */
     em_andamento: number;
+    /** Apenas itens preenchidos (value > 0) que ainda faltam comprovar em PDF. */
     falta: number;
     filledItems: number;
+    unfilledItems: number;
     totalItems: number;
   };
+}
+
+export interface CurriculumRoiOpportunity {
+  itemId: string;
+  titulo: string;
+  actionLabel: string;
+  effort: CurriculumEffortLevel;
+  currentValue: number;
+  simulatedValue: number;
+  unitLabel?: string;
+  deltaByBank: Record<CurriculumBankId, number>;
+  /** Soma do ganho em pontos percentuais (0–100) na nota final nas 3 bancas. */
+  combinedFinalPtsDelta: number;
+  /** Pontuação de prioridade ponderada por esforço (maior = melhor retorno/esforço). */
+  roiScore: number;
 }
 
 function round2(n: number): number {
@@ -527,14 +562,17 @@ export function evaluateRulePoints(rule: BankItemRule | undefined, unitsRaw: num
   return Math.min(rule.maxItemPoints, round2(units * rule.perUnit));
 }
 
-export function computeUnifiedCurriculumScores(
-  entries: Record<string, CurriculumEntryState> | undefined,
-  options: { enamedConcept?: 3 | 4 | 5 } = {}
-): UnifiedCurriculumEvaluation {
-  const safeEntries = entries || {};
-  const enamedConcept = options.enamedConcept ?? 5;
-  const uspSpMultiplier = enamedConcept === 5 ? 1.2 : enamedConcept === 4 ? 1.1 : 1.0;
+interface PassEvaluation {
+  blockAccumulator: Record<CurriculumBankId, Record<string, number>>;
+  itemPointsByBank: Record<string, Record<CurriculumBankId, number>>;
+  uspRpEnamedBonus: number;
+}
 
+function evaluateEntriesPass(
+  entries: Record<string, CurriculumEntryState>,
+  enamedConcept: 3 | 4 | 5,
+  onlyConfirmed: boolean
+): PassEvaluation {
   const bankIds: CurriculumBankId[] = ['usp_sp', 'usp_rp', 'unicamp'];
   const blockAccumulator: Record<CurriculumBankId, Record<string, number>> = {
     usp_sp: {},
@@ -548,18 +586,102 @@ export function computeUnifiedCurriculumScores(
     }
   }
 
+  const effectiveUnits: Record<string, number> = {};
+  for (const item of UNIFIED_CURRICULUM_CATALOG) {
+    const entry = entries[item.id];
+    const rawVal = Math.min(item.maxInput, Math.max(0, Number(entry?.value) || 0));
+    const status: ProofStatus = entry?.proofStatus || 'falta';
+    effectiveUnits[item.id] = onlyConfirmed && status !== 'pdf_pronto' ? 0 : rawVal;
+  }
+
+  // Regras cruzadas USP-SP: Item 5 (IC com/sem artigo vinculado) e Item 6 (Publicação DIFERENTE da IC)
+  const icBolsaAnos = effectiveUnits.ic_com_bolsa || 0;
+  const icSemBolsaAnos = effectiveUnits.ic_sem_bolsa || 0;
+  const pubmedCount = Math.floor(effectiveUnits.artigo_pubmed || 0);
+  const scieloCount = Math.floor(effectiveUnits.artigo_scielo || 0);
+  const totalArticles = pubmedCount + scieloCount;
+  const icBolsaProjects = Math.min(2, Math.floor(icBolsaAnos + 1e-9));
+  const icSemBolsaProjects = Math.min(2, Math.floor(icSemBolsaAnos + 1e-9));
+  const requestedIcLinked = Math.min(2, Math.floor(effectiveUnits.ic_artigo_vinculado || 0));
+  const effectiveIcLinked = Math.min(requestedIcLinked, totalArticles, icBolsaProjects + icSemBolsaProjects);
+  const linkedBolsa = Math.min(effectiveIcLinked, icBolsaProjects);
+  const linkedSemBolsa = Math.min(effectiveIcLinked - linkedBolsa, icSemBolsaProjects);
+  const uspSpIcArtigoBonus = round2(linkedBolsa * 4 + linkedSemBolsa * 3);
+
+  // Alocar artigos vinculados à IC preferencialmente de SciELO primeiro para preservar PubMed no Item 6
+  const usedScieloInIc = Math.min(scieloCount, effectiveIcLinked);
+  const usedPubmedInIc = Math.min(pubmedCount, effectiveIcLinked - usedScieloInIc);
+  const freePubmedForItem6 = Math.max(0, pubmedCount - usedPubmedInIc);
+  const freeScieloForItem6 = Math.max(0, scieloCount - usedScieloInIc);
+
   const itemPointsByBank: Record<string, Record<CurriculumBankId, number>> = {};
+
+  // Rastrear teto específico de Liga na USP-RP (máx 1,0 pt somando diretoria + membro)
+  let uspRpLigaPts = 0;
+
+  for (const item of UNIFIED_CURRICULUM_CATALOG) {
+    const units = effectiveUnits[item.id] || 0;
+    itemPointsByBank[item.id] = { usp_sp: 0, usp_rp: 0, unicamp: 0 };
+
+    for (const bId of bankIds) {
+      const rule = item.rules[bId];
+      if (!rule) continue;
+
+      let pts = 0;
+      if (bId === 'usp_sp' && item.id === 'ic_artigo_vinculado') {
+        pts = uspSpIcArtigoBonus;
+      } else if (bId === 'usp_sp' && item.id === 'artigo_pubmed') {
+        pts = freePubmedForItem6 > 0 ? 10 : 0;
+      } else if (bId === 'usp_sp' && item.id === 'artigo_scielo') {
+        pts = freePubmedForItem6 > 0 ? 0 : freeScieloForItem6 > 0 ? 8 : 0;
+      } else {
+        pts = evaluateRulePoints(rule, units);
+      }
+
+      if (bId === 'usp_rp' && (item.id === 'liga_diretoria' || item.id === 'liga_membro')) {
+        const room = Math.max(0, round2(1.0 - uspRpLigaPts));
+        pts = Math.min(pts, room);
+        uspRpLigaPts = round2(uspRpLigaPts + pts);
+      }
+
+      itemPointsByBank[item.id][bId] = pts;
+      if (pts > 0) {
+        blockAccumulator[bId][rule.blockId] = round2((blockAccumulator[bId][rule.blockId] || 0) + pts);
+      }
+    }
+  }
+
+  // USP-RP Edital 2027: ENAMED soma 0,1 × conceito (0,3 a 0,5 pt) no bloco Histórico
+  // quando houver vínculo institucional informado/comprovado (HU ou Pós CAPES).
+  const hasInstForUspRp = (effectiveUnits.inst_pos_capes || 0) > 0 || (effectiveUnits.inst_hu_proprio || 0) > 0;
+  const uspRpEnamedBonus = hasInstForUspRp ? round2(enamedConcept * 0.1) : 0;
+  if (uspRpEnamedBonus > 0) {
+    blockAccumulator.usp_rp.historico = round2((blockAccumulator.usp_rp.historico || 0) + uspRpEnamedBonus);
+  }
+
+  return { blockAccumulator, itemPointsByBank, uspRpEnamedBonus };
+}
+
+export function computeUnifiedCurriculumScores(
+  entries: Record<string, CurriculumEntryState> | undefined,
+  options: { enamedConcept?: 3 | 4 | 5 } = {}
+): UnifiedCurriculumEvaluation {
+  const safeEntries = entries || {};
+  const enamedConcept: 3 | 4 | 5 =
+    options.enamedConcept === 3 || options.enamedConcept === 4 || options.enamedConcept === 5
+      ? options.enamedConcept
+      : 5;
+  const uspSpMultiplier = enamedConcept === 5 ? 1.2 : enamedConcept === 4 ? 1.1 : 1.0;
+
   let pdfPronto = 0;
   let emAndamento = 0;
   let falta = 0;
   let filledItems = 0;
+  let unfilledItems = 0;
 
   for (const item of UNIFIED_CURRICULUM_CATALOG) {
     const entry = safeEntries[item.id];
-    const clampedUnits = Math.min(
-      item.maxInput,
-      Math.max(0, Number(entry?.value) || 0)
-    );
+    const clampedUnits = Math.min(item.maxInput, Math.max(0, Number(entry?.value) || 0));
     const status: ProofStatus = entry?.proofStatus || 'falta';
 
     if (clampedUnits > 0) {
@@ -567,33 +689,24 @@ export function computeUnifiedCurriculumScores(
       if (status === 'pdf_pronto') pdfPronto += 1;
       else if (status === 'em_andamento') emAndamento += 1;
       else falta += 1;
-    } else if (status === 'em_andamento') {
-      emAndamento += 1;
-    } else if (status === 'pdf_pronto') {
-      pdfPronto += 1;
     } else {
-      falta += 1;
-    }
-
-    itemPointsByBank[item.id] = { usp_sp: 0, usp_rp: 0, unicamp: 0 };
-
-    for (const bId of bankIds) {
-      const rule = item.rules[bId];
-      const pts = evaluateRulePoints(rule, clampedUnits);
-      itemPointsByBank[item.id][bId] = pts;
-      if (rule && pts > 0) {
-        blockAccumulator[bId][rule.blockId] = round2((blockAccumulator[bId][rule.blockId] || 0) + pts);
-      }
+      unfilledItems += 1;
     }
   }
 
+  const projectedPass = evaluateEntriesPass(safeEntries, enamedConcept, false);
+  const confirmedPass = evaluateEntriesPass(safeEntries, enamedConcept, true);
+
+  const bankIds: CurriculumBankId[] = ['usp_sp', 'usp_rp', 'unicamp'];
   const banks = {} as Record<CurriculumBankId, BankScoreSummary>;
 
   for (const bId of bankIds) {
     const cfg = CURRICULUM_BANKS_CONFIG[bId];
     const blocks: CurriculumBlockScore[] = cfg.blocks.map((blk) => {
-      const rawScore = round2(blockAccumulator[bId][blk.id] || 0);
+      const rawScore = round2(projectedPass.blockAccumulator[bId][blk.id] || 0);
       const cappedScore = Math.min(blk.maxPoints, rawScore);
+      const confRaw = round2(confirmedPass.blockAccumulator[bId][blk.id] || 0);
+      const confirmedCappedScore = Math.min(blk.maxPoints, confRaw);
       const missingToCap = Math.max(0, round2(blk.maxPoints - cappedScore));
       const pct = blk.maxPoints > 0 ? Math.min(100, Math.round((cappedScore / blk.maxPoints) * 100)) : 0;
       return {
@@ -601,6 +714,7 @@ export function computeUnifiedCurriculumScores(
         label: blk.label,
         rawScore,
         cappedScore,
+        confirmedCappedScore,
         maxPoints: blk.maxPoints,
         missingToCap,
         pct,
@@ -608,10 +722,22 @@ export function computeUnifiedCurriculumScores(
     });
 
     const rawSubtotal = round2(blocks.reduce((acc, b) => acc + b.cappedScore, 0));
+    const confirmedRawSubtotal = round2(blocks.reduce((acc, b) => acc + b.confirmedCappedScore, 0));
     const multiplier = bId === 'usp_sp' ? uspSpMultiplier : 1.0;
     const finalScore = Math.min(cfg.escalaMax, round2(rawSubtotal * multiplier));
+    const confirmedScore = Math.min(cfg.escalaMax, round2(confirmedRawSubtotal * multiplier));
+    const unconfirmedGap = Math.max(0, round2(finalScore - confirmedScore));
     const missingToMax = Math.max(0, round2(cfg.escalaMax - finalScore));
     const pct = cfg.escalaMax > 0 ? Math.min(100, Math.round((finalScore / cfg.escalaMax) * 100)) : 0;
+    const confirmedPct =
+      cfg.escalaMax > 0 ? Math.min(100, Math.round((confirmedScore / cfg.escalaMax) * 100)) : 0;
+
+    const finalGradeImpactMissing =
+      cfg.escalaMax > 0 ? round2((missingToMax / cfg.escalaMax) * cfg.pesoCurriculoPct) : 0;
+    const ptsPerQuestion =
+      cfg.questoesPrimeiraFase > 0 ? cfg.pesoPrimeiraFasePct / cfg.questoesPrimeiraFase : 1;
+    const equivalentFirstPhaseQuestions =
+      ptsPerQuestion > 0 ? round2(finalGradeImpactMissing / ptsPerQuestion) : 0;
 
     banks[bId] = {
       bankId: bId,
@@ -619,25 +745,116 @@ export function computeUnifiedCurriculumScores(
       sigla: cfg.sigla,
       escalaMax: cfg.escalaMax,
       rawSubtotal,
+      confirmedRawSubtotal,
       multiplier,
+      enamedBonusPoints: bId === 'usp_rp' ? projectedPass.uspRpEnamedBonus : 0,
       finalScore,
+      confirmedScore,
+      unconfirmedGap,
       missingToMax,
       pct,
+      confirmedPct,
+      finalGradeImpactMissing,
+      equivalentFirstPhaseQuestions,
       blocks,
     };
   }
 
   return {
     banks,
-    itemPointsByBank,
+    itemPointsByBank: projectedPass.itemPointsByBank,
     proofCounts: {
       pdf_pronto: pdfPronto,
       em_andamento: emAndamento,
       falta,
       filledItems,
+      unfilledItems,
       totalItems: UNIFIED_CURRICULUM_CATALOG.length,
     },
   };
+}
+
+/**
+ * Simula incrementalmente cada item acionável do catálogo e ranqueia as
+ * melhores alavancas de pontuação real nas 3 bancas (já descontando tetos
+ * de bloco, multiplicador ENAMED e esforço relativo).
+ */
+export function computeCurriculumRoiOpportunities(
+  entries: Record<string, CurriculumEntryState> | undefined,
+  options: { enamedConcept?: 3 | 4 | 5; limit?: number } = {}
+): CurriculumRoiOpportunity[] {
+  const safeEntries = entries || {};
+  const enamedConcept = options.enamedConcept ?? 5;
+  const limit = options.limit ?? 5;
+  const baseline = computeUnifiedCurriculumScores(safeEntries, { enamedConcept });
+
+  const effortPenalty: Record<CurriculumEffortLevel, number> = {
+    baixo: 1.0,
+    medio: 1.45,
+    alto: 2.25,
+  };
+
+  const opportunities: CurriculumRoiOpportunity[] = [];
+
+  for (const item of UNIFIED_CURRICULUM_CATALOG) {
+    if (item.actionable === false) continue;
+    const curEntry = safeEntries[item.id];
+    const currentValue = Math.min(item.maxInput, Math.max(0, Number(curEntry?.value) || 0));
+    if (currentValue >= item.maxInput) continue;
+
+    const deltaStep = item.inputType === 'boolean' ? 1 : item.roiStep || item.step || 1;
+    const simulatedValue = Math.min(item.maxInput, round2(currentValue + deltaStep));
+    if (simulatedValue <= currentValue) continue;
+
+    const simEntries: Record<string, CurriculumEntryState> = {
+      ...safeEntries,
+      [item.id]: {
+        value: simulatedValue,
+        proofStatus: curEntry?.proofStatus || 'em_andamento',
+        notes: curEntry?.notes,
+      },
+    };
+
+    const simulated = computeUnifiedCurriculumScores(simEntries, { enamedConcept });
+    const dSp = round2(simulated.banks.usp_sp.finalScore - baseline.banks.usp_sp.finalScore);
+    const dRp = round2(simulated.banks.usp_rp.finalScore - baseline.banks.usp_rp.finalScore);
+    const dUni = round2(simulated.banks.unicamp.finalScore - baseline.banks.unicamp.finalScore);
+
+    const combinedFinalPtsDelta = round2(
+      (dSp / CURRICULUM_BANKS_CONFIG.usp_sp.escalaMax) * CURRICULUM_BANKS_CONFIG.usp_sp.pesoCurriculoPct +
+        (dRp / CURRICULUM_BANKS_CONFIG.usp_rp.escalaMax) * CURRICULUM_BANKS_CONFIG.usp_rp.pesoCurriculoPct +
+        (dUni / CURRICULUM_BANKS_CONFIG.unicamp.escalaMax) * CURRICULUM_BANKS_CONFIG.unicamp.pesoCurriculoPct
+    );
+
+    if (combinedFinalPtsDelta <= 0.01) continue;
+
+    const effort: CurriculumEffortLevel = item.effortHint || 'medio';
+    const roiScore = round2(combinedFinalPtsDelta / effortPenalty[effort]);
+
+    opportunities.push({
+      itemId: item.id,
+      titulo: item.titulo,
+      actionLabel: item.roiActionLabel || item.titulo,
+      effort,
+      currentValue,
+      simulatedValue,
+      unitLabel: item.unitLabel,
+      deltaByBank: {
+        usp_sp: dSp,
+        usp_rp: dRp,
+        unicamp: dUni,
+      },
+      combinedFinalPtsDelta,
+      roiScore,
+    });
+  }
+
+  opportunities.sort((a, b) => {
+    if (b.roiScore !== a.roiScore) return b.roiScore - a.roiScore;
+    return b.combinedFinalPtsDelta - a.combinedFinalPtsDelta;
+  });
+
+  return opportunities.slice(0, limit);
 }
 
 // ============================================================================
@@ -652,19 +869,24 @@ export function migrateCentral6AnoState(state: Partial<Central6AnoState>): Centr
   const rodizio = RODIZIOS_6ANO.find((r) => r.id === state.rodizioId) || RODIZIOS_6ANO[0];
   const weeklySchedule = cloneWeeklySchedule(state.weeklySchedule);
 
-  // Migrar curriculoDoneIds (v1) -> curriculumEntries (v2) somente se ainda não houver entradas v2
+  // Migrar curriculoDoneIds (v1) -> curriculumEntries (v2/2027) e mapear chaves antigas renomeadas
   let curriculumEntries: Record<string, CurriculumEntryState> = {};
   if (isPlainObj(state.curriculumEntries) && Object.keys(state.curriculumEntries).length > 0) {
-    for (const [k, v] of Object.entries(state.curriculumEntries)) {
+    for (const [rawKey, v] of Object.entries(state.curriculumEntries)) {
       if (!isPlainObj(v)) continue;
+      const targetKey = CURRICULUM_ID_MIGRATION_MAP[rawKey] || rawKey;
       const proofStatus: ProofStatus =
         v.proofStatus === 'pdf_pronto' || v.proofStatus === 'em_andamento' || v.proofStatus === 'falta'
           ? v.proofStatus
           : 'falta';
-      curriculumEntries[k] = {
-        value: Number.isFinite(Number(v.value)) ? Math.max(0, Number(v.value)) : 0,
+      const incomingVal = Number.isFinite(Number(v.value)) ? Math.max(0, Number(v.value)) : 0;
+      const prev = curriculumEntries[targetKey];
+      // Evita sobrescrever a nova chave caso já exista no mesmo objeto salvo
+      if (prev && rawKey !== targetKey) continue;
+      curriculumEntries[targetKey] = {
+        value: incomingVal,
         proofStatus,
-        notes: typeof v.notes === 'string' ? v.notes : undefined,
+        notes: typeof v.notes === 'string' && v.notes.trim() ? v.notes : undefined,
       };
     }
   } else {
@@ -731,6 +953,9 @@ export function migrateCentral6AnoState(state: Partial<Central6AnoState>): Centr
     checkedTimelineIds: isPlainObj(state.checkedTimelineIds) ? (state.checkedTimelineIds as Record<string, boolean>) : {},
     curriculoDoneIds: isPlainObj(state.curriculoDoneIds) ? (state.curriculoDoneIds as Record<string, boolean>) : {},
     ritualDomingoDoneIds: isPlainObj(state.ritualDomingoDoneIds) ? (state.ritualDomingoDoneIds as Record<string, boolean>) : {},
+    ritualDomingoCycleIso: typeof state.ritualDomingoCycleIso === 'string' ? state.ritualDomingoCycleIso : undefined,
+    ritualDomingoLastCompletedIso:
+      typeof state.ritualDomingoLastCompletedIso === 'string' ? state.ritualDomingoLastCompletedIso : undefined,
     procCountsById: isPlainObj(state.procCountsById) ? (state.procCountsById as Record<string, number>) : {},
     procAutonomyById: isPlainObj(state.procAutonomyById) ? state.procAutonomyById : {},
     logbookEntries: Array.isArray(state.logbookEntries) ? state.logbookEntries : [],
@@ -759,6 +984,7 @@ export function migrateCentral6AnoState(state: Partial<Central6AnoState>): Centr
     r1Milestones,
     curriculumEntries,
     curriculumEnamedConcept,
+    r1SubTab: state.r1SubTab === 'r1' ? 'r1' : 'plano',
     treinoClinico: migrateTreinoClinicoState(state.treinoClinico),
   };
 }
@@ -838,6 +1064,48 @@ export function resolveCalendarContextForDate(dateObj: Date): {
   return { dateIso, diaSemana, rodizioId, feriasSemana, arquetipoSugerido, labelResumo };
 }
 
+/**
+ * Chave de ciclo semanal do Ritual de Domingo: ancora no sábado mais recente
+ * (Sáb → Sex pertencem ao mesmo ciclo; no sábado seguinte inicia ciclo limpo).
+ */
+export function getRitualCycleKey(dateIso: string): string {
+  const [y, m, d] = String(dateIso || '').split('-').map(Number);
+  if (!y || !m || !d) return String(dateIso || '');
+  const utc = new Date(Date.UTC(y, m - 1, d));
+  const backDays = (utc.getUTCDay() + 1) % 7;
+  utc.setUTCDate(utc.getUTCDate() - backDays);
+  const yy = utc.getUTCFullYear();
+  const mm = String(utc.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(utc.getUTCDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+}
+
+export function getEffectiveRitualDoneMap(
+  state: Pick<Central6AnoState, 'ritualDomingoDoneIds' | 'ritualDomingoCycleIso'>,
+  todayIso: string
+): Record<string, boolean> {
+  const raw = state.ritualDomingoDoneIds || {};
+  if (state.ritualDomingoCycleIso && state.ritualDomingoCycleIso !== getRitualCycleKey(todayIso)) {
+    return {};
+  }
+  return raw;
+}
+
+export function resolveFeriasSemanaForDate(todayIso: string): string | null {
+  if (!todayIso) return null;
+  for (const sem of FERIAS_SEMANAS) {
+    if (todayIso >= sem.de && todayIso <= sem.ate) return sem.id;
+  }
+  return null;
+}
+
+export function resolveExpectedRodizioForDate(todayIso: string): RodizioConfig {
+  const [y, m, d] = String(todayIso || '').split('-').map(Number);
+  const dt = y && m && d ? new Date(y, m - 1, d, 12, 0, 0) : new Date();
+  const ctx = resolveCalendarContextForDate(dt);
+  return RODIZIOS_6ANO.find((r) => r.id === ctx.rodizioId) || RODIZIOS_6ANO[0];
+}
+
 export function buildDailyTimeline(state: Central6AnoState): TimelineStep[] {
   const rodizio = RODIZIOS_6ANO.find((r) => r.id === state.rodizioId) || RODIZIOS_6ANO[0];
   const rotaDia = ROTA_DIAS_SEMANA[state.diaSemana] || ROTA_DIAS_SEMANA.seg;
@@ -851,16 +1119,16 @@ export function buildDailyTimeline(state: Central6AnoState): TimelineStep[] {
         id: 'pos-ancoragem',
         horario: 'Manhã',
         titulo: 'Sono de Recuperação Pós-Plantão (Protegido)',
-        detalhe: 'Sem metas pesadas de teoria ou questões hoje.',
+        detalhe: 'Descanso integral — zero revisão leve, zero teoria e zero treino.',
         categoria: 'PÓS-PLANTÃO',
         corCategoria: '#10b981',
       },
       {
         id: 'pos-noite',
         horario: 'Tarde / Noite',
-        titulo: 'Anki leve (≤ 15 min) + Descanso',
-        detalhe: `Se for ao hospital, aplique apenas "${microHab}".`,
-        categoria: 'MANUTENÇÃO LEVE',
+        titulo: 'Recuperação Livre & Sono Cedo',
+        detalhe: 'Sem meta de estudo hoje; retomar o ritmo normalmente amanhã.',
+        categoria: 'DESCANSO',
         corCategoria: '#818cf8',
       },
     ];
