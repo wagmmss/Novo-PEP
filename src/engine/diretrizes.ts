@@ -2,6 +2,19 @@
 // RENDERIZADOR EDITORIAL DE DIRETRIZES & RACIOCÍNIO CLÍNICO ("POR QUÊ")
 // ============================================================================
 
+import {
+  TREINO_SCENARIO_BY_SLUG,
+  formatExternalUrlLabel,
+  normalizeTeoriaHeadingText,
+  slugifyTeoriaHeading,
+  stripInlineMarkdownForLabel,
+} from './teoriaGuias.ts';
+
+export interface RenderTeoriaMarkdownOptions {
+  linkTreinoSlugs?: boolean;
+  includeHeadingIds?: boolean;
+}
+
 export function escapeHtml(str: unknown): string {
   return String(str == null ? '' : str)
     .replace(/&/g, '&amp;')
@@ -335,7 +348,7 @@ function normalizeTeoriaMathInline(raw: string): string {
   return s;
 }
 
-function formatInlineTeoriaMd(text: string): string {
+function formatInlineTeoriaMd(text: string, options?: RenderTeoriaMarkdownOptions): string {
   const tokens: string[] = [];
   const protect = (htmlFragment: string): string => {
     const idx = tokens.length;
@@ -343,10 +356,18 @@ function formatInlineTeoriaMd(text: string): string {
     return `\u0000TTOK_${idx}\u0000`;
   };
 
-  // 1) Protege spans de código inline `...`
-  let protectedRaw = String(text || '').replace(/`([^`]+)`/g, (_, code: string) =>
-    protect(`<code>${escapeHtml(code)}</code>`)
-  );
+  // 1) Protege spans de código inline `...` (e converte slugs de cenários do Treino Clínico em chips clicáveis)
+  let protectedRaw = String(text || '').replace(/`([^`]+)`/g, (_, code: string) => {
+    if (options?.linkTreinoSlugs) {
+      const target = TREINO_SCENARIO_BY_SLUG.get(code.trim());
+      if (target) {
+        return protect(
+          `<button type="button" class="teoria-scenario-chip" data-treino-slug="${escapeHtml(target.slug)}" title="Abrir cenário ${escapeHtml(target.nome)} no Treino Clínico">${escapeHtml(target.nome)} ↗</button>`
+        );
+      }
+    }
+    return protect(`<code>${escapeHtml(code)}</code>`);
+  });
 
   // 2) Converte links Markdown seguros [texto](https://...) antes de escapar HTML
   protectedRaw = protectedRaw.replace(
@@ -356,6 +377,18 @@ function formatInlineTeoriaMd(text: string): string {
         `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="guia-link">${escapeHtml(label)}</a>`
       )
   );
+
+  // 3) Converte URLs cruas https?://... em links clicáveis com rótulo curto e sem overflow
+  protectedRaw = protectedRaw.replace(/(https?:\/\/[^\s)<>"`*]+)/g, (rawMatch: string) => {
+    const cleanUrl = rawMatch.replace(/[.,;:!?]+$/, '');
+    const trailing = rawMatch.slice(cleanUrl.length);
+    const label = formatExternalUrlLabel(cleanUrl);
+    return (
+      protect(
+        `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" class="teoria-ext-link" title="${escapeHtml(cleanUrl)}">${escapeHtml(label)} ↗</a>`
+      ) + trailing
+    );
+  });
 
   const mathClean = normalizeTeoriaMathInline(protectedRaw);
   let html = escapeHtml(mathClean);
@@ -439,7 +472,10 @@ function extractEditorialSubheading(trimmed: string, nextNonEmptyTrimmed: string
   return null;
 }
 
-export function renderTeoriaMarkdownToHtml(md: string): string {
+export function renderTeoriaMarkdownToHtml(
+  md: string,
+  options?: RenderTeoriaMarkdownOptions
+): string {
   const lines = String(md || '').split('\n');
   const out: string[] = [];
   let inUl = false;
@@ -447,6 +483,18 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
   let olNextNum = 1;
   let tableRows: string[][] = [];
   let quoteBuffer: string[] = [];
+  const usedHeadingIds = new Map<string, number>();
+
+  const nextHeadingIdAttr = (normalizedHeadingText: string): string => {
+    if (!options?.includeHeadingIds) return '';
+    const label = stripInlineMarkdownForLabel(normalizedHeadingText);
+    if (!label) return '';
+    const baseId = slugifyTeoriaHeading(label);
+    const seen = usedHeadingIds.get(baseId) || 0;
+    usedHeadingIds.set(baseId, seen + 1);
+    const id = seen === 0 ? `sec-${baseId}` : `sec-${baseId}-${seen + 1}`;
+    return ` id="${escapeHtml(id)}"`;
+  };
 
   const closeLists = () => {
     if (inUl) {
@@ -462,7 +510,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
 
   const flushQuote = () => {
     if (quoteBuffer.length === 0) return;
-    const innerHtml = quoteBuffer.map((q) => formatInlineTeoriaMd(q)).join('<br>');
+    const innerHtml = quoteBuffer.map((q) => formatInlineTeoriaMd(q, options)).join('<br>');
     out.push(`<blockquote>${innerHtml}</blockquote>`);
     quoteBuffer = [];
   };
@@ -473,13 +521,13 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     const bodyRows = tableRows.slice(2);
     let html = '<div class="mq-table-wrap"><table class="mq-table"><thead><tr>';
     headerCells.forEach((c) => {
-      html += `<th>${formatInlineTeoriaMd(c.trim())}</th>`;
+      html += `<th>${formatInlineTeoriaMd(c.trim(), options)}</th>`;
     });
     html += '</tr></thead><tbody>';
     bodyRows.forEach((row) => {
       html += '<tr>';
       row.forEach((c) => {
-        html += `<td>${formatInlineTeoriaMd(c.trim())}</td>`;
+        html += `<td>${formatInlineTeoriaMd(c.trim(), options)}</td>`;
       });
       html += '</tr>';
     });
@@ -528,6 +576,10 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     }
     if (trimmed === '---') {
       closeLists();
+      // Suprime <hr> redundante imediatamente antes de <h2> (o próprio h2 já carrega divisória)
+      if (findNextNonEmpty(i).startsWith('## ')) {
+        continue;
+      }
       out.push('<hr>');
       continue;
     }
@@ -537,7 +589,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
       closeLists();
       flushTable();
       out.push(
-        `<details class="guia-drill-details my-3 rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-white/[0.08] dark:bg-[#15181F]"><summary class="cursor-pointer select-none text-xs font-semibold text-[#0F766E] dark:text-[#2DD4BF]">${formatInlineTeoriaMd(detailsOpenMatch[1].trim())}</summary><div class="mt-2.5 space-y-2 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">`
+        `<details class="guia-drill-details my-3 rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-white/[0.08] dark:bg-[#15181F]"><summary class="cursor-pointer select-none text-xs font-semibold text-[#0F766E] dark:text-[#2DD4BF]">${formatInlineTeoriaMd(detailsOpenMatch[1].trim(), options)}</summary><div class="mt-2.5 space-y-2 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">`
       );
       continue;
     }
@@ -550,22 +602,24 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     }
     if (trimmed.startsWith('# ')) {
       closeLists();
-      out.push(`<h1>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(2)))}</h1>`);
+      out.push(`<h1>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(2)), options)}</h1>`);
       continue;
     }
     if (trimmed.startsWith('## ')) {
       closeLists();
-      out.push(`<h2>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(3)))}</h2>`);
+      const normalized = normalizeTeoriaHeadingText(stripHeadingDecorators(trimmed.slice(3)));
+      out.push(`<h2${nextHeadingIdAttr(normalized)}>${formatInlineTeoriaMd(normalized, options)}</h2>`);
       continue;
     }
     if (trimmed.startsWith('### ')) {
       closeLists();
-      out.push(`<h3>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(4)))}</h3>`);
+      const normalized = normalizeTeoriaHeadingText(stripHeadingDecorators(trimmed.slice(4)));
+      out.push(`<h3${nextHeadingIdAttr(normalized)}>${formatInlineTeoriaMd(normalized, options)}</h3>`);
       continue;
     }
     if (trimmed.startsWith('#### ')) {
       closeLists();
-      out.push(`<h4 class="preporta-subhead">${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(5)))}</h4>`);
+      out.push(`<h4 class="preporta-subhead">${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(5)), options)}</h4>`);
       continue;
     }
 
@@ -574,7 +628,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
       const subhead = extractEditorialSubheading(trimmed, findNextNonEmpty(i));
       if (subhead) {
         closeLists();
-        out.push(`<h4 class="preporta-subhead">${formatInlineTeoriaMd(subhead)}</h4>`);
+        out.push(`<h4 class="preporta-subhead">${formatInlineTeoriaMd(subhead, options)}</h4>`);
         continue;
       }
     }
@@ -582,7 +636,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
     if (/^[-*]\s+/.test(trimmed)) {
       if (inOl && isIndented) {
         out.push(
-          `<li style="list-style:disc; margin-left:22px;">${formatInlineTeoriaMd(trimmed.replace(/^[-*]\s+/, ''))}</li>`
+          `<li style="list-style:disc; margin-left:22px;">${formatInlineTeoriaMd(trimmed.replace(/^[-*]\s+/, ''), options)}</li>`
         );
       } else {
         if (inOl) {
@@ -594,7 +648,7 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
           out.push('<ul>');
           inUl = true;
         }
-        out.push(`<li>${formatInlineTeoriaMd(trimmed.replace(/^[-*]\s+/, ''))}</li>`);
+        out.push(`<li>${formatInlineTeoriaMd(trimmed.replace(/^[-*]\s+/, ''), options)}</li>`);
       }
     } else if (/^\d+\.\s+/.test(trimmed)) {
       const numMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
@@ -611,11 +665,11 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
         olNextNum = itemNum;
       }
       const liAttr = itemNum !== olNextNum ? ` value="${itemNum}"` : '';
-      out.push(`<li${liAttr}>${formatInlineTeoriaMd(itemBody)}</li>`);
+      out.push(`<li${liAttr}>${formatInlineTeoriaMd(itemBody, options)}</li>`);
       olNextNum = itemNum + 1;
     } else {
       closeLists();
-      out.push(`<p>${formatInlineTeoriaMd(trimmed)}</p>`);
+      out.push(`<p>${formatInlineTeoriaMd(trimmed, options)}</p>`);
     }
   }
 

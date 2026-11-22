@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -72,11 +72,18 @@ import {
 import { cockpitStore } from '../state/store.ts';
 import { copyToClipboard } from '../utils/clipboard.ts';
 
+export interface TreinoFocusTarget {
+  eixo: 'e1' | 'e3' | 'e4';
+  slug?: string;
+  nonce: number;
+}
+
 interface TreinoClinicoViewProps {
   central6Ano: Central6AnoState;
   onOpenPrePorta: (habId: string) => void;
   onNotify: (msg: string) => void;
   onOpenGuiaTeorico?: (modId: string) => void;
+  focusTarget?: TreinoFocusTarget | null;
 }
 
 type LeftSection = 'esteira' | 'e1' | 'e3' | 'e4' | 'log';
@@ -131,6 +138,7 @@ export function TreinoClinicoView({
   onOpenPrePorta,
   onNotify,
   onOpenGuiaTeorico,
+  focusTarget,
 }: TreinoClinicoViewProps) {
   const treino = useMemo(
     () => migrateTreinoClinicoState(central6Ano.treinoClinico),
@@ -144,6 +152,20 @@ export function TreinoClinicoView({
   const [selectedE3Slug, setSelectedE3Slug] = useState<string>(ARQUETIPOS_E3[0].slug);
   const [selectedE4Slug, setSelectedE4Slug] = useState<string>(CENARIOS_E4[0].slug);
   const [logFilter, setLogFilter] = useState<'todos' | TipoLog>('todos');
+
+  useEffect(() => {
+    if (!focusTarget) return;
+    setSection(focusTarget.eixo);
+    if (focusTarget.slug) {
+      if (focusTarget.eixo === 'e1' && QUEIXAS_E1.some((q) => q.slug === focusTarget.slug)) {
+        setSelectedE1Slug(focusTarget.slug);
+      } else if (focusTarget.eixo === 'e3' && ARQUETIPOS_E3.some((a) => a.slug === focusTarget.slug)) {
+        setSelectedE3Slug(focusTarget.slug);
+      } else if (focusTarget.eixo === 'e4' && CENARIOS_E4.some((c) => c.slug === focusTarget.slug)) {
+        setSelectedE4Slug(focusTarget.slug);
+      }
+    }
+  }, [focusTarget]);
 
   // Estados efêmeros para montagem de prompts (CASO_FIXO nunca persiste!)
   const [casoFixoMasked, setCasoFixoMasked] = useState('');

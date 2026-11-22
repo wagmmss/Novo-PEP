@@ -16,7 +16,13 @@ import {
   PEP_PROTOCOLS,
   resolveKnownRouteId,
 } from './data/protocolsRepo.ts';
-import { formatHashRoute, parseHashRoute, type AppRoute } from './state/hashRoute.ts';
+import { FORMACAO_TEORICA_MODULOS } from './data/formacao_teorica_data.ts';
+import {
+  formatHashRoute,
+  parseHashRoute,
+  type AppRoute,
+  type TeoriaSubMode,
+} from './state/hashRoute.ts';
 import { subscribeAppHealth } from './state/appHealth.ts';
 
 function readInitialRoute(): AppRoute | null {
@@ -69,10 +75,40 @@ export function App() {
     initialRoute?.world === 'beira-leito' && initialRoute.tab === 'pre-porta' && initialRoute.detail
   );
 
+  const [teoriaSubMode, setTeoriaSubMode] = useState<TeoriaSubMode>(
+    initialRoute?.world === 'sexto-ano' &&
+      initialRoute.tab === 'teoria' &&
+      initialRoute.teoriaMode === 'guias'
+      ? 'guias'
+      : 'treino'
+  );
+  const [selectedTeoriaModId, setSelectedTeoriaModId] = useState<string>(
+    initialRoute?.world === 'sexto-ano' &&
+      initialRoute.tab === 'teoria' &&
+      initialRoute.teoriaModId
+      ? initialRoute.teoriaModId
+      : FORMACAO_TEORICA_MODULOS[0]?.id ?? 'mod-01'
+  );
+  const [mobileTeoriaDetail, setMobileTeoriaDetail] = useState<boolean>(
+    Boolean(
+      initialRoute?.world === 'sexto-ano' &&
+        initialRoute.tab === 'teoria' &&
+        initialRoute.teoriaDetail
+    )
+  );
+
   // ---- Sincronização estado ⇄ URL --------------------------------------------
   const currentHash = formatHashRoute(
     world === 'sexto-ano'
-      ? { world, tab: sextoAnoTab }
+      ? sextoAnoTab === 'teoria'
+        ? {
+            world,
+            tab: 'teoria',
+            teoriaMode: teoriaSubMode,
+            teoriaModId: selectedTeoriaModId,
+            teoriaDetail: mobileTeoriaDetail,
+          }
+        : { world, tab: sextoAnoTab }
       : beiraLeitoTab === 'protocolos'
         ? { world, tab: 'protocolos', id: selectedProtocolId, detail: mobileProtocolDetail }
         : { world, tab: 'pre-porta', id: selectedHabId, detail: mobileHabDetail }
@@ -103,6 +139,11 @@ export function App() {
       setWorld(route.world);
       if (route.world === 'sexto-ano') {
         setSextoAnoTab(route.tab);
+        if (route.tab === 'teoria') {
+          setTeoriaSubMode(route.teoriaMode === 'guias' ? 'guias' : 'treino');
+          if (route.teoriaModId) setSelectedTeoriaModId(route.teoriaModId);
+          setMobileTeoriaDetail(Boolean(route.teoriaDetail));
+        }
         return;
       }
       setBeiraLeitoTab(route.tab);
@@ -205,8 +246,6 @@ export function App() {
     setMobileHabDetail(true);
   }, []);
 
-  const [selectedTeoriaModId, setSelectedTeoriaModId] = useState<string | null>(null);
-
   const handleOpenProtocolFromPrePorta = useCallback((protocolId: string) => {
     setWorld('beira-leito');
     setBeiraLeitoTab('protocolos');
@@ -214,10 +253,20 @@ export function App() {
     setMobileProtocolDetail(true);
   }, []);
 
-  const handleOpenTeoriaFromPrePorta = useCallback((modId: string) => {
+  const handleOpenTeoriaModule = useCallback((modId: string) => {
     setSelectedTeoriaModId(modId);
+    setTeoriaSubMode('guias');
+    setMobileTeoriaDetail(true);
     setWorld('sexto-ano');
     setSextoAnoTab('teoria');
+  }, []);
+
+  const handleChangeSextoAnoTab = useCallback((tab: SextoAnoTab) => {
+    setSextoAnoTab(tab);
+    if (tab === 'teoria') {
+      setTeoriaSubMode('treino');
+      setMobileTeoriaDetail(false);
+    }
   }, []);
 
   return (
@@ -230,7 +279,7 @@ export function App() {
         syncStatus={syncState.status}
         onChangeWorld={setWorld}
         onChangeBeiraLeitoTab={setBeiraLeitoTab}
-        onChangeSextoAnoTab={setSextoAnoTab}
+        onChangeSextoAnoTab={handleChangeSextoAnoTab}
         onOpenSearch={() => setCmdOpen(true)}
         onToggleTheme={() => cockpitStore.toggleTheme()}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -268,7 +317,7 @@ export function App() {
           onBackToList={() => setMobileHabDetail(false)}
           onOpenQuickCapture={setQuickCapture}
           onOpenProtocol={handleOpenProtocolFromPrePorta}
-          onOpenTeoria={handleOpenTeoriaFromPrePorta}
+          onOpenTeoria={handleOpenTeoriaModule}
           onNotify={notify}
           shortcutsEnabled={!anyModalOpen}
         />
@@ -285,8 +334,22 @@ export function App() {
       {world === 'sexto-ano' && sextoAnoTab === 'teoria' && (
         <TeoriaView
           central6Ano={storeState.central6Ano}
+          subMode={teoriaSubMode}
+          selectedModId={selectedTeoriaModId}
+          mobileShowDetail={mobileTeoriaDetail}
+          shortcutsEnabled={!anyModalOpen}
+          onChangeSubMode={(mode) => {
+            setTeoriaSubMode(mode);
+            if (mode === 'treino') {
+              setMobileTeoriaDetail(false);
+            }
+          }}
+          onSelectModId={(modId) => {
+            setSelectedTeoriaModId(modId);
+            setMobileTeoriaDetail(true);
+          }}
+          onBackToList={() => setMobileTeoriaDetail(false)}
           onOpenPrePorta={handleOpenPrePortaFromProtocol}
-          initialModId={selectedTeoriaModId}
           onNotify={notify}
         />
       )}
@@ -294,7 +357,7 @@ export function App() {
       {world === 'sexto-ano' && sextoAnoTab === 'r1-curriculo' && (
         <R1CurriculoView
           central6Ano={storeState.central6Ano}
-          onNavigateSextoAnoTab={setSextoAnoTab}
+          onNavigateSextoAnoTab={handleChangeSextoAnoTab}
           onNotify={notify}
         />
       )}
@@ -303,8 +366,10 @@ export function App() {
         open={cmdOpen}
         items={COMMAND_PALETTE_ITEMS}
         searchIndex={COMMAND_PALETTE_SEARCH_INDEX}
+        teoriaModules={FORMACAO_TEORICA_MODULOS}
         onClose={() => setCmdOpen(false)}
         onSelectItem={handleSelectFromPalette}
+        onSelectTeoriaModule={handleOpenTeoriaModule}
       />
 
       <BackupModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />

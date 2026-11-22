@@ -1463,3 +1463,150 @@ test('Regressões Protocolos (P0/P1/P2): Amoxicilina intacta + mL dinâmico, Aud
   assert.equal(getSubcategoryLabel('Emergencias GO'), 'Emergências em GO');
 });
 
+test('Guias Teóricos: hash routes, busca sem acento/conteúdo, links clicáveis, sumário e micro-drills', async () => {
+  const { formatHashRoute, parseHashRoute } = await import('../src/state/hashRoute.ts');
+  const {
+    countModuleDrills,
+    estimateReadingStats,
+    extractModuleTreinoTargets,
+    extractTeoriaOutline,
+    formatExternalUrlLabel,
+    getTeoriaDrillKey,
+    searchTeoriaModules,
+    stripModuleTitlePrefix,
+  } = await import('../src/engine/teoriaGuias.ts');
+
+  // 1) Hash routes de Guias Teóricos preservam submodo e módulo ativo
+  assert.equal(
+    formatHashRoute({
+      world: 'sexto-ano',
+      tab: 'teoria',
+      teoriaMode: 'guias',
+      teoriaModId: 'mod-05',
+      teoriaDetail: true,
+    }),
+    '#/6ano/teoria/guias/mod-05'
+  );
+  assert.equal(
+    formatHashRoute({
+      world: 'sexto-ano',
+      tab: 'teoria',
+      teoriaMode: 'guias',
+      teoriaModId: 'mod-05',
+      teoriaDetail: false,
+    }),
+    '#/6ano/teoria/guias'
+  );
+  assert.equal(
+    formatHashRoute({
+      world: 'sexto-ano',
+      tab: 'teoria',
+      teoriaMode: 'treino',
+    }),
+    '#/6ano/teoria'
+  );
+
+  const parsedMod5 = parseHashRoute('#/6ano/teoria/guias/mod-05', () => false);
+  assert.deepEqual(parsedMod5, {
+    world: 'sexto-ano',
+    tab: 'teoria',
+    teoriaMode: 'guias',
+    teoriaModId: 'mod-05',
+    teoriaDetail: true,
+  });
+
+  const parsedInvalidMod = parseHashRoute('#/6ano/teoria/guias/mod-99', () => false);
+  assert.deepEqual(parsedInvalidMod, {
+    world: 'sexto-ano',
+    tab: 'teoria',
+    teoriaMode: 'guias',
+    teoriaModId: null,
+    teoriaDetail: false,
+  });
+
+  // 2) Busca sem acento e dentro do corpo clínico
+  const byNoAccent = searchTeoriaModules(
+    FORMACAO_TEORICA_MODULOS,
+    'oratoria',
+    'todos',
+    () => 'nao_iniciado'
+  );
+  assert.ok(byNoAccent.some((m) => m.mod.id === 'mod-04'), 'Busca sem acento "oratoria" deve achar Módulo 04');
+
+  const byHints = searchTeoriaModules(
+    FORMACAO_TEORICA_MODULOS,
+    'HINTS',
+    'todos',
+    () => 'nao_iniciado'
+  );
+  assert.ok(
+    byHints.some((m) => m.mod.id === 'mod-02' && m.matchKind === 'body' && Boolean(m.snippet)),
+    'Busca por "HINTS" deve encontrar Módulo 02 no corpo com snippet'
+  );
+
+  // 3) Renderização: 0 URLs cruas não clicáveis, 0 <hr> duplicados antes de <h2>, 0 cabeçalhos "4. 3 Micro-Drills"
+  for (const mod of FORMACAO_TEORICA_MODULOS) {
+    const stripped = mod.markdown.replace(/^\s*#\s+[^\n]+\n+/, '');
+    const html = renderTeoriaMarkdownToHtml(stripped, {
+      linkTreinoSlugs: true,
+      includeHeadingIds: true,
+    });
+    const outline = extractTeoriaOutline(stripped);
+    const stats = estimateReadingStats(stripped);
+
+    assert.ok(!stripModuleTitlePrefix(mod.title).startsWith('Módulo'), 'Prefixo "Módulo XX —" deve ser removido do H1');
+    assert.ok(stats.words > 1000 && stats.minutes >= 8, `Estatísticas de leitura válidas em ${mod.id}`);
+    assert.equal(countModuleDrills(stripped), 3, `${mod.id} deve ter 3 micro-drills`);
+    assert.ok(!html.includes('<hr>\n<h2'), `${mod.id} não deve renderizar <hr> colado antes de <h2>`);
+    assert.ok(!html.includes('4. 3 Micro-Drills'), `${mod.id} deve normalizar o título da seção 4`);
+    assert.ok(
+      html.includes('4. Micro-Drills Ativos de Voz Alta (3 casos)'),
+      `${mod.id} deve conter o título padronizado da seção 4`
+    );
+
+    // Todos os IDs do sumário devem existir no HTML gerado
+    for (const item of outline) {
+      assert.ok(
+        html.includes(`id="${item.id}"`),
+        `Âncora ${item.id} do sumário deve existir no HTML de ${mod.id}`
+      );
+    }
+
+    // Se o markdown tem URLs externas, todas devem ser convertidas em <a href="https://...">
+    const rawUrls = stripped.match(/https?:\/\/[^\s)<>"]+/g) || [];
+    if (rawUrls.length > 0) {
+      const anchors = html.match(/<a\s+href="https?:\/\/[^"]+"/g) || [];
+      assert.equal(anchors.length, rawUrls.length, `Todas as URLs de ${mod.id} devem virar links clicáveis`);
+    }
+  }
+
+  // 4) Rótulos curtos de URLs conhecidas e ponte para cenários do Treino Clínico
+  assert.equal(formatExternalUrlLabel('https://doi.org/10.1097/00001888-200308000-00011'), 'DOI');
+  assert.equal(formatExternalUrlLabel('https://pubmed.ncbi.nlm.nih.gov/14507619/'), 'PubMed 14507619');
+  assert.equal(
+    formatExternalUrlLabel('https://bvsms.saude.gov.br/bvs/saudelegis/gm/2002/prt2048_05_11_2002.html'),
+    'MS · Portaria 2048'
+  );
+
+  const mod09 = FORMACAO_TEORICA_MODULOS.find((m) => m.id === 'mod-09')!;
+  const mod09Targets = extractModuleTreinoTargets(mod09.markdown);
+  assert.ok(
+    mod09Targets.some((t) => t.slug === 'e3-alta-cinzenta-recusa' && t.eixo === 'e3'),
+    'Módulo 09 deve mapear o cenário e3-alta-cinzenta-recusa para o eixo E3'
+  );
+  const mod09Html = renderTeoriaMarkdownToHtml(mod09.markdown, { linkTreinoSlugs: true });
+  assert.ok(
+    mod09Html.includes('data-treino-slug="e3-alta-cinzenta-recusa"'),
+    'Slug conhecido no texto deve renderizar botão clicável para Treino Clínico'
+  );
+
+  // 5) Persistência de micro-drill praticado no cockpitStore
+  const drillKey = getTeoriaDrillKey('mod-01', 1);
+  const firstToggle = cockpitStore.toggleTeoriaExerciseDone(drillKey);
+  assert.equal(firstToggle, true);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.teoriaExercisesDone?.[drillKey], true);
+  const secondToggle = cockpitStore.toggleTeoriaExerciseDone(drillKey);
+  assert.equal(secondToggle, false);
+});
+
+

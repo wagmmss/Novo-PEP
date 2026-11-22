@@ -640,6 +640,20 @@ class ClinicalCockpitStore {
     });
   }
 
+  public toggleTeoriaExerciseDone(exerciseKey: string): boolean {
+    const current = this.state.central6Ano;
+    const prev = current.teoriaExercisesDone || {};
+    const nextVal = !prev[exerciseKey];
+    this.setCentral6AnoState({
+      ...current,
+      teoriaExercisesDone: {
+        ...prev,
+        [exerciseKey]: nextVal,
+      },
+    });
+    return nextVal;
+  }
+
   public addR1Milestone(input: Omit<R1Milestone, 'id'>): R1Milestone | null {
     const cleanTitle = input.titulo.trim();
     if (!cleanTitle || !input.dateIso) return null;

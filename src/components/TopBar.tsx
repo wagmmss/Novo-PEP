@@ -113,7 +113,7 @@ export function TopBar({
         });
 
   return (
-    <header className="sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+    <header className="no-print sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs dark:border-white/[0.07] dark:bg-[#0F1115]/95">
       {/* Linha principal (única no desktop sm+; superior no mobile) */}
       <div className="mx-auto flex h-12 w-full items-center justify-between gap-2 px-3 sm:h-13 sm:px-5">
         {/* Esquerda: Switch de contexto + Abas inline no desktop */}

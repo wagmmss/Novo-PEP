@@ -8,13 +8,21 @@ interface ShortcutsHelpProps {
 
 const GROUPS: Array<{ title: string; items: Array<{ keys: string[]; label: string }> }> = [
   {
-    title: 'Busca e navegação (Protocolos e Pré-Porta)',
+    title: 'Busca e navegação (Protocolos, Pré-Porta e Guias Teóricos)',
     items: [
-      { keys: ['Ctrl', 'K'], label: 'Busca global (protocolos, Pré-Porta e 6 Intercorrências)' },
+      { keys: ['Ctrl', 'K'], label: 'Busca global (protocolos, Pré-Porta, 6 Intercorrências e Guias Teóricos)' },
       { keys: ['Shift', 'Enter'], label: 'Na busca global: abrir protocolo e copiar tudo' },
       { keys: ['/'], label: 'Focar o filtro da barra lateral' },
       { keys: ['↑', '↓'], label: 'No filtro: navegar entre itens da lista' },
-      { keys: ['Enter'], label: 'No filtro: voltar ao conteúdo' },
+      { keys: ['Enter'], label: 'No filtro: voltar ao conteúdo (ou saltar ocorrência nos Guias)' },
+    ],
+  },
+  {
+    title: 'Guias Teóricos (fora de campos de texto)',
+    items: [
+      { keys: ['['], label: 'Recolher ou expandir lista de módulos' },
+      { keys: ['Alt', '←'], label: 'Módulo teórico anterior' },
+      { keys: ['Alt', '→'], label: 'Próximo módulo teórico' },
     ],
   },
   {
