@@ -480,7 +480,7 @@ export function R1CurriculoView({
                       value={msTitulo}
                       onChange={(e) => setMsTitulo(e.target.value)}
                       placeholder="Ex.: Envio do currículo USP-SP"
-                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                     />
                   </div>
 
@@ -497,7 +497,7 @@ export function R1CurriculoView({
                       required
                       value={msDateIso}
                       onChange={(e) => setMsDateIso(e.target.value)}
-                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 font-mono text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 font-mono text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                     />
                   </div>
 
@@ -512,7 +512,7 @@ export function R1CurriculoView({
                       id="ms-cat"
                       value={msCategoria}
                       onChange={(e) => setMsCategoria(e.target.value as R1Milestone['categoria'])}
-                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                     >
                       {MILESTONE_CATEGORIES.map((c) => (
                         <option key={c.value} value={c.value}>
@@ -537,7 +537,7 @@ export function R1CurriculoView({
                       value={msNota}
                       onChange={(e) => setMsNota(e.target.value)}
                       placeholder="Ex.: Conferir PDF único e autenticidade das declarações."
-                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                      className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                     />
                   </div>
 
@@ -1211,7 +1211,7 @@ export function R1CurriculoView({
                               }
                             }}
                             placeholder="Ex.: PDF salvo em Certificados/..., DOI, pendência de assinatura CCEx..."
-                            className="flex-1 rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 text-xs text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                            className="flex-1 rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 text-xs text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                           />
                           <div className="flex items-center justify-end gap-1.5">
                             <button
@@ -1535,7 +1535,7 @@ function Plano6AnoTool({
                     rows={2}
                     value={draftAncora}
                     onChange={(e) => setDraftAncora(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                   />
                 </div>
                 <div>
@@ -1550,7 +1550,7 @@ function Plano6AnoTool({
                     rows={2}
                     value={draftTrilha}
                     onChange={(e) => setDraftTrilha(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                    className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
                   />
                 </div>
               </div>

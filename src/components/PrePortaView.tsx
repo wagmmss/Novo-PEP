@@ -244,7 +244,7 @@ export function PrePortaView({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar exame, intercorrência ou habilidade..."
               aria-label="Filtrar cartões Pré-Porta"
-              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] py-1.5 pr-7 pl-8 text-xs text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
+              className="w-full rounded-lg border border-zinc-200/90 bg-[#FAFAFA] py-1.5 pr-7 pl-8 text-xs text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-[#0F766E] focus:bg-white dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF] dark:focus:bg-[#0F1115]"
             />
             {searchQuery && (
               <button
