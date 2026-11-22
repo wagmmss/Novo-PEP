@@ -35,7 +35,7 @@ import { normalizeSearchText } from '../engine/search.ts';
 import { resolveLinksForTeoriaModule } from '../data/clinical_links.ts';
 import { HAB_PROTOCOLS } from '../data/protocolsRepo.ts';
 import { cockpitStore, type TeoriaModuleStatus } from '../state/store.ts';
-import type { TeoriaSubMode } from '../state/hashRoute.ts';
+import type { TeoriaSubMode, TreinoSectionRoute } from '../state/hashRoute.ts';
 import { TreinoClinicoView, type TreinoFocusTarget } from './TreinoClinicoView.tsx';
 
 interface TeoriaViewProps {
@@ -43,10 +43,14 @@ interface TeoriaViewProps {
   subMode: TeoriaSubMode;
   selectedModId: string;
   mobileShowDetail: boolean;
+  treinoSection: TreinoSectionRoute;
+  treinoSlug: string | null;
+  mobileTreinoDetail: boolean;
   shortcutsEnabled?: boolean;
   onChangeSubMode: (mode: TeoriaSubMode) => void;
   onSelectModId: (modId: string) => void;
   onBackToList: () => void;
+  onChangeTreinoRoute: (sec: TreinoSectionRoute, slug: string | null | undefined, detail: boolean) => void;
   onOpenPrePorta: (habId: string) => void;
   onNotify?: (msg: string) => void;
 }
@@ -149,10 +153,14 @@ export function TeoriaView({
   subMode,
   selectedModId,
   mobileShowDetail,
+  treinoSection,
+  treinoSlug,
+  mobileTreinoDetail,
   shortcutsEnabled = true,
   onChangeSubMode,
   onSelectModId,
   onBackToList,
+  onChangeTreinoRoute,
   onOpenPrePorta,
   onNotify,
 }: TeoriaViewProps) {
@@ -386,6 +394,7 @@ export function TeoriaView({
 
   const handleJumpToTreinoScenario = useCallback(
     (eixo: 'e1' | 'e3' | 'e4', slug?: string) => {
+      onChangeTreinoRoute(eixo, slug ?? null, Boolean(slug));
       setTreinoFocus({ eixo, slug, nonce: Date.now() });
       setCameFromTreino(false);
       onChangeSubMode('treino');
@@ -394,7 +403,7 @@ export function TeoriaView({
         onNotify?.(`Treino Clínico: ${scenario?.nome || slug}`);
       }
     },
-    [onChangeSubMode, onNotify]
+    [onChangeSubMode, onChangeTreinoRoute, onNotify]
   );
 
   // Delegação de clique dentro do HTML renderizado (chips de cenário do Treino Clínico)
@@ -562,19 +571,27 @@ export function TeoriaView({
         )}
       </div>
 
-      {subMode === 'treino' ? (
+      {/* Mantém TreinoClinicoView montado (hidden) para preservar rascunhos, data simulada e estado ao ir/voltar de Guias */}
+      <div className={subMode === 'treino' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'hidden'}>
         <TreinoClinicoView
           central6Ano={central6Ano}
+          section={treinoSection}
+          routeSlug={treinoSlug}
+          mobileShowDetail={mobileTreinoDetail}
+          onChangeRoute={onChangeTreinoRoute}
           onOpenPrePorta={onOpenPrePorta}
           onNotify={onNotify || (() => {})}
           focusTarget={treinoFocus}
+          onConsumeFocusTarget={() => setTreinoFocus(null)}
           onOpenGuiaTeorico={(modId: string) => {
             setCameFromTreino(true);
             onSelectModId(modId);
             onChangeSubMode('guias');
           }}
         />
-      ) : (
+      </div>
+
+      {subMode === 'guias' && (
         <div className="flex min-h-0 flex-1 overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
           {/* Coluna Esquerda — Lista de módulos (recolhível em desktop) */}
           <aside

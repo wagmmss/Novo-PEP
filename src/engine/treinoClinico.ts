@@ -53,6 +53,51 @@ export function findCatalogItem(slug: string): QueixaE1 | ArquetipoE3 | CenarioE
   return E1_BY_SLUG.get(slug) || E3_BY_SLUG.get(slug) || E4_BY_SLUG.get(slug) || null;
 }
 
+export function formatTargetLabel(slug: string): string {
+  const e1 = E1_BY_SLUG.get(slug);
+  if (e1) return `#${String(e1.num).padStart(2, '0')} ${e1.nome}`;
+  const e3 = E3_BY_SLUG.get(slug);
+  if (e3) return `E3 #${e3.num} · ${e3.nome}`;
+  const e4 = E4_BY_SLUG.get(slug);
+  if (e4) return `E4 #${e4.num} · ${e4.nome}`;
+  return slug;
+}
+
+export function recalculateTreinoDerivedState(
+  state: TreinoClinicoState,
+  affectedDateIso?: string
+): TreinoClinicoState {
+  // Se a alteração não tocou na janela de contingência (<= 2027-01-17), preserva snapshot existente
+  if (affectedDateIso && affectedDateIso > '2027-01-17') {
+    return state;
+  }
+  const preFreezeDates = state.logs
+    .map((l) => l.dateIso)
+    .filter((d) => d <= '2027-01-17')
+    .sort();
+  if (preFreezeDates.length === 0) {
+    return {
+      ...state,
+      contingencia10jan: undefined,
+      metas: {
+        ...state.metas,
+        primeiraPassadaCedeu: false,
+      },
+    };
+  }
+  const latestPreFreeze = preFreezeDates[preFreezeDates.length - 1];
+  const freshBase: TreinoClinicoState = { ...state, contingencia10jan: undefined };
+  const snap = computeContingencia10Jan(freshBase, latestPreFreeze);
+  return {
+    ...state,
+    contingencia10jan: snap,
+    metas: {
+      ...state.metas,
+      primeiraPassadaCedeu: latestPreFreeze >= '2027-01-10' ? snap.disparou : false,
+    },
+  };
+}
+
 export function habIdsDe(item: { eixo: Eixo; relatedHabIds: HabId[] }): HabId[] {
   const seen = new Set<HabId>();
   const out: HabId[] = [];
@@ -1901,25 +1946,54 @@ export interface ParsedLogDraft {
   baselineFase: 'A' | 'B' | null;
 }
 
+function cleanGeminiCandidateLine(rawLine: string): string {
+  let s = String(rawLine || '').trim();
+  // Remove marcadores de lista / citação no início (ex.: "- ", "* ", "• ", "> ")
+  s = s.replace(/^(?:[-*•>]\s+)+/, '').trim();
+  // Remove delimitadores Markdown externos (crases, negrito, itálico) repetidamente
+  for (let i = 0; i < 3; i++) {
+    if (s.startsWith('```') && s.endsWith('```') && s.length > 6) {
+      s = s.slice(3, -3).trim();
+    } else if (s.startsWith('`') && s.endsWith('`') && s.length > 2) {
+      s = s.slice(1, -1).trim();
+    } else if (s.startsWith('**') && s.endsWith('**') && s.length > 4) {
+      s = s.slice(2, -2).trim();
+    } else if (s.startsWith('__') && s.endsWith('__') && s.length > 4) {
+      s = s.slice(2, -2).trim();
+    } else if (s.startsWith('*') && s.endsWith('*') && !s.startsWith('**') && s.length > 2) {
+      s = s.slice(1, -1).trim();
+    } else {
+      break;
+    }
+  }
+  // Remove ponto final avulso após o veredito
+  s = s.replace(/\.\s*$/, '').trim();
+  return s;
+}
+
 export function parseLogLineFromGemini(
   rawText: string,
   refTodayIso: string,
   baselineHint?: 'A' | 'B'
 ): { ok: true; draft: ParsedLogDraft } | { ok: false; error: string } {
   const trimmed = String(rawText || '').trim();
-  const lines = trimmed.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = trimmed
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0 && !/^```[a-z]*$/i.test(l));
   if (lines.length === 0) return { ok: false, error: 'Texto vazio.' };
 
   // Para BASELINE-A, a resposta inteira deve ser só a linha do LOG
-  const candidate = baselineHint === 'A' ? trimmed : lines[lines.length - 1];
+  if (baselineHint === 'A' && lines.length > 1) {
+    return { ok: false, error: 'BASELINE-A contém texto além da linha do LOG.' };
+  }
+  const rawCandidate = baselineHint === 'A' ? lines[0] : lines[lines.length - 1];
+  const candidate = cleanGeminiCandidateLine(rawCandidate);
   const m = LOG_RE.exec(candidate);
   if (!m || !m.groups) {
     return {
       ok: false,
-      error:
-        baselineHint === 'A' && lines.length > 1
-          ? 'BASELINE-A contém texto além da linha do LOG.'
-          : 'Linha não bate no formato de 9 campos separados por " | ".',
+      error: 'Linha não bate no formato de 9 campos separados por " | ".',
     };
   }
 
@@ -2255,28 +2329,29 @@ export function recomendarGuiasPorGargalo(state: TreinoClinicoState): GuiaRecome
   };
 
   for (const l of ultimas) {
+    const alvoNome = formatTargetLabel(l.slug);
     if ((l.tipo === 'Nova' || l.tipo === 'Var') && l.h3Bloco === 'N') {
-      pushUnique('mod-01', `Falha no bloco 3H em ${l.slug} (${formatDateDDMM(l.dateIso)}) → treinar Funil 3H ≤60s`);
-      pushUnique('mod-03', `Falha no bloco 3H em ${l.slug} → revisar Matriz 3H & Illness Scripts`);
+      pushUnique('mod-01', `Falha no bloco 3H em ${alvoNome} (${formatDateDDMM(l.dateIso)}) → treinar Funil 3H ≤60s`);
+      pushUnique('mod-03', `Falha no bloco 3H em ${alvoNome} → revisar Matriz 3H & Illness Scripts`);
     }
     if ((l.tipo === 'Nova' || l.tipo === 'Var' || l.tipo === 'Micro') && l.pemc.kind === 'omissao') {
-      pushUnique('mod-02', `PEMC em ${l.slug} (${formatDateDDMM(l.dateIso)}) → revisar HDPE, manobras & LR+/LR-`);
-      pushUnique('mod-03', `PEMC em ${l.slug} → revisar Discriminadores & Debiasing`);
+      pushUnique('mod-02', `PEMC em ${alvoNome} (${formatDateDDMM(l.dateIso)}) → revisar HDPE, manobras & LR+/LR-`);
+      pushUnique('mod-03', `PEMC em ${alvoNome} → revisar Discriminadores & Debiasing`);
     }
     if ((l.tipo === 'Nova' || l.tipo === 'Var') && l.score.kind === 'rubrica' && l.score.valor <= 2) {
-      pushUnique('mod-04', `Score E2 ${l.score.valor}/4 em ${l.slug} → treinar Apresentação ≤90s & Explicação ≤60s`);
-      pushUnique('mod-01', `Score E2 ${l.score.valor}/4 em ${l.slug} → revisar Scripts de Atrito E2 & Teach-Back`);
+      pushUnique('mod-04', `Score E2 ${l.score.valor}/4 em ${alvoNome} → treinar Apresentação ≤90s & Explicação ≤60s`);
+      pushUnique('mod-01', `Score E2 ${l.score.valor}/4 em ${alvoNome} → revisar Scripts de Atrito E2 & Teach-Back`);
     }
     if (l.tipo === 'GRAVAÇÃO' && l.score.kind === 'muletas' && l.score.contagem > 2) {
       pushUnique('mod-04', `Gravação com ${l.score.contagem} muletas → treinar Regra da Pausa Limpa de 1s`);
     }
     if (l.tipo === 'E3' && l.veredito === 'Repetir') {
-      pushUnique('mod-06', `E3 Repetir em ${l.slug} → revisar 7 Travas A-R-G-I-V-P-O, ATB & Pediatria Ponderal`);
-      pushUnique('mod-09', `E3 Repetir em ${l.slug} → revisar Disposição, Limites s/ Lab (CROSS) & UBS`);
+      pushUnique('mod-06', `E3 Repetir em ${alvoNome} → revisar 7 Travas A-R-G-I-V-P-O, ATB & Pediatria Ponderal`);
+      pushUnique('mod-09', `E3 Repetir em ${alvoNome} → revisar Disposição, Limites s/ Lab (CROSS) & UBS`);
     }
     if (l.tipo === 'E4' && l.veredito === 'Repetir') {
-      pushUnique('mod-08', `E4 Repetir em ${l.slug} → revisar Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves`);
-      pushUnique('mod-07', `E4 Repetir em ${l.slug} → revisar Via Aérea Inicial (BVM/SRI/Vortex)`);
+      pushUnique('mod-08', `E4 Repetir em ${alvoNome} → revisar Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves`);
+      pushUnique('mod-07', `E4 Repetir em ${alvoNome} → revisar Via Aérea Inicial (BVM/SRI/Vortex)`);
     }
   }
 

@@ -23,6 +23,7 @@ import {
   type AppRoute,
   type PraticaRouteSubTab,
   type TeoriaSubMode,
+  type TreinoSectionRoute,
 } from './state/hashRoute.ts';
 import { subscribeAppHealth } from './state/appHealth.ts';
 
@@ -102,6 +103,27 @@ export function App() {
         initialRoute.teoriaDetail
     )
   );
+  const [treinoSection, setTreinoSection] = useState<TreinoSectionRoute>(
+    initialRoute?.world === 'sexto-ano' &&
+      initialRoute.tab === 'teoria' &&
+      initialRoute.treinoSection
+      ? initialRoute.treinoSection
+      : 'esteira'
+  );
+  const [treinoSlug, setTreinoSlug] = useState<string | null>(
+    initialRoute?.world === 'sexto-ano' &&
+      initialRoute.tab === 'teoria' &&
+      initialRoute.treinoSlug
+      ? initialRoute.treinoSlug
+      : null
+  );
+  const [mobileTreinoDetail, setMobileTreinoDetail] = useState<boolean>(
+    Boolean(
+      initialRoute?.world === 'sexto-ano' &&
+        initialRoute.tab === 'teoria' &&
+        initialRoute.treinoDetail
+    )
+  );
 
   // ---- Sincronização estado ⇄ URL --------------------------------------------
   const currentHash = formatHashRoute(
@@ -115,6 +137,9 @@ export function App() {
               teoriaMode: teoriaSubMode,
               teoriaModId: selectedTeoriaModId,
               teoriaDetail: mobileTeoriaDetail,
+              treinoSection,
+              treinoSlug,
+              treinoDetail: mobileTreinoDetail,
             }
           : { world, tab: sextoAnoTab }
       : beiraLeitoTab === 'protocolos'
@@ -153,6 +178,11 @@ export function App() {
           setTeoriaSubMode(route.teoriaMode === 'guias' ? 'guias' : 'treino');
           if (route.teoriaModId) setSelectedTeoriaModId(route.teoriaModId);
           setMobileTeoriaDetail(Boolean(route.teoriaDetail));
+          if (route.teoriaMode !== 'guias') {
+            setTreinoSection(route.treinoSection ?? 'esteira');
+            if (route.treinoSlug) setTreinoSlug(route.treinoSlug);
+            setMobileTreinoDetail(Boolean(route.treinoDetail));
+          }
         }
         return;
       }
@@ -352,6 +382,9 @@ export function App() {
           subMode={teoriaSubMode}
           selectedModId={selectedTeoriaModId}
           mobileShowDetail={mobileTeoriaDetail}
+          treinoSection={treinoSection}
+          treinoSlug={treinoSlug}
+          mobileTreinoDetail={mobileTreinoDetail}
           shortcutsEnabled={!anyModalOpen}
           onChangeSubMode={(mode) => {
             setTeoriaSubMode(mode);
@@ -364,6 +397,11 @@ export function App() {
             setMobileTeoriaDetail(true);
           }}
           onBackToList={() => setMobileTeoriaDetail(false)}
+          onChangeTreinoRoute={(sec, slug, detail) => {
+            setTreinoSection(sec);
+            if (slug !== undefined) setTreinoSlug(slug);
+            setMobileTreinoDetail(detail);
+          }}
           onOpenPrePorta={handleOpenPrePortaFromProtocol}
           onNotify={notify}
         />

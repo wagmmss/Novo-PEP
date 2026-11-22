@@ -24,10 +24,10 @@ import { reportPersistFailure } from './appHealth.ts';
 import {
   applyNppTextEdit,
   canDeleteLogEntry,
-  computeContingencia10Jan,
   computeVeredito,
   migrateTreinoClinicoState,
   normalizeMecanismo,
+  recalculateTreinoDerivedState,
   validateLogEntry,
   validateNppAdd,
   validateNppCheck,
@@ -899,36 +899,42 @@ class ClinicalCockpitStore {
     }
 
     const nextLogs = [...treino.logs, entry];
-    let nextState: TreinoClinicoState = { ...treino, logs: nextLogs };
-    // Atualiza snapshot de contingência até 17/jan (congela em 18/jan)
-    if (entry.dateIso <= '2027-01-17') {
-      const snap = computeContingencia10Jan(nextState, entry.dateIso);
-      nextState = {
-        ...nextState,
-        contingencia10jan: snap,
-        metas: {
-          ...nextState.metas,
-          primeiraPassadaCedeu:
-            entry.dateIso >= '2027-01-10' ? snap.disparou : nextState.metas.primeiraPassadaCedeu,
-        },
-      };
-    }
+    const nextState = recalculateTreinoDerivedState({ ...treino, logs: nextLogs }, entry.dateIso);
 
     this.setTreinoState(nextState);
     return { ok: true, entry, warnings: validation.warnings };
   }
 
-  public deleteTreinoLogEntry(logId: string): { ok: true } | { ok: false; error: string } {
+  public deleteTreinoLogEntry(
+    logId: string
+  ): { ok: true; deleted: TreinoLogEntry; index: number } | { ok: false; error: string } {
     const treino = this.getTreinoState();
     const check = canDeleteLogEntry(logId, treino.naoPodePassar);
     if (!check.ok) {
       return { ok: false, error: check.errorMessage || 'Linha referenciada por Não Pode Passar.' };
     }
-    this.setTreinoState({
-      ...treino,
-      logs: treino.logs.filter((l) => l.id !== logId),
-    });
-    return { ok: true };
+    const index = treino.logs.findIndex((l) => l.id === logId);
+    if (index === -1) {
+      return { ok: false, error: 'Entrada de LOG não encontrada.' };
+    }
+    const deleted = treino.logs[index];
+    const remaining = treino.logs.filter((l) => l.id !== logId);
+    const nextState = recalculateTreinoDerivedState({ ...treino, logs: remaining }, deleted.dateIso);
+    this.setTreinoState(nextState);
+    return { ok: true, deleted, index };
+  }
+
+  public restoreTreinoLogEntry(entry: TreinoLogEntry, index?: number): void {
+    const treino = this.getTreinoState();
+    if (treino.logs.some((l) => l.id === entry.id)) return;
+    const nextLogs = [...treino.logs];
+    if (typeof index === 'number' && index >= 0 && index <= nextLogs.length) {
+      nextLogs.splice(index, 0, entry);
+    } else {
+      nextLogs.push(entry);
+    }
+    const nextState = recalculateTreinoDerivedState({ ...treino, logs: nextLogs }, entry.dateIso);
+    this.setTreinoState(nextState);
   }
 
   public addTreinoNppItems(
@@ -975,8 +981,10 @@ class ClinicalCockpitStore {
     fonteTipo: FonteTipo,
     fontePrimaria: string,
     checadoEm: string
-  ): { ok: true } | { ok: false; error: string } {
-    const val = validateNppCheck({ fonteTipo, fontePrimaria, checadoEm });
+  ): { ok: true; sanitizedCount: number } | { ok: false; error: string } {
+    const piiRes = sanitizePiiText(fontePrimaria);
+    const cleanFonte = piiRes.sanitized.replace(/\r?\n/g, ' ').trim();
+    const val = validateNppCheck({ fonteTipo, fontePrimaria: cleanFonte, checadoEm });
     if (!val.ok) return { ok: false, error: val.errorMessage };
 
     const treino = this.getTreinoState();
@@ -988,13 +996,13 @@ class ClinicalCockpitStore {
               ...it,
               checado: true,
               fonteTipo,
-              fontePrimaria: fontePrimaria.trim(),
+              fontePrimaria: cleanFonte,
               checadoEm,
             }
           : it
       ),
     });
-    return { ok: true };
+    return { ok: true, sanitizedCount: piiRes.replacedCount };
   }
 
   public uncheckTreinoNppItem(id: string): void {
@@ -1009,11 +1017,30 @@ class ClinicalCockpitStore {
     });
   }
 
-  public deleteTreinoNppItem(id: string): void {
+  public deleteTreinoNppItem(id: string): { item: NaoPodePassarItem; index: number } | null {
     const treino = this.getTreinoState();
+    const index = treino.naoPodePassar.findIndex((it) => it.id === id);
+    if (index === -1) return null;
+    const item = treino.naoPodePassar[index];
     this.setTreinoState({
       ...treino,
       naoPodePassar: treino.naoPodePassar.filter((it) => it.id !== id),
+    });
+    return { item, index };
+  }
+
+  public restoreTreinoNppItem(item: NaoPodePassarItem, index?: number): void {
+    const treino = this.getTreinoState();
+    if (treino.naoPodePassar.some((it) => it.id === item.id)) return;
+    const next = [...treino.naoPodePassar];
+    if (typeof index === 'number' && index >= 0 && index <= next.length) {
+      next.splice(index, 0, item);
+    } else {
+      next.push(item);
+    }
+    this.setTreinoState({
+      ...treino,
+      naoPodePassar: next,
     });
   }
 

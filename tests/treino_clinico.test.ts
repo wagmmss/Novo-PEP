@@ -471,3 +471,141 @@ test('10. 9 Guias Teóricos v2.0 renderizam 27 Micro-Drills (<details>) e conect
   assert.ok(recs.includes('mod-03'));
 });
 
+test('11. Regressões Treino Clínico (P0/P1/P2): parser Markdown, recálculo contingência no delete/restore, anti-PII NPP, formatTargetLabel e hash routes', async () => {
+  const { formatTargetLabel } = await import('../src/engine/treinoClinico.ts');
+  const { cockpitStore } = await import('../src/state/store.ts');
+  const { formatHashRoute, parseHashRoute } = await import('../src/state/hashRoute.ts');
+
+  // P0.10: Parser Gemini aceita crases, negrito, bullet, fence ``` e ponto final
+  const formattedVariants = [
+    '`21/11 | Nova | dor-toracica:iamcsst | __m | S | nenhuma | 3/4 (teach-back) | [N/S] | Limpo`',
+    '**21/11 | Nova | dor-toracica:iamcsst | __m | S | nenhuma | 3/4 (teach-back) | [N/S] | Limpo.**',
+    '- 21/11 | Nova | dor-toracica:iamcsst | __m | S | nenhuma | 3/4 (teach-back) | [N/S] | Limpo.',
+    '```\n21/11 | Nova | dor-toracica:iamcsst | __m | S | nenhuma | 3/4 (teach-back) | [N/S] | Limpo\n```',
+  ];
+  for (const variant of formattedVariants) {
+    const parsed = parseLogLineFromGemini(variant, '2026-11-21');
+    assert.equal(parsed.ok, true, `Parser deveria aceitar formatação Markdown: ${variant}`);
+  }
+  // BASELINE-A com texto extra continua rejeitado
+  const baseLeak = parseLogLineFromGemini(
+    'Comentário extra\n`29/11 | BASELINE | sensorio-focal-glicemia | __m | S | N | 3/4 (1101) | [N/S] | Limpo`',
+    '2026-11-29',
+    'A'
+  );
+  assert.equal(baseLeak.ok, false);
+
+  // P0.11: formatTargetLabel + recomendarGuiasPorGargalo sem slugs crus
+  assert.equal(formatTargetLabel('dor-toracica'), '#01 Dor torácica');
+  assert.ok(formatTargetLabel('e3-atb-empirico').startsWith('E3 #1'));
+  assert.ok(formatTargetLabel('e4-trauma-hemorragia').startsWith('E4 #'));
+  const stGarg = createInitialTreinoClinicoState();
+  stGarg.logs.push(
+    makeLog({
+      dateIso: '2026-11-24',
+      tipo: 'Nova',
+      slug: 'dor-abdominal',
+      pemc: { kind: 'omissao', texto: 'Não avaliou sinal de Murphy' },
+    })
+  );
+  const motivos = recomendarGuiasPorGargalo(stGarg).map((g) => g.motivo);
+  assert.ok(motivos.some((m) => m.includes('#02 Dor abdominal')));
+  assert.ok(motivos.every((m) => !m.includes('dor-abdominal')));
+
+  // P0.2: Hash routes para sub-seções do Treino Clínico
+  assert.equal(
+    formatHashRoute({
+      world: 'sexto-ano',
+      tab: 'teoria',
+      teoriaMode: 'treino',
+      treinoSection: 'e1',
+      treinoSlug: 'dor-toracica',
+      treinoDetail: true,
+    }),
+    '#/6ano/teoria/treino/e1/dor-toracica'
+  );
+  assert.equal(
+    formatHashRoute({
+      world: 'sexto-ano',
+      tab: 'teoria',
+      teoriaMode: 'treino',
+      treinoSection: 'log',
+    }),
+    '#/6ano/teoria/treino/log'
+  );
+  assert.deepEqual(parseHashRoute('#/6ano/teoria/treino/e3/e3-atb-empirico', () => false), {
+    world: 'sexto-ano',
+    tab: 'teoria',
+    teoriaMode: 'treino',
+    treinoSection: 'e3',
+    treinoSlug: 'e3-atb-empirico',
+    treinoDetail: true,
+  });
+
+  // P0.6 + P0.8 + P0.12: deleteTreinoLogEntry recalcula contingência + restoreTreinoLogEntry + anti-PII NPP
+  cockpitStore.setCentral6AnoState(migrateCentral6AnoState({}));
+  const addBad = cockpitStore.addTreinoLogEntry({
+    dateIso: '2027-01-10',
+    tipo: 'Nova',
+    slug: 'dor-toracica',
+    mecanismo: 'iamcsst',
+    ambiente: null,
+    rodizioId: null,
+    min: 22,
+    h3Bloco: 'N',
+    pemc: { kind: 'omissao', texto: 'Omitiu supra em aVR' },
+    score: { kind: 'rubrica', valor: 3, ajuste: 'ok' },
+    iaPista: false,
+    baselineFase: null,
+    avaliavel: true,
+    erroCritico: false,
+    refacaoIntegralPendente: false,
+    atritoE2: null,
+    servicoResultado: null,
+    linhaEm2min: null,
+    vereditoIA: 'Repetir',
+  });
+  assert.equal(addBad.ok, true);
+  if (!addBad.ok) return;
+
+  assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico?.contingencia10jan?.disparou, true);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico?.metas.primeiraPassadaCedeu, true);
+
+  // Adicionar item NPP, validar com PII na fonte primária (deve sanitizar!), depois excluir e restaurar
+  const nppAdd = cockpitStore.addTreinoNppItems([
+    { slug: 'dor-toracica', texto: 'Avaliar derivação aVR no ECG', origemLogId: addBad.entry.id },
+  ]);
+  assert.equal(nppAdd.ok, true);
+  const nppItem = cockpitStore.getSnapshot().central6Ano.treinoClinico!.naoPodePassar[0];
+  const checkRes = cockpitStore.checkTreinoNppItem(
+    nppItem.id,
+    'diretriz',
+    'Diretriz SBC SCA 2025 — caso CPF 123.456.789-00 p. 18',
+    '2027-01-10'
+  );
+  assert.equal(checkRes.ok, true);
+  if (checkRes.ok) assert.ok(checkRes.sanitizedCount >= 1);
+  const checkedNpp = cockpitStore.getSnapshot().central6Ano.treinoClinico!.naoPodePassar[0];
+  assert.ok(!checkedNpp.fontePrimaria?.includes('123.456.789-00'));
+
+  // Excluir e restaurar NPP (Undo)
+  const delNpp = cockpitStore.deleteTreinoNppItem(nppItem.id);
+  assert.ok(delNpp);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico!.naoPodePassar.length, 0);
+  cockpitStore.restoreTreinoNppItem(delNpp.item, delNpp.index);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico!.naoPodePassar.length, 1);
+
+  // Remover NPP para poder apagar o LOG e verificar recálculo de contingencia10jan
+  cockpitStore.deleteTreinoNppItem(nppItem.id);
+  const delLog = cockpitStore.deleteTreinoLogEntry(addBad.entry.id);
+  assert.equal(delLog.ok, true);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico?.contingencia10jan, undefined);
+  assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico?.metas.primeiraPassadaCedeu, false);
+
+  // Restaurar LOG recompõe contingencia10jan
+  if (delLog.ok) {
+    cockpitStore.restoreTreinoLogEntry(delLog.deleted, delLog.index);
+    assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico?.contingencia10jan?.disparou, true);
+  }
+});
+
