@@ -767,15 +767,15 @@ export interface StratifiedGlobalSearchResult<T extends ClinicalSearchItem = Cli
 }
 
 const BUILTIN_THEORY_INDEX: TheorySearchEntry[] = [
-  { id: 'mod-01', kind: 'teoria', title: 'Módulo 01 — Anamnese & Calgary-Cambridge', subtitle: 'Formação Teórica', keywords: 'anamnese calgary cambridge ice spikes nurse' },
-  { id: 'mod-02', kind: 'teoria', title: 'Módulo 02 — Exame Físico HDPE, Stanford 25 & LR', subtitle: 'Formação Teórica', keywords: 'exame fisico hdpe stanford lr verossimilhanca' },
-  { id: 'mod-03', kind: 'teoria', title: 'Módulo 03 — Raciocínio Clínico, Illness Scripts & Bayes', subtitle: 'Formação Teórica', keywords: 'raciocinio clinico illness scripts bayes vieses' },
-  { id: 'mod-04', kind: 'teoria', title: 'Módulo 04 — Oratória Clínica (SNAPPS, SBAR & Pyramid)', subtitle: 'Formação Teórica', keywords: 'oratoria snapps sbar pyramid apresentacao' },
-  { id: 'mod-05', kind: 'teoria', title: 'Módulo 05 — Interpretação Sistemática de Exames', subtitle: 'Formação Teórica', keywords: 'exames ecg gasometria rx tc efast' },
-  { id: 'mod-06', kind: 'teoria', title: 'Módulo 06 — Farmacologia Prática & 7 Travas', subtitle: 'Formação Teórica', keywords: 'farmacologia prescricao 7 travas intercorrencias' },
-  { id: 'mod-07', kind: 'teoria', title: 'Módulo 07 — Execução Motora & Procedimentos', subtitle: 'Formação Teórica', keywords: 'procedimentos sutura iot via aerea paracentese' },
-  { id: 'mod-08', kind: 'teoria', title: 'Módulo 08 — Triagem Multi-Paciente & Deterioração', subtitle: 'Formação Teórica', keywords: 'triagem priorizacao mews news2 deterioracao plantao sepse choque quem ver primeiro' },
-  { id: 'mod-09', kind: 'teoria', title: 'Módulo 09 — Prontuário Defensivo, Alta & Documentos Legais', subtitle: 'Formação Teórica', keywords: 'prontuario defensivo soap receita alta declaracao obito do iml svo cross alta a pedido' },
+  { id: 'mod-01', kind: 'teoria', title: 'Módulo 01 — Anamnese Dirigida (3H ≤60s), Calgary-Cambridge & Atrito E2', subtitle: 'Formação Teórica', keywords: 'anamnese 3h calgary cambridge ice sife spikes nurse teach back atrito demanda indevida project beta cssrs suicidio' },
+  { id: 'mod-02', kind: 'teoria', title: 'Módulo 02 — Exame Físico HDPE, Stanford 25, LR+/LR- & Manobras de Porta', subtitle: 'Formação Teórica', keywords: 'exame fisico hdpe stanford 25 lr verossimilhanca mcgee hints ottawa wells perc tep pat choque oculto' },
+  { id: 'mod-03', kind: 'teoria', title: 'Módulo 03 — Raciocínio Clínico Sob Incerteza, Illness Scripts, Vieses & Bayes', subtitle: 'Formação Teórica', keywords: 'raciocinio clinico illness scripts bayes vieses debiasing qualificadores semanticos one liner limiar terapeutico' },
+  { id: 'mod-04', kind: 'teoria', title: 'Módulo 04 — Oratória Clínica, Apresentação ≤90s, Explicação Leiga & SBAR/I-PASS', subtitle: 'Formação Teórica', keywords: 'oratoria snapps sbar ipass pyramid apresentacao 90s explicacao leiga teach back alca fechada crm muletas gravacao' },
+  { id: 'mod-05', kind: 'teoria', title: 'Módulo 05 — Interpretação Sistemática: ECG, Gasometria, RX, TC & Laboratório Diário', subtitle: 'Formação Teórica', keywords: 'exames ecg sgarbossa wellens de winter gasometria figge delta rx felson tc aspects laboratorio hemograma kdigo lra troponina r-factor eas' },
+  { id: 'mod-06', kind: 'teoria', title: 'Módulo 06 — Farmacologia Prática, 7 Travas A-R-G-I-V-P-O, ATB Empírico & Pediatria Ponderal', subtitle: 'Formação Teórica', keywords: 'farmacologia prescricao 7 travas argivpo antibiotico empirico pediatria ponderal intercorrencias kcl fluidoterapia' },
+  { id: 'mod-07', kind: 'teoria', title: 'Módulo 07 — Procedimentos Essenciais de Porta, Via Aérea Inicial (BVM/SRI) & Trauma Leve', subtitle: 'Formação Teórica', keywords: 'procedimentos fitts posner ensaio mental via aerea bvm sri lemon moans vortex das sutura lidocaina svd sng tetano raiva sindrome compartimental' },
+  { id: 'mod-08', kind: 'teoria', title: 'Módulo 08 — Triagem Multi-Paciente A→B→C→D, Deterioração (NEWS2) & Chegadas Inesperadas', subtitle: 'Formação Teórica', keywords: 'triagem multipaciente priorizacao news2 indice de choque deterioracao sala vermelha pcr acls pals crianca grave gestante eclampsia hpp trauma x-abcde' },
+  { id: 'mod-09', kind: 'teoria', title: 'Módulo 09 — Disposição sob Incerteza, Regulação CROSS, Transição UPA→UBS & Documentos Legais', subtitle: 'Formação Teórica', keywords: 'disposicao heart curb65 psi qsofa alvarado air sincope abcd2 pa sem lab vaga zero cross ubs reconciliacao mccp prontuario soap alta a pedido declaracao obito do iml svo' },
 ];
 
 /**

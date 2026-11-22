@@ -33,6 +33,7 @@ import {
   type TipoLog,
 } from '../data/treino_clinico_data.ts';
 import { HAB_PROTOCOLS } from '../data/protocolsRepo.ts';
+import { FORMACAO_TEORICA_MODULOS } from '../data/formacao_teorica_data.ts';
 import {
   buildPromptA,
   buildPromptB,
@@ -55,11 +56,13 @@ import {
   formatLogMarkdown,
   formatNaoPodePassarMarkdown,
   getBlocoMacro,
+  guiaTeoricoDaSemana,
   habIdsDe,
   mecanismosUsadosDe,
   migrateTreinoClinicoState,
   parseLogLineFromGemini,
   proximosPassos,
+  recomendarGuiasPorGargalo,
   rodizioAtivo,
   sortLogsChrono,
   sugerirAmbienteE3,
@@ -73,6 +76,7 @@ interface TreinoClinicoViewProps {
   central6Ano: Central6AnoState;
   onOpenPrePorta: (habId: string) => void;
   onNotify: (msg: string) => void;
+  onOpenGuiaTeorico?: (modId: string) => void;
 }
 
 type LeftSection = 'esteira' | 'e1' | 'e3' | 'e4' | 'log';
@@ -126,6 +130,7 @@ export function TreinoClinicoView({
   central6Ano,
   onOpenPrePorta,
   onNotify,
+  onOpenGuiaTeorico,
 }: TreinoClinicoViewProps) {
   const treino = useMemo(
     () => migrateTreinoClinicoState(central6Ano.treinoClinico),
@@ -189,6 +194,8 @@ export function TreinoClinicoView({
     [treino, todayIso]
   );
   const relatorioBaseline = useMemo(() => computeRelatorioBaseline(treino), [treino]);
+  const guiaSemana = useMemo(() => guiaTeoricoDaSemana(todayIso), [todayIso]);
+  const guiasGargalo = useMemo(() => recomendarGuiasPorGargalo(treino), [treino]);
 
   const handleCopy = async (text: string, msg: string) => {
     const ok = await copyToClipboard(text);
@@ -837,6 +844,63 @@ export function TreinoClinicoView({
                 </div>
 
                 {/* Lista de Passos do Dia */}
+                {(guiaSemana || guiasGargalo.length > 0) && (
+                  <div className="space-y-2.5 rounded-2xl border border-zinc-200/80 bg-white p-4 dark:border-white/[0.07] dark:bg-[#15181F]">
+                    {guiaSemana && (() => {
+                      const mod = FORMACAO_TEORICA_MODULOS.find((m) => m.id === guiaSemana.modId);
+                      const st = central6Ano.teoriaStatusById?.[guiaSemana.modId] || 'nao_iniciado';
+                      return (
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F766E] dark:text-[#2DD4BF]">
+                              Guia Teórico da Semana (~20 min + 3 Micro-Drills)
+                            </span>
+                            <p className="text-xs font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                              {mod ? mod.title : guiaSemana.motivo}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onOpenGuiaTeorico?.(guiaSemana.modId)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-[#0F766E] px-2.5 py-1.5 text-xs font-semibold text-[#0F766E] hover:bg-[#0F766E]/10 dark:border-[#2DD4BF] dark:text-[#2DD4BF]"
+                          >
+                            <span>
+                              {st === 'dominado' ? '✓ Dominado · Revisar Drills' : 'Abrir Guia & 3 Micro-Drills'}
+                            </span>
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {guiasGargalo.length > 0 && (
+                      <div className="space-y-1.5 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.06]">
+                        <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                          Recomendado pelos seus gargalos recentes no LOG:
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {guiasGargalo.map((g) => {
+                            const mod = FORMACAO_TEORICA_MODULOS.find((m) => m.id === g.modId);
+                            return (
+                              <button
+                                key={g.modId}
+                                type="button"
+                                onClick={() => onOpenGuiaTeorico?.(g.modId)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-amber-300/80 bg-amber-50/70 px-2.5 py-1 text-left text-[11px] font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                              >
+                                <span>
+                                  <strong>{mod ? `Mód. ${mod.num}` : g.modId}:</strong> {g.motivo}
+                                </span>
+                                <ArrowUpRight className="h-3 w-3 shrink-0" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   {passosHoje.map((passo, idx) => {
                     if (passo.kind === 'descanso') {

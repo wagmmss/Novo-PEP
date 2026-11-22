@@ -154,6 +154,11 @@ export function TeoriaView({ central6Ano, onOpenPrePorta, initialModId, onNotify
           central6Ano={central6Ano}
           onOpenPrePorta={onOpenPrePorta}
           onNotify={onNotify || (() => {})}
+          onOpenGuiaTeorico={(modId: string) => {
+            setSelectedModId(modId);
+            setSubMode('guias');
+            setMobileShowDetail(true);
+          }}
         />
       ) : (
       <div className="flex min-h-0 flex-1 overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">

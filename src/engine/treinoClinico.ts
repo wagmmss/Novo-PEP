@@ -2199,3 +2199,86 @@ export function formatNaoPodePassarMarkdown(items: NaoPodePassarItem[]): string 
   }
   return out.join('\n').trimEnd() + '\n';
 }
+
+// ── Integração Bidirecional: 1 Guia/Semana + Recomendação por Gargalo ───────
+export interface GuiaRecomendado {
+  modId: string;
+  motivo: string;
+  tipo: 'semana' | 'gargalo';
+}
+
+const GUIA_POR_FERIAS_WEEK: Record<string, { modId: string; label: string }> = {
+  S1: { modId: 'mod-03', label: 'Semana 1 (30/nov–04/dez) · Raciocínio Clínico, Illness Scripts & Bayes' },
+  S2: { modId: 'mod-02', label: 'Semana 2 (07–11/dez) · Exame Físico HDPE, Stanford 25 & LR+/LR-' },
+  S3: { modId: 'mod-05', label: 'Semana 3 (14–18/dez) · Exames: ECG, Gasometria, RX, TC & Lab Diário' },
+  S4: { modId: 'mod-04', label: 'Semana 4 (21–23/dez) · Oratória ≤90s, Explicação Leiga & SBAR/I-PASS' },
+  S5: { modId: 'mod-06', label: 'Semana 5 (28–30/dez) · Farmacologia, 7 Travas, ATB & Pediatria Ponderal' },
+  S6: { modId: 'mod-08', label: 'Semana 6 (04–08/jan) · Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves' },
+  S7: { modId: 'mod-09', label: 'Semana 7 (18–22/jan) · Disposição, Limites s/ Lab (CROSS), UBS & Legais' },
+  MARCO: { modId: 'mod-09', label: 'Fechamento Férias · Disposição, Regulação & Revisão Geral' },
+};
+
+export function guiaTeoricoDaSemana(todayIso: string): GuiaRecomendado | null {
+  const bloco = getBlocoMacro(todayIso);
+  if (bloco === 'BLOCO0_PILOTO') {
+    return {
+      modId: 'mod-01',
+      motivo: 'Guia do Piloto (21–29/nov) · Anamnese Dirigida (3H ≤60s), Calgary-Cambridge & Atrito E2',
+      tipo: 'semana',
+    };
+  }
+  if (bloco === 'BLOCO1_FERIAS') {
+    const dia = FERIAS_DIA_BY_ISO.get(todayIso);
+    if (!dia || dia.weekId === 'LIVRE') return null;
+    const g = GUIA_POR_FERIAS_WEEK[dia.weekId];
+    return g ? { modId: g.modId, motivo: g.label, tipo: 'semana' } : null;
+  }
+  return {
+    modId: 'mod-07',
+    motivo: 'Internato · Procedimentos de Porta, Via Aérea Inicial (BVM/SRI) & Trauma Leve',
+    tipo: 'semana',
+  };
+}
+
+export function recomendarGuiasPorGargalo(state: TreinoClinicoState): GuiaRecomendado[] {
+  const ordered = sortLogsChrono(state.logs);
+  if (ordered.length === 0) return [];
+  const ultimas = ordered.slice(-6).reverse();
+  const out: GuiaRecomendado[] = [];
+  const seen = new Set<string>();
+
+  const pushUnique = (modId: string, motivo: string) => {
+    if (!seen.has(modId)) {
+      seen.add(modId);
+      out.push({ modId, motivo, tipo: 'gargalo' });
+    }
+  };
+
+  for (const l of ultimas) {
+    if ((l.tipo === 'Nova' || l.tipo === 'Var') && l.h3Bloco === 'N') {
+      pushUnique('mod-01', `Falha no bloco 3H em ${l.slug} (${formatDateDDMM(l.dateIso)}) → treinar Funil 3H ≤60s`);
+      pushUnique('mod-03', `Falha no bloco 3H em ${l.slug} → revisar Matriz 3H & Illness Scripts`);
+    }
+    if ((l.tipo === 'Nova' || l.tipo === 'Var' || l.tipo === 'Micro') && l.pemc.kind === 'omissao') {
+      pushUnique('mod-02', `PEMC em ${l.slug} (${formatDateDDMM(l.dateIso)}) → revisar HDPE, manobras & LR+/LR-`);
+      pushUnique('mod-03', `PEMC em ${l.slug} → revisar Discriminadores & Debiasing`);
+    }
+    if ((l.tipo === 'Nova' || l.tipo === 'Var') && l.score.kind === 'rubrica' && l.score.valor <= 2) {
+      pushUnique('mod-04', `Score E2 ${l.score.valor}/4 em ${l.slug} → treinar Apresentação ≤90s & Explicação ≤60s`);
+      pushUnique('mod-01', `Score E2 ${l.score.valor}/4 em ${l.slug} → revisar Scripts de Atrito E2 & Teach-Back`);
+    }
+    if (l.tipo === 'GRAVAÇÃO' && l.score.kind === 'muletas' && l.score.contagem > 2) {
+      pushUnique('mod-04', `Gravação com ${l.score.contagem} muletas → treinar Regra da Pausa Limpa de 1s`);
+    }
+    if (l.tipo === 'E3' && l.veredito === 'Repetir') {
+      pushUnique('mod-06', `E3 Repetir em ${l.slug} → revisar 7 Travas A-R-G-I-V-P-O, ATB & Pediatria Ponderal`);
+      pushUnique('mod-09', `E3 Repetir em ${l.slug} → revisar Disposição, Limites s/ Lab (CROSS) & UBS`);
+    }
+    if (l.tipo === 'E4' && l.veredito === 'Repetir') {
+      pushUnique('mod-08', `E4 Repetir em ${l.slug} → revisar Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves`);
+      pushUnique('mod-07', `E4 Repetir em ${l.slug} → revisar Via Aérea Inicial (BVM/SRI/Vortex)`);
+    }
+  }
+
+  return out.slice(0, 4);
+}

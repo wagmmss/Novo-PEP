@@ -427,6 +427,23 @@ export function renderTeoriaMarkdownToHtml(md: string): string {
       out.push('<hr>');
       continue;
     }
+    const detailsOpenMatch = trimmed.match(/^<details>\s*<summary>([\s\S]+?)<\/summary>\s*$/i);
+    if (detailsOpenMatch) {
+      flushQuote();
+      closeLists();
+      flushTable();
+      out.push(
+        `<details class="guia-drill-details my-3 rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-white/[0.08] dark:bg-[#15181F]"><summary class="cursor-pointer select-none text-xs font-semibold text-[#0F766E] dark:text-[#2DD4BF]">${formatInlineTeoriaMd(detailsOpenMatch[1].trim())}</summary><div class="mt-2.5 space-y-2 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">`
+      );
+      continue;
+    }
+    if (/^<\/details>\s*$/i.test(trimmed)) {
+      flushQuote();
+      closeLists();
+      flushTable();
+      out.push('</div></details>');
+      continue;
+    }
     if (trimmed.startsWith('# ')) {
       closeLists();
       out.push(`<h1>${formatInlineTeoriaMd(stripHeadingDecorators(trimmed.slice(2)))}</h1>`);

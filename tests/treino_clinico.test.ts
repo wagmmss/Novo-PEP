@@ -22,6 +22,7 @@ import {
   formatLogLine,
   formatLogMarkdown,
   formatNaoPodePassarMarkdown,
+  guiaTeoricoDaSemana,
   isSaidaAntecipadaS7,
   LOG_RE,
   mecanismosUsadosDe,
@@ -29,11 +30,13 @@ import {
   normalizeMecanismo,
   parseLogLineFromGemini,
   proximosPassos,
+  recomendarGuiasPorGargalo,
   validateLogEntry,
   validateNppAdd,
   validateNppCheck,
 } from '../src/engine/treinoClinico.ts';
-import { migrateCentral6AnoState } from '../src/engine/central6ano.ts';
+import { migrateCentral6AnoState, FORMACAO_TEORICA_MODULOS } from '../src/engine/central6ano.ts';
+import { renderTeoriaMarkdownToHtml } from '../src/engine/diretrizes.ts';
 
 let seqId = 1;
 function makeLog(partial: Partial<TreinoLogEntry> & Pick<TreinoLogEntry, 'dateIso' | 'tipo' | 'slug'>): TreinoLogEntry {
@@ -437,3 +440,34 @@ test('9. Parser Gemini LOG_RE (5 exemplos ChatGPT + malformados) + Round-trip LO
   assert.equal(computeTreinoMetrics(st, '2026-11-21').h3Num, 1);
   assert.equal(canDeleteLogEntry(entry.id, []).ok, true);
 });
+
+test('10. 9 Guias Teóricos v2.0 renderizam 27 Micro-Drills (<details>) e conectam por semana + gargalo do LOG', () => {
+  assert.equal(FORMACAO_TEORICA_MODULOS.length, 9);
+  for (const mod of FORMACAO_TEORICA_MODULOS) {
+    const html = renderTeoriaMarkdownToHtml(mod.markdown);
+    assert.ok(!html.includes('&lt;details&gt;'), `${mod.id} não pode escapar <details>`);
+    const drills = html.match(/<details class="guia-drill-details/g) || [];
+    assert.equal(drills.length, 3, `${mod.id} deve ter exatamente 3 Micro-Drills renderizados`);
+  }
+
+  assert.equal(guiaTeoricoDaSemana('2026-11-22')?.modId, 'mod-01');
+  assert.equal(guiaTeoricoDaSemana('2026-12-01')?.modId, 'mod-03');
+  assert.equal(guiaTeoricoDaSemana('2026-12-08')?.modId, 'mod-02');
+  assert.equal(guiaTeoricoDaSemana('2026-12-15')?.modId, 'mod-05');
+
+  const st = createInitialTreinoClinicoState();
+  st.logs.push(
+    makeLog({
+      dateIso: '2026-11-22',
+      tipo: 'Nova',
+      slug: 'dor-toracica',
+      h3Bloco: 'N',
+      pemc: { kind: 'omissao', texto: 'Não avaliou PA nos 2 braços' },
+    })
+  );
+  const recs = recomendarGuiasPorGargalo(st).map((r) => r.modId);
+  assert.ok(recs.includes('mod-01'));
+  assert.ok(recs.includes('mod-02'));
+  assert.ok(recs.includes('mod-03'));
+});
+
