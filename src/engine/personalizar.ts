@@ -130,6 +130,17 @@ export function isSecondaryOptionBracket(inner: string): boolean {
   return /^(?:OPÇÃO\s+(?:[2-9]|[B-Z]\b|ALTERNATIVA\b)|MODALIDADE\s+(?:[2-9]|[B-Z]\b)|2ª\s*ESCOLHA|3ª\s*ESCOLHA|OU(?:\s|$)|SE\s+(?:ALERGIA|ALÉRGIC|HISTÓRICO\s+DE\s+ANAFILAXIA|USO\s+DE\s+ANTIBIÓTICO\s+RECENTE|FALHA|INTOLERÂNCIA|SUSPEITA\s+DE\s+MRSA))/i.test(trimmed);
 }
 
+/**
+ * Cláusulas explicitamente opcionais ou restritas a subgrupos específicos de risco
+ * (ex.: mãe Rh negativo, alto risco de TEV, constipação) que devem iniciar desligadas
+ * na UI para evitar prescrição indevida por omissão, podendo ser ativadas com 1 clique.
+ */
+export function isConditionalDefaultOffBracket(inner: string): boolean {
+  const trimmed = String(inner || '').trim();
+  if (isSecondaryOptionBracket(trimmed)) return true;
+  return /^(?:Opcional\b|Se\s+(?:mãe\s+Rh\s+negativ|alto\s+risco\s+para\s+TEV|constipação\b))/i.test(trimmed);
+}
+
 export interface ParsedChoiceGroup {
   isExplicitMulti: boolean;
   hasDefault: boolean;
@@ -144,6 +155,9 @@ export function formatMultiChoices(selected: string[]): string {
   return `${clean.slice(0, -1).join(', ')} e ${clean[clean.length - 1]}`;
 }
 
+const UNIT_RATIO_SLASH_RE =
+  /\b(mg|mcg|µg|ug|g|UI|mEq|mmol)\s+\/\s+(\d*(?:[.,]\d+)?\s*(?:mL|ml|L|kg|dia|h|min|gota|gotas|dose|jato|puff))\b/gi;
+
 function splitTopLevelChoices(inner: string): string[] {
   let trimmed = inner.trim();
   if (/^(?:DD\/MM\/AAAA|DD\/MM|MM\/AAAA|HH:MM)$/i.test(trimmed)) {
@@ -156,6 +170,10 @@ function splitTopLevelChoices(inner: string): string[] {
   if (trimmed.startsWith('+ ')) {
     trimmed = trimmed.slice(2).trim();
   }
+
+  // Protege razões de concentração/posologia com espaços ao redor da barra
+  // (ex.: "400 mg / 5 mL" -> "400 mg/5 mL") para que não sejam partidas como opções distintas.
+  trimmed = trimmed.replace(UNIT_RATIO_SLASH_RE, '$1/$2');
 
   const parts: string[] = [];
   let bDepth = 0;
@@ -695,6 +713,8 @@ export interface PediatricDoseFieldContext {
   isWeightSourceInput: boolean;
   lineContext: string;
   prevLineContext: string;
+  /** Linha seguinte (ex.: linha de conferência "dose de 50 mg/kg/dia") com escolhas ativas resolvidas. */
+  nextLineContext?: string;
   beforeText: string;
   afterText: string;
   placeholder: string;
@@ -709,7 +729,8 @@ export interface PediatricDoseFieldContext {
 export function resolvePediatricDoseFieldValue(ctx: PediatricDoseFieldContext): string | null {
   const lineCtx = ctx.lineContext.toLowerCase();
   const prevCtx = ctx.prevLineContext.toLowerCase();
-  const combined = `${prevCtx} ${lineCtx}`;
+  const nextCtx = (ctx.nextLineContext || '').toLowerCase();
+  const combined = `${prevCtx} ${lineCtx} ${nextCtx}`;
   const ph = ctx.placeholder.toLowerCase();
   const beforeTxt = ctx.beforeText.toLowerCase();
   const afterTxt = ctx.afterText.toLowerCase();
@@ -735,12 +756,25 @@ export function resolvePediatricDoseFieldValue(ctx: PediatricDoseFieldContext): 
     return null;
   }
   if ((afterTxt.includes('ml') || ph === 'ml') && combined.includes('amoxicilina')) {
-    const is400 =
-      lineCtx.includes('400') ||
-      prevCtx.includes('400') ||
-      combined.includes('12 em 12') ||
-      combined.includes('12/12');
-    return is400 ? doses.amoxi90Ml12h : doses.amoxi50Ml8h;
+    // Determina concentração selecionada (400 mg/5 mL = 80 mg/mL vs 250 mg/5 mL = 50 mg/mL)
+    const has400 = /\b400\b|80\s*mg\/ml/.test(prevCtx) || /\b400\b|80\s*mg\/ml/.test(lineCtx);
+    const has250 = /\b250\b|50\s*mg\/ml/.test(prevCtx) || /\b250\b|50\s*mg\/ml/.test(lineCtx);
+    const has12h = /12\s*em\s*12|12\/12/.test(lineCtx) || /12\s*em\s*12|12\/12/.test(prevCtx);
+    const has8h = /8\s*em\s*8|8\/8/.test(lineCtx) || /8\s*em\s*8|8\/8/.test(prevCtx);
+
+    const mgPerMl = has400 && !has250 ? 80 : has250 && !has400 ? 50 : has12h && !has8h ? 80 : 50;
+    const dosesPerDay = has12h && !has8h ? 2 : has8h && !has12h ? 3 : mgPerMl === 80 ? 2 : 3;
+
+    // Determina dose diária selecionada (50 vs 90 mg/kg/dia) olhando também a linha seguinte de conferência
+    const hasExplicit90 = /\b90\s*mg\/kg\/dia\b/.test(combined) && !/\b50\s*\/\s*90\b/.test(combined);
+    const hasExplicit50 = /\b50\s*mg\/kg\/dia\b/.test(combined) && !/\b50\s*\/\s*90\b/.test(combined);
+    const mgPerKgDay = hasExplicit90 ? 90 : hasExplicit50 ? 50 : mgPerMl === 80 ? 90 : 50;
+
+    // Teto adulto por tomada: 1000 mg para regime 12/12h ou dose dobrada; 500 mg para regime 50 mg/kg/dia 8/8h
+    const maxMgPerDose = dosesPerDay === 2 || mgPerKgDay >= 80 ? 1000 : 500;
+    const mgPerDose = Math.min(maxMgPerDose, (weightKg * mgPerKgDay) / dosesPerDay);
+    const mlPerDose = mgPerDose / mgPerMl;
+    return mlPerDose.toFixed(1).replace('.', ',');
   }
   if (
     combined.includes('prednisolona') &&

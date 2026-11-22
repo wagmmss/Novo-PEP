@@ -47,6 +47,8 @@ export interface PrescriptionAuditItem {
   isSequentialPhase?: boolean;
   /** Conduta específica para gestação inviável (ectópica/abortamento infectado). */
   nonViablePregnancyScenario?: boolean;
+  /** Prescrição de alta/pós-parto (puerpério/pós-cesariana) — gestação já resolvida. */
+  postpartumScenario?: boolean;
 }
 
 export interface PrescriptionAuditReport {
@@ -117,13 +119,28 @@ export function parseEstimatedDailyDoseMg(text: string): {
     .trim();
 
   // Evita confundir concentração líquida "250 mg/5 mL" ou "500 mg/mL" com dose tomada quando não há volume
-  // Primeiro tenta capturar dose explícita tomada: "tomar 500 mg" ou "<num> mg" (sem /ml ou /5ml colado)
+  // Também detecta dose diária já explícita ("700 mg/dia") para não multiplicar novamente por dosesPerDay.
+  const explicitDailyMgMatch = doseNorm.match(/\b(\d+(?:[.,]\d+)?)\s*mg\s*\/\s*dia\b/i);
+  if (explicitDailyMgMatch) {
+    const dailyVal = Number.parseFloat(explicitDailyMgMatch[1].replace(',', '.'));
+    if (Number.isFinite(dailyVal) && dailyVal > 0) {
+      let dosesPerDay: number | null = null;
+      const intervalMatch = doseNorm.match(/\b(\d{1,2})\s*\/\s*(\d{1,2})\s*h\b/i) || doseNorm.match(/\ba cada\s*(\d{1,2})\s*h/i);
+      if (intervalMatch) {
+        const hours = Number.parseInt(intervalMatch[1], 10);
+        if (hours > 0 && hours <= 24) dosesPerDay = Math.round((24 / hours) * 10) / 10;
+      }
+      const singleDoseMg = dosesPerDay && dosesPerDay > 0 ? Math.round((dailyVal / dosesPerDay) * 10) / 10 : dailyVal;
+      return { singleDoseMg, dosesPerDay, dailyDoseMg: Math.round(dailyVal * 10) / 10 };
+    }
+  }
+
   let baseMg: number | null = null;
 
   // Padrão em gramas (ex.: "1 g", "1,5 g", "2g") — exclui "gotas"
   const gMatch = doseNorm.match(/\b(\d+(?:[.,]\d+)?)\s*g(?!\s*\/|\s*ot|\s*t|\w)/i);
-  // Padrão em mg (exclui mg/kg e mg/ml)
-  const mgMatches = Array.from(doseNorm.matchAll(/\b(\d+(?:[.,]\d+)?)\s*mg(?![a-z]|\s*\/\s*(?:kg|ml|\d+\s*ml))/gi));
+  // Padrão em mg (exclui mg/kg, mg/ml e mg/dia)
+  const mgMatches = Array.from(doseNorm.matchAll(/\b(\d+(?:[.,]\d+)?)\s*mg(?![a-z]|\s*\/\s*(?:kg|ml|\d+\s*ml|dia))/gi));
 
   if (mgMatches.length > 0) {
     const parsedValues = mgMatches
@@ -222,7 +239,10 @@ const PARTNER_TREATMENT_HEADER_RE =
   /^(?:>>\s*|\*\s*|#+\s*)?(?:tratamento|convocacao)[^\n:]{0,60}\bparceir[oa]/i;
 
 const NON_VIABLE_PREGNANCY_RE =
-  /\b(?:abortamento\s+infectado|gravidez\s+ectopica|gestacao\s+ectopica|mola\s+hidatiforme|obito\s+fetal|resolucao\s+da\s+gestacao|inducao\s+do\s+trabalho\s+de\s+parto)\b/i;
+  /\b(?:abortamento\s+(?:infectado|completo|incompleto)|pos-abortamento|amiu\b|gravidez\s+ectopica|gestacao\s+ectopica|mola\s+hidatiforme|obito\s+fetal|resolucao\s+da\s+gestacao|inducao\s+do\s+trabalho\s+de\s+parto)\b/i;
+
+const POSTPARTUM_SCENARIO_RE =
+  /\b(?:pos-cesariana|pos-parto|puerperi[oa]|alta\s+puerperal|alojamento\s+conjunto|parto\s+vaginal\s+recente|perineal|colica\s+uterina)\b/i;
 
 const POSOLOGY_CONTINUATION_RE =
   /^(?:[-•*]\s*)?(?:tomar|dar|aplicar|fazer|administrar|infundir|usar|pingar|instilar|inalar|lavar|mastigar|dissolver|repetir|diluir|correr|manter|posologia\s*:|obs\.?\s*:|\(nota\s*:|nota\s*:)/i;
@@ -232,6 +252,15 @@ const NON_PRESCRIPTION_PROSE_RE =
 
 const SEQUENTIAL_PHASE_RE =
   /\b(?:a\s+partir\s+do\s+\d+[º°o]?\s*dia|fase\s+de\s+manutencao|apos\s+termino|apos\s+\d+\s+dias\s+de\s+ataque)\b/i;
+
+function cleanPrescriptionDisplayName(rawName: string): string {
+  return String(rawName || '')
+    .replace(/\[(?:NÃO\s+PRESCREVER|CONTRAINDICAD|EVITAR\s+SE|APENAS\s+P[ÓO]S-ABORTAMENTO)[^\]]*\]/gi, '')
+    .replace(/\s*(?:-{2,}|[—–])\s*(?:\d+|\[[^\]]*\])\s*(?:caixa|caixas|frasco|frascos|fr\.?|comprimido|comprimidos|cp|c[aá]psula|c[aá]psulas|caps|ampola|ampolas|envelope|envelopes|bisnaga|bisnagas|tubo|tubos|pote|potes|seringa|seringas|unidade|unidades)[^]*$/i, '')
+    .replace(/\s*-{2,}\s*$/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
 
 /**
  * Extrai itens de prescrição linha a linha a partir de um bloco textual de PEP/Receita.
@@ -253,6 +282,7 @@ export function extractPrescriptionItemsFromText(
   let inConditionalBlock = false;
   let nextLineIsAlternative = false;
   let inNonViablePregBlock = false;
+  let inPostpartumBlock = false;
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
@@ -267,6 +297,7 @@ export function extractPrescriptionItemsFromText(
       inConditionalBlock = false;
       nextLineIsAlternative = false;
       inNonViablePregBlock = false;
+      inPostpartumBlock = POSTPARTUM_SCENARIO_RE.test(normLine);
       continue;
     }
     if (IGNORE_SECTION_HEADING_RE.test(normLine)) {
@@ -274,6 +305,7 @@ export function extractPrescriptionItemsFromText(
       inConditionalBlock = false;
       nextLineIsAlternative = false;
       inNonViablePregBlock = false;
+      inPostpartumBlock = false;
       continue;
     }
     if (PARTNER_TREATMENT_HEADER_RE.test(normLine)) {
@@ -286,6 +318,7 @@ export function extractPrescriptionItemsFromText(
       inConditionalBlock = false;
       nextLineIsAlternative = false;
       inNonViablePregBlock = false;
+      inPostpartumBlock = POSTPARTUM_SCENARIO_RE.test(normLine);
       continue;
     }
     if (trimmed.startsWith('>>') || BRACKET_HEADER_LINE_RE.test(normLine)) {
@@ -297,6 +330,9 @@ export function extractPrescriptionItemsFromText(
         nextLineIsAlternative = false;
       }
       inNonViablePregBlock = NON_VIABLE_PREGNANCY_RE.test(normLine);
+      if (POSTPARTUM_SCENARIO_RE.test(normLine)) {
+        inPostpartumBlock = true;
+      }
       if (zone === 'ignore' && /\bconduta\b/i.test(normLine)) {
         zone = 'conduta';
       }
@@ -309,16 +345,27 @@ export function extractPrescriptionItemsFromText(
     // Ignora cabeçalhos puros ou separadores sem fármaco
     if (/^(?:===|---|#|\*\*|uso\s+(?:oral|topico|nasal|otologico|oftalmico|retal|vaginal|inalatorio|interno|externo|intramuscular)\b)/i.test(normLine)) {
       inConditionalBlock = false;
+      if (POSTPARTUM_SCENARIO_RE.test(normLine)) {
+        inPostpartumBlock = true;
+      }
       continue;
     }
 
-    // Ignora linhas de orientação, proibição ou referência a dose prévia
-    if (NON_PRESCRIPTION_PROSE_RE.test(normLine)) {
+    // Ignora linhas de orientação, proibição ou referência a dose prévia.
+    // Remove avisos inline entre colchetes ("[NÃO PRESCREVER SE...]") ou parênteses de cautela
+    // para que fármacos ativos com alerta acoplado (ex.: "3. Ibuprofeno 600 mg [NÃO PRESCREVER SE...] -- 1 caixa")
+    // continuem sendo auditados normalmente.
+    const isNumberedItem = /^\d+[.)]\s+/.test(trimmed);
+    const normLineForProseCheck = normLine
+      .replace(/\[[^\]]*\]/g, ' ')
+      .replace(/\(\s*(?:evitar|nao\s+prescrever|contraindicad[oa]|nao\s+usar|se\s+nao\s+hipertens)[^)]*\)/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (NON_PRESCRIPTION_PROSE_RE.test(normLineForProseCheck)) {
       continue;
     }
 
     // Em seção de Receita estruturada, linhas que começam com verbo de posologia sem numeração são continuação, não item novo
-    const isNumberedItem = /^\d+[.)]\s+/.test(trimmed);
     if (zone === 'receita' && isStructured && !isNumberedItem && POSOLOGY_CONTINUATION_RE.test(normLine)) {
       continue;
     }
@@ -326,11 +373,12 @@ export function extractPrescriptionItemsFromText(
     const meta = getDrugClinicalMeta(trimmed);
     if (!meta) continue;
 
-    const cleaned = trimmed
+    const cleanedRaw = trimmed
       .replace(/^\d+[.)]\s*/, '')
       .replace(/^[-•*]\s*/, '')
       .replace(/^\[[ xX]?\]\s*/, '')
       .trim();
+    const cleaned = cleanPrescriptionDisplayName(cleanedRaw) || cleanedRaw;
 
     const dedupeKey = `${zone}::${meta.canonicalKey}::${normalizeText(cleaned).slice(0, 60)}`;
     if (seenKeys.has(dedupeKey)) continue;
@@ -380,17 +428,19 @@ export function extractPrescriptionItemsFromText(
     nextLineIsAlternative = false;
     const isSequentialPhase = SEQUENTIAL_PHASE_RE.test(normLine) || SEQUENTIAL_PHASE_RE.test(normPosology);
     const nonViablePregnancyScenario = inNonViablePregBlock || NON_VIABLE_PREGNANCY_RE.test(normLine);
+    const postpartumScenario = inPostpartumBlock || POSTPARTUM_SCENARIO_RE.test(normLine);
 
     items.push({
       id: `rx-${i}`,
       name: cleaned.slice(0, 110),
       posology,
-      rawText: posology ? `${cleaned} ${posology}` : cleaned,
+      rawText: posology ? `${cleanedRaw} ${posology}` : cleanedRaw,
       scope: zone,
       rxGroupId,
       isAlternative,
       isSequentialPhase,
       nonViablePregnancyScenario,
+      postpartumScenario,
     });
   }
 
@@ -505,13 +555,14 @@ export function auditPrescription(
     // 3A. FUNÇÃO RENAL (TFG / ClCr)
     // ------------------------------------------------------------------------
     if (gfr !== null) {
+      const gfrDisplay = String(gfr).replace('.', ',');
       const renal = meta.renalAdjustment;
       if (renal.contraindicatedBelowGfr !== undefined && gfr < renal.contraindicatedBelowGfr) {
         alerts.push({
           id: `renal-block-${meta.canonicalKey}-${alerts.length}`,
           severity: 'block',
           category: 'renal',
-          title: `Contraindicado na DRC (TFG ${gfr} mL/min): ${item.name}`,
+          title: `Contraindicado na DRC (TFG ${gfrDisplay} mL/min): ${item.name}`,
           detail: renal.note || `Evitar ${meta.classLabel} quando TFG < ${renal.contraindicatedBelowGfr} mL/min.`,
           drugNames: [item.name],
           ruleCode: 'RENAL_CONTRAINDICATED',
@@ -521,7 +572,7 @@ export function auditPrescription(
           id: `renal-warn-${meta.canonicalKey}-${alerts.length}`,
           severity: 'warn',
           category: 'renal',
-          title: `Ajuste renal necessário (TFG ${gfr} mL/min): ${item.name}`,
+          title: `Ajuste renal necessário (TFG ${gfrDisplay} mL/min): ${item.name}`,
           detail: renal.note || `Ajustar dose ou intervalo de ${item.name} para TFG <= ${renal.gfrCutoffMlMin} mL/min.`,
           drugNames: [item.name],
           ruleCode: 'RENAL_ADJUST',
@@ -532,7 +583,7 @@ export function auditPrescription(
     // ------------------------------------------------------------------------
     // 3B. GESTAÇÃO
     // ------------------------------------------------------------------------
-    if (effectivePregnant && !item.nonViablePregnancyScenario) {
+    if (effectivePregnant && !item.nonViablePregnancyScenario && !item.postpartumScenario) {
       if (meta.pregnancyRisk === 'X' || meta.pregnancyRisk === 'D') {
         alerts.push({
           id: `preg-block-${meta.canonicalKey}-${alerts.length}`,

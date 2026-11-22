@@ -10,6 +10,7 @@
 import {
   formatMultiChoices,
   inferVitalSignRole,
+  isConditionalDefaultOffBracket,
   isContraindicationWarningBracket,
   isInternalInstructionBracket,
   isSecondaryOptionBracket,
@@ -181,6 +182,8 @@ export interface AstSelectionState {
   travaExcluded: Record<string, boolean>;
   /** Mapa blockId -> checkbox marcado */
   checkboxStates: Record<string, boolean>;
+  /** Mapa blockId -> item numerado excluído manualmente pelo usuário (ex.: retirar fármaco da receita em 1 clique) */
+  excludedBlocks?: Record<string, boolean>;
   /** IDs de nós explicitamente alterados pelo usuário (nunca sobrescritos por pré-seleção automática) */
   userEditedNodes: Record<string, boolean>;
 }
@@ -188,6 +191,8 @@ export interface AstSelectionState {
 export interface SerializeAstOptions {
   keepEmptyBrackets?: boolean;
   includeDoseFormulaCalc?: boolean;
+  /** Quando true, omite avisos de contraindicação [NÃO PRESCREVER SE...] do texto copiado (ex.: receita para o paciente). */
+  stripSafetyWarnings?: boolean;
   blockSubsetIndices?: Set<number>;
   /**
    * Marcadores de auditoria (uso interno da trava de cópia): quando definidos,
@@ -325,7 +330,8 @@ function inferInputMetadata(
   inner: string,
   beforeText: string,
   afterText: string,
-  lineContext: string
+  lineContext: string,
+  nextBracketInner?: string
 ): Pick<InlineInputNode, 'maskType' | 'obstetricRole' | 'anthroRole' | 'vitalRole' | 'mirrorRole'> {
   const cleanInner = inner.trim();
   const lowLine = (lineContext || '').toLowerCase();
@@ -366,10 +372,20 @@ function inferInputMetadata(
     anthroRole = 'imc';
   }
 
+  const nextIsAgeUnit = Boolean(
+    nextBracketInner &&
+      /(?:mes(?:es)?|anos?)\s*\/\s*(?:anos?|mes(?:es)?)/i.test(nextBracketInner) &&
+      afterText.trim() === ''
+  );
+
   let mirrorRole: InlineInputNode['mirrorRole'];
   if (/^nome$/i.test(cleanInner) || /(?:paciente|nome)\s*:\s*$/i.test(beforeText)) {
     mirrorRole = 'nome';
-  } else if (/^idade$/i.test(cleanInner) || /\bidade\s*:\s*$/i.test(beforeText)) {
+  } else if (
+    /^idade$/i.test(cleanInner) ||
+    /\bidade\s*:\s*$/i.test(beforeText) ||
+    (cleanInner === '' && nextIsAgeUnit && /\bid\s*:/i.test(lowLine))
+  ) {
     mirrorRole = 'idade';
   } else if (anthroRole === 'peso') {
     mirrorRole = 'peso';
@@ -748,7 +764,7 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
           isSafetyWarning,
           isSecondaryOption,
           isOptionGroupItem,
-          defaultExcluded: isSecondaryOption,
+          defaultExcluded: isConditionalDefaultOffBracket(inner),
         });
         return;
       }
@@ -782,15 +798,26 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
       }
 
       // 3. Campo editável inline
-      const meta = inferInputMetadata(inner, beforeText, afterText, lineContext);
+      const nextBracketToken =
+        tokIdx + 1 < tokens.length && tokens[tokIdx + 1].type === 'bracket'
+          ? tokens[tokIdx + 1]
+          : tokIdx + 2 < tokens.length &&
+              tokens[tokIdx + 1].type === 'text' &&
+              tokens[tokIdx + 1].raw.trim() === '' &&
+              tokens[tokIdx + 2].type === 'bracket'
+            ? tokens[tokIdx + 2]
+            : undefined;
+      const meta = inferInputMetadata(inner, beforeText, afterText, lineContext, nextBracketToken?.inner);
       const isEmpty = inner === '' || /^_+$/.test(inner);
+      const smartPh =
+        isEmpty && meta.mirrorRole === 'idade' ? 'Idade' : inferSmartPlaceholder(inner, beforeText, afterText);
       stats.inputs++;
       nodes.push({
         kind: 'inline-input',
         id: nextId('inp'),
         origBracket: tok.raw,
         inner,
-        placeholder: inferSmartPlaceholder(inner, beforeText, afterText),
+        placeholder: smartPh,
         defaultValue: '',
         isEmpty,
         isSubInput: false,
@@ -993,6 +1020,7 @@ export function createAstSelectionState(
     optionalOpen: {},
     travaExcluded: {},
     checkboxStates: {},
+    excludedBlocks: {},
     userEditedNodes: {},
   };
 
@@ -1264,6 +1292,17 @@ export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelec
     }
 
     if (block.kind === 'paragraph') {
+      if (state.excludedBlocks?.[block.id]) {
+        excluded.add(i);
+        const trimmed = block.rawLine.trim();
+        if (/^\d+[.)]\s+/.test(trimmed)) {
+          skipMode = 'item';
+        } else if (/^[-*]\s+/.test(trimmed)) {
+          skipMode = 'bullet-item';
+          skipBaseIndent = block.indent.length;
+        }
+        continue;
+      }
       if (block.checkbox && state.checkboxStates[block.id] === false) {
         excluded.add(i);
         continue;
@@ -1418,6 +1457,7 @@ export function serializeAstToClinicalText(
 ): string {
   const keepEmpty = options?.keepEmptyBrackets !== undefined ? options.keepEmptyBrackets : true;
   const includeDoseCalc = options?.includeDoseFormulaCalc !== undefined ? options.includeDoseFormulaCalc : true;
+  const stripSafetyWarnings = Boolean(options?.stripSafetyWarnings);
   const subset = options?.blockSubsetIndices;
   const gapMarkers = options?.gapMarkers;
   const layout = computeAstDisplayLayout(ast, state, subset);
@@ -1461,7 +1501,7 @@ export function serializeAstToClinicalText(
       }
 
       if (node.kind === 'trava-alert') {
-        if (node.isSafetyWarning && !state.travaExcluded[node.id]) {
+        if (node.isSafetyWarning && !stripSafetyWarnings && !state.travaExcluded[node.id]) {
           justOmittedTrava = false;
           out += node.rawBracket;
         } else {
