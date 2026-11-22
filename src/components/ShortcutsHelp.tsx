@@ -33,6 +33,14 @@ const GROUPS: Array<{ title: string; items: Array<{ keys: string[]; label: strin
     ],
   },
   {
+    title: 'Prática (Logbook 3x e Pontos Cegos)',
+    items: [
+      { keys: ['/'], label: 'Focar o campo de busca da sub-aba ativa' },
+      { keys: ['Ctrl', 'Enter'], label: 'Salvar captura rápida ou edição inline' },
+      { keys: ['Esc'], label: 'Limpar busca ou cancelar edição inline' },
+    ],
+  },
+  {
     title: 'Copiar para o PEP — Protocolos (fora de campos de texto)',
     items: [
       { keys: ['1'], label: 'Copiar tudo' },

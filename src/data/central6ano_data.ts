@@ -1555,10 +1555,10 @@ export const LOGBOOK_PROCEDIMENTOS_MATRIX: LogbookProcedureGoal[] = [
   { id: 'proc-sng', rodizioId: 'cirurgia', rodizioNome: 'Cirurgia Geral', nome: 'Sondagem Nasogástrica / Enteral (SNG/SNE)', metaAlvo: 3, guiaRef: '03_Execucao_Motora_Procedimentos_Essenciais.md', habId: 'hab-19' },
   { id: 'proc-bvm', rodizioId: 'anestesio_cti', rodizioNome: 'Anestesio / CTI', nome: 'Ventilação Bolsa-Válvula-Máscara (BVM C-E)', metaAlvo: 3, guiaRef: 'Módulo 07', habId: 'hab-22' },
   { id: 'proc-iot', rodizioId: 'anestesio_cti', rodizioNome: 'Anestesio / CTI', nome: 'Laringoscopia / Intubação Orotraqueal (IOT)', metaAlvo: 3, guiaRef: 'Módulo 07', habId: 'hab-22' },
-  { id: 'proc-gaso-art', rodizioId: 'anestesio_cti', rodizioNome: 'Anestesio / CTI', nome: 'Punção para Gasometria Arterial', metaAlvo: 3, guiaRef: 'Módulo 07' },
+  { id: 'proc-gaso-art', rodizioId: 'anestesio_cti', rodizioNome: 'Anestesio / CTI', nome: 'Punção para Gasometria Arterial', metaAlvo: 3, guiaRef: 'Módulo 07', habId: 'hab-14' },
   { id: 'proc-especular', rodizioId: 'go', rodizioNome: 'Ginecologia & Obstetrícia', nome: 'Exame Especular + Coleta CCO', metaAlvo: 3, guiaRef: '02_Exame_Fisico_Anamnese_GO.md', habId: 'hab-3' },
   { id: 'proc-toque-obs', rodizioId: 'go', rodizioNome: 'Ginecologia & Obstetrícia', nome: 'Toque Obstétrico (dilatação/apagamento/plano)', metaAlvo: 3, guiaRef: '02_Exame_Fisico_Anamnese_GO.md', habId: 'hab-3' },
-  { id: 'proc-parto-sut', rodizioId: 'go', rodizioNome: 'Ginecologia & Obstetrícia', nome: 'Parto Normal Assistido / Sutura Perineal', metaAlvo: 3, guiaRef: '02_Exame_Fisico_Anamnese_GO.md' },
+  { id: 'proc-parto-sut', rodizioId: 'go', rodizioNome: 'Ginecologia & Obstetrícia', nome: 'Parto Normal Assistido / Sutura Perineal', metaAlvo: 3, guiaRef: '02_Exame_Fisico_Anamnese_GO.md', habId: 'hab-3' },
   { id: 'proc-otoscopia', rodizioId: 'oftalmo_orl_ccp', rodizioNome: 'Oftalmo / ORL / CCP', nome: 'Otoscopia limpa + Remoção de cerume / CE simples', metaAlvo: 3, guiaRef: 'Guias de Semiologia + R1', habId: 'hab-20' },
   { id: 'proc-fluoresceina', rodizioId: 'oftalmo_orl_ccp', rodizioNome: 'Oftalmo / ORL / CCP', nome: 'Avaliação de olho vermelho com Fluoresceína', metaAlvo: 3, guiaRef: 'Guias de Semiologia + R1', habId: 'hab-20' },
   { id: 'proc-tamponamento', rodizioId: 'oftalmo_orl_ccp', rodizioNome: 'Oftalmo / ORL / CCP', nome: 'Tamponamento nasal anterior', metaAlvo: 3, guiaRef: 'Guias de Semiologia + R1', habId: 'hab-20' },
@@ -1566,7 +1566,7 @@ export const LOGBOOK_PROCEDIMENTOS_MATRIX: LogbookProcedureGoal[] = [
   { id: 'proc-toracocentese', rodizioId: 'cm', rodizioNome: 'Clínica Médica', nome: 'Toracocentese (diagnóstica / alívio)', metaAlvo: 3, guiaRef: '03_Execucao_Motora_Procedimentos_Essenciais.md', habId: 'hab-19' },
   { id: 'proc-pl', rodizioId: 'cm', rodizioNome: 'Clínica Médica', nome: 'Punção Lombar (PL)', metaAlvo: 3, guiaRef: '03_Execucao_Motora_Procedimentos_Essenciais.md', habId: 'hab-19' },
   { id: 'proc-ped-oto', rodizioId: 'ped', rodizioNome: 'Pediatria', nome: 'Otoscopia pediátrica com contenção adequada', metaAlvo: 3, guiaRef: '08_Exame_Fisico_Pediatrico.md', habId: 'hab-10' },
-  { id: 'proc-ped-sala-parto', rodizioId: 'ped', rodizioNome: 'Pediatria', nome: 'Passos iniciais + VPP neonatal em sala de parto', metaAlvo: 3, guiaRef: '08_Exame_Fisico_Pediatrico.md' },
+  { id: 'proc-ped-sala-parto', rodizioId: 'ped', rodizioNome: 'Pediatria', nome: 'Passos iniciais + VPP neonatal em sala de parto', metaAlvo: 3, guiaRef: '08_Exame_Fisico_Pediatrico.md', habId: 'hab-10' },
   { id: 'proc-cardioversao', rodizioId: 'emergencia_trauma', rodizioNome: 'Emergência & Trauma', nome: 'Cardioversão elétrica / Desfibrilação (manuseio prático)', metaAlvo: 3, guiaRef: '02_Avaliacao_Paciente_Grave_ABCDE.md', habId: 'hab-18' },
 ];
 

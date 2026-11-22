@@ -1609,4 +1609,155 @@ test('Guias Teóricos: hash routes, busca sem acento/conteúdo, links clicáveis
   assert.equal(secondToggle, false);
 });
 
+test('Logbook 3x & Pontos Cegos: busca sem acento, D2 inteligente, links clínicos, edição inline, Desfazer exclusão, URL #/6ano/pratica/pontos-cegos e 20/20 técnicas', async () => {
+  const {
+    filterLogbookProcedures,
+    filterBlindSpots,
+    inferBestD2TargetForBlindSpot,
+    findRelatedClinicalLinksForBlindSpot,
+    cleanLogbookNoteDisplay,
+    cleanBlindSpotDuvidaDisplay,
+    buildLogbookMarkdownExport,
+  } = await import('../src/engine/praticaHelpers.ts');
+  const { formatHashRoute, parseHashRoute } = await import('../src/state/hashRoute.ts');
+  const { resolveKnownRouteId } = await import('../src/data/protocolsRepo.ts');
+
+  // 1) Todos os 20 procedimentos manuais possuem vínculo habId para "Ver técnica →"
+  assert.equal(LOGBOOK_PROCEDIMENTOS_MATRIX.length, 20);
+  assert.ok(
+    LOGBOOK_PROCEDIMENTOS_MATRIX.every((p) => Boolean(p.habId)),
+    'Todos os 20 procedimentos da matriz devem ter habId vinculado'
+  );
+
+  // 2) Busca no Logbook tolerante a acentos ("puncao" acha "Punção") + filtro de estágio
+  const emptyProgMap = new Map(
+    LOGBOOK_PROCEDIMENTOS_MATRIX.map((p) => [
+      p.id,
+      computeProcedureProgress(p.id, { procAutonomyById: {}, logbookEntries: [] }),
+    ])
+  );
+  const puncaoMatches = filterLogbookProcedures(
+    LOGBOOK_PROCEDIMENTOS_MATRIX,
+    emptyProgMap,
+    new Map(),
+    { query: 'puncao', rodizioFilter: 'todos', stageFilter: 'todos' }
+  );
+  assert.equal(puncaoMatches.length, 2, 'Busca "puncao" sem acento deve encontrar Gasometria Arterial e Punção Lombar');
+
+  const clinicaMatches = filterLogbookProcedures(
+    LOGBOOK_PROCEDIMENTOS_MATRIX,
+    emptyProgMap,
+    new Map(),
+    { query: 'clinica', rodizioFilter: 'todos', stageFilter: 'todos' }
+  );
+  assert.ok(clinicaMatches.length >= 3, 'Busca "clinica" sem acento deve encontrar procedimentos de Clínica Médica');
+
+  // 3) Exportação Markdown do Logbook sinaliza recorte filtrado
+  const mdFiltered = buildLogbookMarkdownExport({
+    procedures: puncaoMatches,
+    progressByProcId: emptyProgMap,
+    summary: { completed3x: 0, autonomousCount: 0, totalProcedures: 20, totalExecutions: 0 },
+    filterDescription: 'Busca: "puncao"',
+  });
+  assert.ok(mdFiltered.includes('Recorte filtrado: Busca: "puncao" (2 de 20 procedimentos)'));
+
+  // 4) Limpeza de notas legadas (sem duplicar "Supervisionado · Supervisionado") e dúvida vazia sem filler
+  assert.equal(cleanLogbookNoteDisplay('Supervisionado · Punção em 1ª tentativa', 'Supervisionado'), 'Punção em 1ª tentativa');
+  assert.equal(cleanLogbookNoteDisplay('Supervisionado', 'Supervisionado'), '');
+  assert.equal(cleanBlindSpotDuvidaDisplay('Revisar conduta e critérios diagnósticos no estudo ativo.'), '');
+
+  // 5) Inferência inteligente de Prompt D2 (não cai mais em dor-toracica para pré-eclâmpsia nas férias!)
+  const preEclTarget = inferBestD2TargetForBlindSpot({
+    titulo: 'Dose de ataque de sulfato de magnésio na pré-eclâmpsia grave',
+    rodizio: 'ferias',
+    aprendizado: 'Diferença entre esquema Pritchard e Zuspan',
+  });
+  assert.equal(preEclTarget.slug, 'e4-gestante-grave');
+  assert.equal(preEclTarget.eixo, 'E4');
+  assert.equal(preEclTarget.inferredFromText, true);
+
+  const iotTarget = inferBestD2TargetForBlindSpot({
+    titulo: 'Critérios de intubação na crise asmática grave',
+    rodizio: 'ferias',
+  });
+  assert.equal(iotTarget.slug, 'e4-va-insuf-resp');
+  assert.equal(iotTarget.eixo, 'E4');
+
+  // 6) Links clínicos relacionados a um Ponto Cego
+  const linksPreEcl = findRelatedClinicalLinksForBlindSpot(
+    { titulo: 'Dose de magnésio na pré-eclâmpsia grave' },
+    ALL_PROTOCOLS
+  );
+  assert.ok(
+    linksPreEcl.protocols.some((p) => /pr[eé]-ecl[aâ]mpsia/i.test(p.title)),
+    'Ponto cego de pré-eclâmpsia deve sugerir protocolo de Pré-Eclâmpsia'
+  );
+
+  // 7) Persistência de sub-aba Pontos Cegos na URL (#/6ano/pratica/pontos-cegos) mantendo #/6ano/pratica
+  assert.equal(
+    formatHashRoute({ world: 'sexto-ano', tab: 'pratica', subTab: 'pontos-cegos' }),
+    '#/6ano/pratica/pontos-cegos'
+  );
+  assert.equal(
+    formatHashRoute({ world: 'sexto-ano', tab: 'pratica', subTab: 'logbook' }),
+    '#/6ano/pratica'
+  );
+  assert.deepEqual(
+    parseHashRoute('#/6ano/pratica/pontos-cegos', resolveKnownRouteId),
+    { world: 'sexto-ano', tab: 'pratica', subTab: 'pontos-cegos' }
+  );
+
+  // 8) Store: QuickCapture sem duplicação de papel, Ponto Cego sem texto artificial, edição inline com anti-PII e Undo restore
+  cockpitStore.setCentral6AnoState(migrateCentral6AnoState({}));
+  cockpitStore.addQuickLogbookEntry({
+    titulo: 'Paracentese diagnóstica / alívio',
+    rodizio: 'cm',
+    autonomy: 'supervisionado',
+    aprendizado: 'Z-track sem intercorrências',
+    procId: 'proc-paracentese',
+  });
+  const savedLog = (cockpitStore.getSnapshot().central6Ano.logbookEntries || [])[0];
+  assert.equal(savedLog.papel, 'Supervisionado');
+  assert.equal(savedLog.aprendizado, 'Z-track sem intercorrências');
+
+  // Excluir e restaurar recompõe a contagem 3x
+  const deletedLog = cockpitStore.deleteLogbookEntry(savedLog.id);
+  assert.ok(deletedLog);
+  assert.equal(computeProcedureProgress('proc-paracentese', cockpitStore.getSnapshot().central6Ano).execCount, 0);
+  cockpitStore.restoreLogbookEntry(deletedLog.entry, deletedLog.index);
+  assert.equal(computeProcedureProgress('proc-paracentese', cockpitStore.getSnapshot().central6Ano).execCount, 1);
+
+  // Ponto Cego sem dúvida não injeta texto genérico; edição inline aplica anti-PII e busca sem acento funciona
+  cockpitStore.addBlindSpotEntry({
+    titulo: 'Critérios de intubação na asma',
+    rodizio: 'emergencia_trauma',
+    duvida: '',
+  });
+  const spot = (cockpitStore.getSnapshot().central6Ano.logbookEntries || []).find(
+    (e) => e.tipo === 'ponto_cego'
+  )!;
+  assert.equal(spot.aprendizado, '');
+
+  const editRes = cockpitStore.updateBlindSpotEntry(spot.id, {
+    titulo: 'Critérios de intubação na asma grave',
+    rodizio: 'cm',
+    duvida: 'Paciente Carlos Lima CPF 222.333.444-55 — cetamina vs etomidato',
+    acaoRevisao: 'Revisar SRI',
+  });
+  assert.ok(editRes.sanitizedCount >= 2);
+  const updatedSpots = (cockpitStore.getSnapshot().central6Ano.logbookEntries || []).filter(
+    (e) => e.tipo === 'ponto_cego'
+  );
+  assert.equal(updatedSpots[0].rodizio, 'cm');
+  assert.ok(!updatedSpots[0].aprendizado.includes('Carlos Lima'));
+  assert.ok(updatedSpots[0].aprendizado.includes('cetamina vs etomidato'));
+
+  const foundSpots = filterBlindSpots(updatedSpots, {
+    statusFilter: 'pendentes',
+    rodizioFilter: 'cm',
+    query: 'intubacao',
+  });
+  assert.equal(foundSpots.length, 1);
+});
+
 

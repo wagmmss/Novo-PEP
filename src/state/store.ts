@@ -488,11 +488,14 @@ class ClinicalCockpitStore {
     return { sanitizedCount: res.replacedCount };
   }
 
-  public deleteLogbookEntry(entryId: string): void {
+  public deleteLogbookEntry(
+    entryId: string
+  ): { entry: NonNullable<Central6AnoState['logbookEntries']>[number]; index: number } | null {
     const current = this.state.central6Ano;
     const entries = current.logbookEntries || [];
-    const target = entries.find((e) => e.id === entryId);
-    if (!target) return;
+    const index = entries.findIndex((e) => e.id === entryId);
+    if (index === -1) return null;
+    const target = entries[index];
 
     const nextEntries = entries.filter((e) => e.id !== entryId);
     let nextProcCounts = current.procCountsById ? { ...current.procCountsById } : {};
@@ -526,6 +529,36 @@ class ClinicalCockpitStore {
       procAutonomyById: nextProcAuto,
       logbookEntries: nextEntries,
     });
+    return { entry: target, index };
+  }
+
+  public restoreLogbookEntry(
+    entry: NonNullable<Central6AnoState['logbookEntries']>[number],
+    index = 0
+  ): void {
+    const current = this.state.central6Ano;
+    const existing = current.logbookEntries || [];
+    if (existing.some((e) => e.id === entry.id)) return;
+
+    let nextCentral = current;
+    if (entry.tipo === 'procedimento' && entry.gatilhoCorrecao) {
+      const roleKey = labelToProcedureAutonomy(entry.papel);
+      if (roleKey) {
+        nextCentral = registerProcedureExecution(nextCentral, entry.gatilhoCorrecao, roleKey);
+      }
+    }
+
+    const safeIndex = Math.max(0, Math.min(index, existing.length));
+    const nextEntries = [
+      ...existing.slice(0, safeIndex),
+      entry,
+      ...existing.slice(safeIndex),
+    ];
+
+    this.setCentral6AnoState({
+      ...nextCentral,
+      logbookEntries: nextEntries,
+    });
   }
 
   public addQuickLogbookEntry(input: {
@@ -545,7 +578,6 @@ class ClinicalCockpitStore {
 
     const autonomyLabel = input.autonomy ? LOGBOOK_ROLE_LABELS[input.autonomy] : '';
     const cleanNote = sanitizePiiText(input.aprendizado.trim()).sanitized;
-    const noteParts = [autonomyLabel, cleanNote].filter(Boolean);
 
     const entry = {
       id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -554,7 +586,7 @@ class ClinicalCockpitStore {
       tipo: 'procedimento' as const,
       titulo: cleanTitle,
       papel: autonomyLabel || 'Executado',
-      aprendizado: noteParts.join(' · ') || 'Registro rápido à beira-leito.',
+      aprendizado: cleanNote,
       status: 'resolvido' as const,
       gatilhoCorrecao: input.procId,
     };
@@ -585,7 +617,7 @@ class ClinicalCockpitStore {
       tipo: 'ponto_cego' as const,
       titulo: titleRes.sanitized,
       papel: 'Ponto Cego',
-      aprendizado: duvidaRes.sanitized || 'Revisar conduta e critérios diagnósticos no estudo ativo.',
+      aprendizado: duvidaRes.sanitized,
       status: 'em_treino' as const,
       gatilhoCorrecao: acaoRes.sanitized || undefined,
     };
@@ -593,6 +625,42 @@ class ClinicalCockpitStore {
     this.setCentral6AnoState({
       ...current,
       logbookEntries: [entry, ...(current.logbookEntries || [])],
+    });
+
+    return {
+      sanitizedCount: titleRes.replacedCount + duvidaRes.replacedCount + acaoRes.replacedCount,
+    };
+  }
+
+  public updateBlindSpotEntry(
+    entryId: string,
+    updates: {
+      titulo: string;
+      rodizio: string;
+      duvida: string;
+      acaoRevisao?: string;
+    }
+  ): { sanitizedCount: number } {
+    const titleRes = sanitizePiiText(updates.titulo.trim());
+    const duvidaRes = sanitizePiiText(updates.duvida.trim());
+    const acaoRes = sanitizePiiText((updates.acaoRevisao || '').trim());
+    if (!titleRes.sanitized) return { sanitizedCount: 0 };
+
+    const current = this.state.central6Ano;
+    const nextEntries = (current.logbookEntries || []).map((entry) => {
+      if (entry.id !== entryId || entry.tipo !== 'ponto_cego') return entry;
+      return {
+        ...entry,
+        titulo: titleRes.sanitized,
+        rodizio: updates.rodizio || entry.rodizio,
+        aprendizado: duvidaRes.sanitized,
+        gatilhoCorrecao: acaoRes.sanitized || undefined,
+      };
+    });
+
+    this.setCentral6AnoState({
+      ...current,
+      logbookEntries: nextEntries,
     });
 
     return {

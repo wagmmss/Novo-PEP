@@ -21,6 +21,7 @@ import {
   formatHashRoute,
   parseHashRoute,
   type AppRoute,
+  type PraticaRouteSubTab,
   type TeoriaSubMode,
 } from './state/hashRoute.ts';
 import { subscribeAppHealth } from './state/appHealth.ts';
@@ -55,6 +56,11 @@ export function App() {
   );
   const [sextoAnoTab, setSextoAnoTab] = useState<SextoAnoTab>(
     initialRoute?.world === 'sexto-ano' ? initialRoute.tab : 'pratica'
+  );
+  const [praticaSubTab, setPraticaSubTab] = useState<PraticaRouteSubTab>(
+    initialRoute?.world === 'sexto-ano' && initialRoute.tab === 'pratica' && initialRoute.subTab
+      ? initialRoute.subTab
+      : 'logbook'
   );
 
   const [selectedProtocolId, setSelectedProtocolId] = useState<string | null>(
@@ -100,15 +106,17 @@ export function App() {
   // ---- Sincronização estado ⇄ URL --------------------------------------------
   const currentHash = formatHashRoute(
     world === 'sexto-ano'
-      ? sextoAnoTab === 'teoria'
-        ? {
-            world,
-            tab: 'teoria',
-            teoriaMode: teoriaSubMode,
-            teoriaModId: selectedTeoriaModId,
-            teoriaDetail: mobileTeoriaDetail,
-          }
-        : { world, tab: sextoAnoTab }
+      ? sextoAnoTab === 'pratica'
+        ? { world, tab: 'pratica', subTab: praticaSubTab }
+        : sextoAnoTab === 'teoria'
+          ? {
+              world,
+              tab: 'teoria',
+              teoriaMode: teoriaSubMode,
+              teoriaModId: selectedTeoriaModId,
+              teoriaDetail: mobileTeoriaDetail,
+            }
+          : { world, tab: sextoAnoTab }
       : beiraLeitoTab === 'protocolos'
         ? { world, tab: 'protocolos', id: selectedProtocolId, detail: mobileProtocolDetail }
         : { world, tab: 'pre-porta', id: selectedHabId, detail: mobileHabDetail }
@@ -139,7 +147,9 @@ export function App() {
       setWorld(route.world);
       if (route.world === 'sexto-ano') {
         setSextoAnoTab(route.tab);
-        if (route.tab === 'teoria') {
+        if (route.tab === 'pratica') {
+          setPraticaSubTab(route.subTab ?? 'logbook');
+        } else if (route.tab === 'teoria') {
           setTeoriaSubMode(route.teoriaMode === 'guias' ? 'guias' : 'treino');
           if (route.teoriaModId) setSelectedTeoriaModId(route.teoriaModId);
           setMobileTeoriaDetail(Boolean(route.teoriaDetail));
@@ -326,8 +336,13 @@ export function App() {
       {world === 'sexto-ano' && sextoAnoTab === 'pratica' && (
         <PraticaView
           central6Ano={storeState.central6Ano}
+          subTab={praticaSubTab}
+          onChangeSubTab={setPraticaSubTab}
           onOpenPrePorta={handleOpenPrePortaFromProtocol}
+          onOpenProtocol={handleOpenProtocolFromPrePorta}
+          onOpenQuickCapture={setQuickCapture}
           onNotify={notify}
+          shortcutsEnabled={!anyModalOpen}
         />
       )}
 

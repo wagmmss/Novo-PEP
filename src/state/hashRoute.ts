@@ -5,11 +5,13 @@
 //   #/hab                       lista Pré-Porta
 //   #/hab/<id>                  cartão Pré-Porta aberto
 //   #/6ano/<aba>                pratica | teoria | r1-curriculo
+//   #/6ano/pratica/pontos-cegos sub-aba Pontos Cegos aberta
 //   #/6ano/teoria/guias         lista de Guias Teóricos
 //   #/6ano/teoria/guias/<modId> Guia Teórico específico aberto
 // ============================================================================
 
 export type SextoAnoRouteTab = 'pratica' | 'teoria' | 'r1-curriculo';
+export type PraticaRouteSubTab = 'logbook' | 'pontos-cegos';
 export type TeoriaSubMode = 'treino' | 'guias';
 
 export type AppRoute =
@@ -17,6 +19,7 @@ export type AppRoute =
   | {
       world: 'sexto-ano';
       tab: SextoAnoRouteTab;
+      subTab?: PraticaRouteSubTab;
       teoriaMode?: TeoriaSubMode;
       teoriaModId?: string | null;
       teoriaDetail?: boolean;
@@ -27,6 +30,9 @@ const KNOWN_TEORIA_MOD_RE = /^mod-0[1-9]$/;
 
 export function formatHashRoute(route: AppRoute): string {
   if (route.world === 'sexto-ano') {
+    if (route.tab === 'pratica' && route.subTab === 'pontos-cegos') {
+      return '#/6ano/pratica/pontos-cegos';
+    }
     if (route.tab === 'teoria' && route.teoriaMode === 'guias') {
       if (route.teoriaDetail && route.teoriaModId) {
         return `#/6ano/teoria/guias/${encodeURIComponent(route.teoriaModId)}`;
@@ -73,6 +79,9 @@ export function parseHashRoute(
   if (head === '6ano') {
     const tabSegment = rest[0] || '';
     const tab = SEXTO_ANO_TABS.find((t) => t === tabSegment) ?? 'pratica';
+    if (tab === 'pratica' && rest[1] === 'pontos-cegos') {
+      return { world: 'sexto-ano', tab, subTab: 'pontos-cegos' };
+    }
     if (tab === 'teoria') {
       const modeSegment = rest[1] || '';
       if (modeSegment === 'guias') {
