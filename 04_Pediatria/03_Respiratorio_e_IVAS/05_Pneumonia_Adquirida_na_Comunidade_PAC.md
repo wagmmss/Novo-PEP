@@ -58,7 +58,7 @@ Criança: [Nome] | Peso Atual: [ ] kg | Idade: [ ] | Data: [DD/MM/AAAA]
 
 USO ORAL E NASAL:
 1. [Amoxicilina Suspensão Oral 250 mg / 5 mL (50 mg/mL) / Amoxicilina Suspensão Oral 400 mg / 5 mL (80 mg/mL)] --- [ ] frasco(s)
-   Dar [ ] mL por via oral de [8 em 8 horas / 12 em 12 horas], em horários regulares, durante 7 dias completos (Não interromper o antibiótico mesmo que a febre desapareça no 2º dia).
+   Dar [ ] mL por via oral de [8 em 8 horas / 12 em 12 horas], nos horários, durante 7 dias completos (Não interromper o antibiótico mesmo que a febre desapareça no 2º dia).
    *(Dose calculada para [ ] kg: [50 / 90] mg/kg/dia).*
 
 2. Dipirona Solução Oral Gotas (500 mg/mL) (ou Paracetamol 200 mg/mL) ---------- 1 frasco

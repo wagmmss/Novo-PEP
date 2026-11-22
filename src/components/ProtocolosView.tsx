@@ -31,7 +31,6 @@ import {
   EMPTY_GAP_REPORT,
   EMPTY_PATIENT_CONTEXT,
   auditProtocolPrescription,
-  getSubcategoryLabel as formatSubcategoryLabel,
   patientContextHasValues,
   GLOBAL_SEARCH_INDEX,
   PEP_PROTOCOLS,
@@ -256,19 +255,35 @@ const MOD_TO_RODIZIO: Record<string, string> = {
   ped: 'ped',
 };
 
+const SUBCAT_DISPLAY_MAP: Record<string, string> = {
+  'Enfermaria Puerperio': 'Enfermaria Puerpério',
+  'Ambulatorio GO': 'Ambulatório GO',
+  'Procedimentos Ambulatoriais': 'Procedimentos Ambulatoriais',
+  'Centro Obstetrico Cirurgias': 'Centro Obstétrico & Cirurgias',
+  'Emergencias GO': 'Emergências GO',
+  'Triagem e Ficha Mestra': 'Triagem e Ficha Mestra',
+  'Infeccoes e Vias Aereas': 'Infecções e Vias Aéreas',
+  'Gastrointestinal e Abdominal': 'Gastrointestinal e Abdominal',
+  'Cardiovascular e Respiratorio': 'Cardiovascular e Respiratório',
+  'Neurologia e Saude Mental': 'Neurologia e Saúde Mental',
+  'Nefrologia Urologia e Dermatologia': 'Nefrologia, Urologia e Dermatologia',
+  'Emergencias Graves e Procedimentos': 'Emergências Graves e Procedimentos',
+  'Admissao e Avaliacao Inicial': 'Admissão e Avaliação Inicial',
+  'Evolucao Diaria SOAP': 'Evolução Diária SOAP',
+  'Passagem de Plantao e Rounds': 'Passagem de Plantão e Rounds',
+  'Altas e Desospitalizacao': 'Altas e Desospitalização',
+  'Declaracao de Obito e Cuidados': 'Declaração de Óbito e Cuidados',
+  'Ficha Mestra e Triagem': 'Ficha Mestra e Triagem',
+  'Puericultura e Ambulatorio': 'Puericultura e Ambulatório',
+  'Respiratorio e IVAS': 'Respiratório e IVAS',
+  'Gastrointestinal e Desidratacao': 'Gastrointestinal e Desidratação',
+  'Febre e Infeccoes Sistemicas': 'Febre e Infecções Sistêmicas',
+};
+
 function getSubcategoryLabel(item: ClinicalProtocolItem): string {
   const withSubcat = item as ClinicalProtocolItem & { subcat?: string };
   const raw = (withSubcat.subcat || item.category || MOD_LABELS[item.mod_id] || 'Geral').trim();
-  return formatSubcategoryLabel(raw);
-}
-
-interface DraftSnapshot {
-  protocolId: string;
-  title: string;
-  astState: AstSelectionState;
-  editedTexts: Record<string, string>;
-  editedBaseTexts: Record<string, string>;
-  sectionNotes: Record<string, string>;
+  return SUBCAT_DISPLAY_MAP[raw] || raw;
 }
 
 interface ProtocolosViewProps {
@@ -308,17 +323,12 @@ export function ProtocolosView({
   const [collapsedAreas, setCollapsedAreas] = useState<Record<string, boolean>>({});
   const [patient, setPatient] = useState<PatientContextInput>(EMPTY_PATIENT_CONTEXT);
   const [ckdEpiOpen, setCkdEpiOpen] = useState(false);
-  const [mobilePatientExpanded, setMobilePatientExpanded] = useState(false);
   const [guiaOpen, setGuiaOpen] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState<PepSectionId | null>(null);
 
-  // Estado interativo da AST real + modo de edição livre opcional por bloco + notas rápidas
+  // Estado interativo da AST real + modo de edição livre opcional por bloco
   const [editingBlockIds, setEditingBlockIds] = useState<Record<string, boolean>>({});
   const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
   const [editedBaseTexts, setEditedBaseTexts] = useState<Record<string, string>>({});
-  const [sectionNotes, setSectionNotes] = useState<Record<string, string>>({});
-  const [openNoteSections, setOpenNoteSections] = useState<Record<string, boolean>>({});
-  const [lastDraftSnapshot, setLastDraftSnapshot] = useState<DraftSnapshot | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   /** Cópia retida pela trava de lacunas (o relatório é recalculado ao vivo). */
   const [pendingCopyKey, setPendingCopyKey] = useState<CopyKey | null>(null);
@@ -326,7 +336,6 @@ export function ProtocolosView({
   const listPaneRef = useRef<HTMLDivElement | null>(null);
   const handledCopyNonceRef = useRef<number | null>(null);
   const initializedCollapsedRef = useRef(false);
-  const pendingRestoreRef = useRef<DraftSnapshot | null>(null);
 
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
 
@@ -371,90 +380,26 @@ export function ProtocolosView({
   // Protocolo ao qual o astState atual pertence (evita serializar AST nova com estado antigo no frame da troca)
   const [astStateProtocolId, setAstStateProtocolId] = useState<string>(activeProtocol.id);
   const prevProtocolIdRef = useRef<string>(activeProtocol.id);
-  const prevProtocolTitleRef = useRef<string>(activeProtocol.title);
   const mainRef = useRef<HTMLElement | null>(null);
-  const latestDraftRef = useRef<{
-    astState: AstSelectionState;
-    editedTexts: Record<string, string>;
-    editedBaseTexts: Record<string, string>;
-    sectionNotes: Record<string, string>;
-  }>({ astState, editedTexts, editedBaseTexts, sectionNotes });
-  latestDraftRef.current = { astState, editedTexts, editedBaseTexts, sectionNotes };
 
   // Reinicia AST limpa ao trocar de protocolo. Peso/idade são SEMPRE limpos na troca para
   // impedir que o peso de um paciente vaze para a prescrição do próximo.
   useEffect(() => {
     if (prevProtocolIdRef.current !== activeProtocol.id) {
-      const prevId = prevProtocolIdRef.current;
-      const prevTitle = prevProtocolTitleRef.current;
       prevProtocolIdRef.current = activeProtocol.id;
-      prevProtocolTitleRef.current = activeProtocol.title;
-
-      const prevDraft = latestDraftRef.current;
-      const hadUserEdits =
-        Object.keys(prevDraft.astState.userEditedNodes).length > 0 ||
-        Object.values(prevDraft.astState.excludedBlocks ?? {}).some(Boolean) ||
-        Object.keys(prevDraft.editedTexts).length > 0 ||
-        Object.values(prevDraft.sectionNotes).some((v) => v.trim().length > 0);
-
-      const pendingRestore = pendingRestoreRef.current;
-      const isRestoringThis = pendingRestore?.protocolId === activeProtocol.id;
-      if (isRestoringThis) {
-        pendingRestoreRef.current = null;
-      }
-
-      if (hadUserEdits && !isRestoringThis) {
-        setLastDraftSnapshot({
-          protocolId: prevId,
-          title: prevTitle,
-          astState: prevDraft.astState,
-          editedTexts: prevDraft.editedTexts,
-          editedBaseTexts: prevDraft.editedBaseTexts,
-          sectionNotes: prevDraft.sectionNotes,
-        });
-      } else if (isRestoringThis) {
-        setLastDraftSnapshot(null);
-      }
-
       const hadPatientValues = patientContextHasValues(patient);
-      const nextCompiled = hadPatientValues
-        ? compileProtocolForDisplay(activeProtocol, EMPTY_PATIENT_CONTEXT)
-        : compiled;
       if (hadPatientValues) {
         setPatient(EMPTY_PATIENT_CONTEXT);
+        setAstState(compileProtocolForDisplay(activeProtocol, EMPTY_PATIENT_CONTEXT).initialAstState);
         onNotify('Dados do paciente limpos ao trocar de protocolo — informe os deste paciente.');
-      }
-
-      if (isRestoringThis && pendingRestore) {
-        setAstState(
-          applyPatientContextToAstState(
-            nextCompiled.ast,
-            pendingRestore.astState,
-            nextCompiled.clinicalContext
-          )
-        );
-        setEditedTexts(pendingRestore.editedTexts);
-        setEditedBaseTexts(pendingRestore.editedBaseTexts);
-        setSectionNotes(pendingRestore.sectionNotes);
-        const restoredOpenNotes: Record<string, boolean> = {};
-        for (const [secId, note] of Object.entries(pendingRestore.sectionNotes)) {
-          if (note.trim()) restoredOpenNotes[secId] = true;
-        }
-        setOpenNoteSections(restoredOpenNotes);
       } else {
-        setAstState(nextCompiled.initialAstState);
-        setEditedTexts({});
-        setEditedBaseTexts({});
-        setSectionNotes({});
-        setOpenNoteSections({});
+        setAstState(compiled.initialAstState);
       }
-
       setAstStateProtocolId(activeProtocol.id);
-      setCkdEpiOpen(false);
-      setMobilePatientExpanded(false);
       setGuiaOpen(false);
-      setActiveSectionId(null);
       setEditingBlockIds({});
+      setEditedTexts({});
+      setEditedBaseTexts({});
       setCopiedKey(null);
       setPendingCopyKey(null);
       mainRef.current?.scrollTo({ top: 0 });
@@ -464,56 +409,6 @@ export function ProtocolosView({
       );
     }
   }, [activeProtocol, compiled, patient]);
-
-  // Destaca a seção visível no índice lateral direito durante a rolagem
-  useEffect(() => {
-    const root = mainRef.current;
-    if (!root || typeof IntersectionObserver === 'undefined') return;
-    const sectionEls = compiled.sections
-      .map((s) => document.getElementById(`pep-section-${s.id}`))
-      .filter((el): el is HTMLElement => Boolean(el));
-    if (sectionEls.length === 0) return;
-
-    const visibleIds = new Set<PepSectionId>();
-    const pickActive = () => {
-      if (root.scrollTop < 40) {
-        setActiveSectionId(compiled.sections[0]?.id ?? null);
-        return;
-      }
-      for (const sec of compiled.sections) {
-        if (visibleIds.has(sec.id)) {
-          setActiveSectionId(sec.id);
-          return;
-        }
-      }
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const id = entry.target.id.replace('pep-section-', '') as PepSectionId;
-          if (entry.isIntersecting) {
-            visibleIds.add(id);
-          } else {
-            visibleIds.delete(id);
-          }
-        }
-        pickActive();
-      },
-      { root, rootMargin: '-5% 0px -45% 0px', threshold: [0, 0.1, 0.25] }
-    );
-    const handleScroll = () => {
-      if (root.scrollTop < 40) {
-        setActiveSectionId(compiled.sections[0]?.id ?? null);
-      }
-    };
-    root.addEventListener('scroll', handleScroll, { passive: true });
-    for (const el of sectionEls) observer.observe(el);
-    return () => {
-      root.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
-  }, [activeProtocol.id, compiled.sections]);
 
   const filteredProtocols = useMemo(() => {
     let base =
@@ -647,21 +542,17 @@ export function ProtocolosView({
   };
 
   const handleAstChoiceSelect = (group: ChoiceGroupNode, nextIndices: number[]) => {
-    setAstState((prev) => {
-      const next: AstSelectionState = {
-        ...prev,
-        choiceSelections: {
-          ...prev.choiceSelections,
-          [group.id]: nextIndices,
-        },
-        userEditedNodes: {
-          ...prev.userEditedNodes,
-          [group.id]: true,
-        },
-      };
-      // Recalcula imediatamente doses dependentes de apresentação/intervalo (ex.: Amoxicilina 400 vs 250 mg/5 mL)
-      return applyPatientContextToAstState(compiled.ast, next, compiled.clinicalContext);
-    });
+    setAstState((prev) => ({
+      ...prev,
+      choiceSelections: {
+        ...prev.choiceSelections,
+        [group.id]: nextIndices,
+      },
+      userEditedNodes: {
+        ...prev.userEditedNodes,
+        [group.id]: true,
+      },
+    }));
   };
 
   const handleToggleTrava = (travaId: string) => {
@@ -702,21 +593,8 @@ export function ProtocolosView({
     }));
   };
 
-  const handleToggleExcludeBlock = (blockId: string) => {
-    setAstState((prev) => ({
-      ...prev,
-      excludedBlocks: {
-        ...(prev.excludedBlocks ?? {}),
-        [blockId]: !prev.excludedBlocks?.[blockId],
-      },
-    }));
-  };
-
   const getSectionSerializedText = (section: PepAstSection): string => {
-    const base = serializeProtocolSection(compiled.ast, astState, compiled.clinicalContext, section);
-    const note = (sectionNotes[section.id] ?? '').trim();
-    if (!note) return base;
-    return base ? `${base}\n${note}` : note;
+    return serializeProtocolSection(compiled.ast, astState, compiled.clinicalContext, section);
   };
 
   const getBlockText = (section: PepAstSection): string => {
@@ -725,7 +603,7 @@ export function ProtocolosView({
       : getSectionSerializedText(section);
   };
 
-  // Auditor de prescrição sobre o texto que de fato será copiado (inclui edição livre e observação)
+  // Auditor de prescrição sobre o texto que de fato será copiado (inclui edição livre)
   const prescriptionAudit = useMemo(() => {
     const texts: Partial<Record<PepSectionId, string>> = {};
     for (const sec of compiled.sections) {
@@ -733,7 +611,7 @@ export function ProtocolosView({
     }
     return auditProtocolPrescription(activeProtocol, texts, compiled.clinicalContext);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeProtocol, compiled, astState, editedTexts, sectionNotes]);
+  }, [activeProtocol, compiled, astState, editedTexts]);
 
   /** Alertas "block" da Prescrição que seguram a cópia (Prescrição ou Copiar tudo). */
   const getGuardBlockingAlerts = (key: CopyKey) =>
@@ -965,16 +843,13 @@ export function ProtocolosView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [copyRequest, activeProtocol.id, astStateProtocolId, astState]);
 
-  // Mantém o item selecionado visível na lista ao navegar por ↑/↓ ou Ctrl+K (após expandir a área)
+  // Mantém o item selecionado visível na lista ao navegar por ↑/↓ ou Ctrl+K
   useEffect(() => {
-    const raf = window.requestAnimationFrame(() => {
-      const el = listPaneRef.current?.querySelector<HTMLElement>(
-        `[data-protocol-id="${CSS.escape(activeProtocol.id)}"]`
-      );
-      el?.scrollIntoView({ block: 'nearest' });
-    });
-    return () => window.cancelAnimationFrame(raf);
-  }, [activeProtocol.id, collapsedAreas]);
+    const el = listPaneRef.current?.querySelector<HTMLElement>(
+      `[data-protocol-id="${CSS.escape(activeProtocol.id)}"]`
+    );
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [activeProtocol.id]);
 
   const pendingGap = pendingCopyKey ? getCopyGapReport(pendingCopyKey).report : null;
   const pendingGuard = pendingCopyKey ? getGuardBlockingAlerts(pendingCopyKey) : [];
@@ -982,13 +857,9 @@ export function ProtocolosView({
 
   const handleClearPatient = () => {
     setPatient(EMPTY_PATIENT_CONTEXT);
-    setCkdEpiOpen(false);
     setEditedTexts({});
     setEditedBaseTexts({});
     setEditingBlockIds({});
-    setSectionNotes({});
-    setOpenNoteSections({});
-    setLastDraftSnapshot(null);
     setPendingCopyKey(null);
     const fresh = compileProtocolForDisplay(activeProtocol, EMPTY_PATIENT_CONTEXT);
     setAstState(fresh.initialAstState);
@@ -1053,12 +924,12 @@ export function ProtocolosView({
                     }
                   }
                 }}
-                placeholder="Filtrar protocolo ou CID..."
+                placeholder="Filtrar protocolo, queixa ou CID...  ( / )"
                 title="Atalho: /  ·  ↑↓ escolhe o protocolo  ·  Enter volta ao documento"
                 aria-label="Filtrar protocolos"
-                className="w-full rounded-lg border border-zinc-200/90 bg-white py-1.5 pr-8 pl-8 text-xs text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
+                className="w-full rounded-lg border border-zinc-200/90 bg-white py-1.5 pr-7 pl-8 text-xs text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
               />
-              {searchQuery ? (
+              {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
@@ -1067,13 +938,6 @@ export function ProtocolosView({
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
-              ) : (
-                <kbd
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border border-zinc-200 bg-zinc-50 px-1 py-0.5 font-mono text-[10px] leading-none text-zinc-400 dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#6B7280]"
-                >
-                  /
-                </kbd>
               )}
             </div>
 
@@ -1205,62 +1069,46 @@ export function ProtocolosView({
 
               return (
                 <section key={area.modId} className="border-b border-zinc-200/70 dark:border-white/[0.07]">
-                  {forceExpanded ? (
-                    <div className="flex w-full items-center justify-between gap-2 bg-zinc-100/80 px-3 py-2 text-left text-zinc-900 dark:bg-[#15181F] dark:text-[#F3F4F6]">
-                      <span className="flex min-w-0 items-center gap-2">
-                        {areaDot && (
-                          <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${areaDot}`} />
-                        )}
-                        <span className="truncate text-xs font-semibold tracking-tight">
-                          {area.label}
-                        </span>
+                  <button
+                    type="button"
+                    aria-expanded={isAreaOpen}
+                    onClick={() =>
+                      setCollapsedAreas((prev) => ({
+                        ...prev,
+                        [area.modId]: !prev[area.modId],
+                      }))
+                    }
+                    className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors ${
+                      isAreaOpen
+                        ? 'bg-zinc-100/80 text-zinc-900 dark:bg-[#15181F] dark:text-[#F3F4F6]'
+                        : 'bg-[#FAFAFA] text-zinc-700 hover:bg-zinc-100/70 dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:bg-[#15181F]/80'
+                    }`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      {areaDot && (
+                        <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${areaDot}`} />
+                      )}
+                      <span className="truncate text-xs font-semibold tracking-tight">
+                        {area.label}
                       </span>
+                      {hasActiveChild && !isAreaOpen && (
+                        <span className="rounded bg-[#0F766E]/12 px-1.5 py-0.5 text-[9px] font-semibold text-[#0F766E] dark:bg-[#2DD4BF]/15 dark:text-[#2DD4BF]">
+                          ativo
+                        </span>
+                      )}
+                    </span>
+
+                    <span className="flex shrink-0 items-center gap-1.5">
                       <span className="rounded-full bg-zinc-200/80 px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums text-zinc-600 dark:bg-white/[0.08] dark:text-[#9CA3AF]">
                         {area.totalCount}
                       </span>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      aria-expanded={isAreaOpen}
-                      onClick={() =>
-                        setCollapsedAreas((prev) => ({
-                          ...prev,
-                          [area.modId]: !prev[area.modId],
-                        }))
-                      }
-                      className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors ${
-                        isAreaOpen
-                          ? 'bg-zinc-100/80 text-zinc-900 dark:bg-[#15181F] dark:text-[#F3F4F6]'
-                          : 'bg-[#FAFAFA] text-zinc-700 hover:bg-zinc-100/70 dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:bg-[#15181F]/80'
-                      }`}
-                    >
-                      <span className="flex min-w-0 items-center gap-2">
-                        {areaDot && (
-                          <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${areaDot}`} />
-                        )}
-                        <span className="truncate text-xs font-semibold tracking-tight">
-                          {area.label}
-                        </span>
-                        {hasActiveChild && !isAreaOpen && (
-                          <span className="rounded bg-[#0F766E]/12 px-1.5 py-0.5 text-[9px] font-semibold text-[#0F766E] dark:bg-[#2DD4BF]/15 dark:text-[#2DD4BF]">
-                            ativo
-                          </span>
-                        )}
-                      </span>
-
-                      <span className="flex shrink-0 items-center gap-1.5">
-                        <span className="rounded-full bg-zinc-200/80 px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums text-zinc-600 dark:bg-white/[0.08] dark:text-[#9CA3AF]">
-                          {area.totalCount}
-                        </span>
-                        {isAreaOpen ? (
-                          <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
-                        ) : (
-                          <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
-                        )}
-                      </span>
-                    </button>
-                  )}
+                      {isAreaOpen ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
+                      )}
+                    </span>
+                  </button>
 
                   {isAreaOpen &&
                     area.groups.map((group) => (
@@ -1424,36 +1272,6 @@ export function ProtocolosView({
               Protocolos
             </button>
           </div>
-
-          {/* Aviso de recuperação de rascunho ao sair de um protocolo com alterações */}
-          {lastDraftSnapshot && lastDraftSnapshot.protocolId !== activeProtocol.id && (
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200/90 bg-white px-3 py-2 text-xs text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.1] dark:bg-[#15181F] dark:text-[#D1D5DB]">
-              <span className="min-w-0 flex-1 truncate">
-                Você saiu de <strong className="font-semibold text-zinc-900 dark:text-[#F3F4F6]">{lastDraftSnapshot.title}</strong> com alterações.
-              </span>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    pendingRestoreRef.current = lastDraftSnapshot;
-                    onSelectProtocol(lastDraftSnapshot.protocolId);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-md border border-[#0F766E]/40 bg-teal-50/70 px-2 py-0.5 text-[11px] font-semibold text-[#0F766E] transition-colors hover:bg-teal-100/80 dark:border-[#2DD4BF]/40 dark:bg-teal-500/12 dark:text-[#2DD4BF] dark:hover:bg-teal-500/20"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  Voltar ao rascunho
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLastDraftSnapshot(null)}
-                  aria-label="Dispensar aviso de rascunho"
-                  className="inline-flex h-6 w-6 items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Cabeçalho Editorial do Protocolo */}
           <header className="border-b border-zinc-200/80 pb-5 dark:border-white/[0.07]">
@@ -1622,32 +1440,6 @@ export function ProtocolosView({
             {/* Faixa do paciente: peso/idade só onde há cálculo ponderal; alergias/TFG/gestação onde há prescrição */}
             {(compiled.needsWeightPersonalization || hasPrescriptionSections) && (
               <div className="mt-4 rounded-lg border border-zinc-200/80 bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
-                {/* No mobile (< lg), colapsa em 1 linha limpa quando ainda vazio para o protocolo começar acima da dobra */}
-                {!hasPatientValues && !mobilePatientExpanded && (
-                  <button
-                    type="button"
-                    onClick={() => setMobilePatientExpanded(true)}
-                    className="flex w-full items-center justify-between gap-2 text-left text-xs text-zinc-600 lg:hidden dark:text-[#D1D5DB]"
-                  >
-                    <span className="flex items-center gap-2 truncate">
-                      <span className="text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
-                        Paciente
-                      </span>
-                      <span className="truncate text-zinc-400 dark:text-[#6B7280]">
-                        {compiled.needsWeightPersonalization
-                          ? 'Peso, Idade, Alergias, TFG...'
-                          : 'Alergias, TFG, Gestante...'}
-                      </span>
-                    </span>
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-                  </button>
-                )}
-
-                <div
-                  className={`${
-                    !hasPatientValues && !mobilePatientExpanded ? 'hidden lg:block' : 'block'
-                  }`}
-                >
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <span className="text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
                     Paciente
@@ -1668,7 +1460,7 @@ export function ProtocolosView({
                       inputMode="decimal"
                       value={patient.pesoKg}
                       onChange={(e) => setPatient((p) => ({ ...p, pesoKg: e.target.value }))}
-                      placeholder={activeProtocol.mod_id === 'ped' ? 'Ex: 14' : 'Ex: 70'}
+                      placeholder="Ex: 14"
                       className="w-20 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
                   </div>
@@ -1685,7 +1477,7 @@ export function ProtocolosView({
                       type="text"
                       value={patient.idade}
                       onChange={(e) => setPatient((p) => ({ ...p, idade: e.target.value }))}
-                      placeholder={activeProtocol.mod_id === 'ped' ? 'Ex: 3a / 8m' : 'Ex: 54a'}
+                      placeholder="Ex: 3a / 8m"
                       className="w-24 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
                   </div>
@@ -1727,23 +1519,21 @@ export function ProtocolosView({
                       }
                       className="w-16 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                     />
-                    {activeProtocol.mod_id !== 'ped' && (
-                      <button
-                        type="button"
-                        onClick={() => setCkdEpiOpen((v) => !v)}
-                        aria-expanded={ckdEpiOpen}
-                        title="Calcular TFG por CKD-EPI 2021 (Creatinina + Idade + Sexo)"
-                        className={`rounded-md border px-2 py-1 font-mono text-[11px] font-medium transition-colors ${
-                          ckdEpiOpen || compiled.clinicalContext.tfgCkdEpi !== null
-                            ? 'border-[#0F766E]/50 bg-teal-50/70 text-[#0F766E] dark:border-[#2DD4BF]/40 dark:bg-teal-500/12 dark:text-[#2DD4BF]'
-                            : 'border-zinc-200/90 bg-[#FAFAFA] text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
-                        }`}
-                      >
-                        {compiled.clinicalContext.tfgCkdEpi !== null
-                          ? `CKD-EPI: ${String(compiled.clinicalContext.tfgCkdEpi).replace('.', ',')}`
-                          : 'CKD-EPI'}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setCkdEpiOpen((v) => !v)}
+                      aria-expanded={ckdEpiOpen}
+                      title="Calcular TFG por CKD-EPI 2021 (Creatinina + Idade + Sexo)"
+                      className={`rounded-md border px-2 py-1 font-mono text-[11px] font-medium transition-colors ${
+                        ckdEpiOpen || compiled.clinicalContext.tfgCkdEpi !== null
+                          ? 'border-[#0F766E]/50 bg-teal-50/70 text-[#0F766E] dark:border-[#2DD4BF]/40 dark:bg-teal-500/12 dark:text-[#2DD4BF]'
+                          : 'border-zinc-200/90 bg-[#FAFAFA] text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+                      }`}
+                    >
+                      {compiled.clinicalContext.tfgCkdEpi !== null
+                        ? `CKD-EPI: ${String(compiled.clinicalContext.tfgCkdEpi).replace('.', ',')}`
+                        : 'CKD-EPI'}
+                    </button>
                   </div>
 
                   {activeProtocol.mod_id !== 'ped' && (
@@ -1778,7 +1568,7 @@ export function ProtocolosView({
                     </div>
                   )}
 
-                  {hasPatientValues ? (
+                  {hasPatientValues && (
                     <button
                       type="button"
                       onClick={handleClearPatient}
@@ -1787,21 +1577,11 @@ export function ProtocolosView({
                       <X className="h-3.5 w-3.5" />
                       Novo paciente
                     </button>
-                  ) : (
-                    mobilePatientExpanded && (
-                      <button
-                        type="button"
-                        onClick={() => setMobilePatientExpanded(false)}
-                        className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-zinc-400 hover:text-zinc-700 lg:hidden dark:hover:text-[#F3F4F6]"
-                      >
-                        Ocultar
-                      </button>
-                    )
                   )}
                 </div>
 
-                {/* CKD-EPI 2021 Integrada (inline, apenas adulto — não validada em pediatria) */}
-                {ckdEpiOpen && activeProtocol.mod_id !== 'ped' && (
+                {/* CKD-EPI 2021 Integrada (inline, sem modal externo) */}
+                {ckdEpiOpen && (
                   <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-zinc-200/70 pt-2.5 text-xs dark:border-white/[0.07]">
                     <span className="font-mono text-[11px] font-semibold text-[#0F766E] dark:text-[#2DD4BF]">
                       CKD-EPI 2021
@@ -1817,7 +1597,7 @@ export function ProtocolosView({
                         value={patient.creatinina ?? ''}
                         onChange={(e) => setPatient((p) => ({ ...p, creatinina: e.target.value }))}
                         placeholder="Ex: 1,4"
-                        className="w-20 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
+                        className="w-16 rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
                       />
                     </div>
                     {!compiled.needsWeightPersonalization && (
@@ -1920,9 +1700,9 @@ export function ProtocolosView({
                   </div>
                 )}
 
-                {/* Resumo rápido de doses ponderais (< xl; em ≥ xl vive na coluna fixa direita para evitar duplicação) */}
+                {/* Resumo rápido de doses ponderais calculadas + alertas de teto adulto */}
                 {compiled.clinicalContext.weightDoses && (
-                  <div className="mt-3 border-t border-zinc-200/70 pt-2.5 xl:hidden dark:border-white/[0.07]">
+                  <div className="mt-3 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">
                     <div className="mb-1.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                       <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
                         Doses ponderais para{' '}
@@ -1958,7 +1738,6 @@ export function ProtocolosView({
                     </div>
                   </div>
                 )}
-                </div>
               </div>
             )}
           </header>
@@ -2136,78 +1915,17 @@ export function ProtocolosView({
                       {currentText}
                     </div>
                   ) : (
-                    <>
-                      <PepBlockRenderer
-                        ast={compiled.ast}
-                        section={section}
-                        state={astState}
-                        clinicalContext={compiled.clinicalContext}
-                        onInputChange={handleAstInputChange}
-                        onChoiceSelect={handleAstChoiceSelect}
-                        onToggleTrava={handleToggleTrava}
-                        onToggleOptional={handleToggleOptional}
-                        onToggleCheckbox={handleToggleCheckbox}
-                        onToggleExcludeBlock={handleToggleExcludeBlock}
-                      />
-                      <div className="border-t border-zinc-100 px-5 py-2 dark:border-white/[0.05]">
-                        {openNoteSections[section.id] || (sectionNotes[section.id] ?? '').trim() ? (
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <label
-                                htmlFor={`pep-note-${section.id}`}
-                                className="text-[11px] font-medium text-zinc-500 dark:text-[#9CA3AF]"
-                              >
-                                {section.id === 'receita'
-                                  ? 'Item ou observação adicional (incluído na cópia e auditoria)'
-                                  : 'Observação adicional (incluída na cópia)'}
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSectionNotes((prev) => {
-                                    const next = { ...prev };
-                                    delete next[section.id];
-                                    return next;
-                                  });
-                                  setOpenNoteSections((prev) => ({ ...prev, [section.id]: false }));
-                                }}
-                                className="text-[11px] text-zinc-400 hover:text-zinc-700 dark:hover:text-[#F3F4F6]"
-                              >
-                                Remover
-                              </button>
-                            </div>
-                            <textarea
-                              id={`pep-note-${section.id}`}
-                              rows={2}
-                              value={sectionNotes[section.id] ?? ''}
-                              onChange={(e) =>
-                                setSectionNotes((prev) => ({
-                                  ...prev,
-                                  [section.id]: e.target.value,
-                                }))
-                              }
-                              placeholder={
-                                section.id === 'receita'
-                                  ? 'Ex: Ondansetrona 4 mg VO se náusea/vômito...'
-                                  : 'Anotação complementar sem sair do modo interativo...'
-                              }
-                              className="w-full resize-y rounded-md border border-zinc-200/90 bg-[#FAFAFA] px-2.5 py-1.5 text-xs leading-relaxed text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF]"
-                            />
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setOpenNoteSections((prev) => ({ ...prev, [section.id]: true }))
-                            }
-                            className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-400 transition-colors hover:text-[#0F766E] dark:text-[#6B7280] dark:hover:text-[#2DD4BF]"
-                          >
-                            <Plus className="h-3 w-3" />
-                            {section.id === 'receita' ? 'Adicionar item / observação' : 'Observação'}
-                          </button>
-                        )}
-                      </div>
-                    </>
+                    <PepBlockRenderer
+                      ast={compiled.ast}
+                      section={section}
+                      state={astState}
+                      clinicalContext={compiled.clinicalContext}
+                      onInputChange={handleAstInputChange}
+                      onChoiceSelect={handleAstChoiceSelect}
+                      onToggleTrava={handleToggleTrava}
+                      onToggleOptional={handleToggleOptional}
+                      onToggleCheckbox={handleToggleCheckbox}
+                    />
                   )}
                 </section>
               );
@@ -2308,11 +2026,9 @@ export function ProtocolosView({
                   <kbd className="rounded bg-white/20 px-1 font-mono text-[10px] dark:bg-black/15">1</kbd>
                 </button>
                 <ul className="space-y-0.5">
-                  {compiled.sections.map((sec, secIdx) => {
+                  {compiled.sections.map((sec) => {
                     const st = SECTION_VISUAL_STYLE[sec.id] || SECTION_VISUAL_STYLE.geral;
                     const shortcut = COPY_SHORTCUT_BY_KEY[sec.id];
-                    const isSectionActive =
-                      activeSectionId === sec.id || (activeSectionId === null && secIdx === 0);
                     const gapCount = sec.id === 'receita' ? getCopyGapReport('receita').report.total : 0;
                     const guardCount =
                       sec.id === 'receita'
@@ -2320,20 +2036,12 @@ export function ProtocolosView({
                         : sec.id === 'conduta'
                           ? (prescriptionAudit.conduta?.blockCount ?? 0) + (prescriptionAudit.conduta?.warnCount ?? 0)
                           : 0;
-                    const isBlockingGuard = sec.id === 'receita';
                     return (
                       <li key={sec.id} className="flex items-center gap-1">
                         <button
                           type="button"
-                          onClick={() => {
-                            setActiveSectionId(sec.id);
-                            scrollToElementById(`pep-section-${sec.id}`);
-                          }}
-                          className={`flex min-w-0 flex-1 items-center gap-2 rounded px-1.5 py-1 text-left text-xs transition-colors ${
-                            isSectionActive
-                              ? 'bg-zinc-100 font-semibold text-zinc-950 dark:bg-[#1C2029] dark:text-white'
-                              : 'text-zinc-700 hover:bg-zinc-100 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]'
-                          }`}
+                          onClick={() => scrollToElementById(`pep-section-${sec.id}`)}
+                          className="flex min-w-0 flex-1 items-center gap-2 rounded px-1.5 py-1 text-left text-xs text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-[#D1D5DB] dark:hover:bg-[#1C2029]"
                         >
                           <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${st.dotClass}`} />
                           <span className="truncate">{st.shortLabel}</span>
@@ -2347,16 +2055,8 @@ export function ProtocolosView({
                           )}
                           {guardCount > 0 && (
                             <span
-                              title={
-                                isBlockingGuard
-                                  ? `${guardCount} alerta(s) que bloqueiam a prescrição`
-                                  : `${guardCount} alerta(s) informativo(s) na conduta`
-                              }
-                              className={`${gapCount > 0 ? '' : 'ml-auto '}shrink-0 rounded px-1 font-mono text-[10px] font-semibold ${
-                                isBlockingGuard
-                                  ? 'bg-red-500/15 text-red-700 dark:text-red-300'
-                                  : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
-                              }`}
+                              title={`${guardCount} alerta(s) de prescrição`}
+                              className={`${gapCount > 0 ? '' : 'ml-auto '}shrink-0 rounded bg-red-500/15 px-1 font-mono text-[10px] font-semibold text-red-700 dark:text-red-300`}
                             >
                               !{guardCount}
                             </span>
@@ -2396,20 +2096,18 @@ export function ProtocolosView({
 
               {compiled.clinicalContext.weightDoses && (
                 <div>
-                  <div className="mb-1.5 text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                  <div className="mb-1 text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
                     Doses ·{' '}
                     <span className="font-mono normal-case">
                       {String(compiled.clinicalContext.weightDoses.weightKg).replace('.', ',')} kg
                     </span>
                   </div>
-                  <ul className="space-y-1.5 text-[11px]">
+                  <ul className="space-y-0.5 text-[11px]">
                     {compiled.clinicalContext.weightDoses.items.slice(0, 6).map((d) => (
-                      <li key={d.drug} className="leading-tight">
-                        <div className="text-zinc-600 dark:text-[#9CA3AF]">
-                          {d.drug.split('(')[0].trim()}
-                        </div>
-                        <div
-                          className={`font-mono text-[11px] font-medium ${
+                      <li key={d.drug} className="flex items-baseline justify-between gap-2">
+                        <span className="truncate text-zinc-600 dark:text-[#9CA3AF]">{d.drug.split('(')[0].trim()}</span>
+                        <span
+                          className={`shrink-0 font-mono font-medium ${
                             !d.allowed
                               ? 'text-red-700 dark:text-red-400'
                               : d.ceilingHit
@@ -2418,8 +2116,7 @@ export function ProtocolosView({
                           }`}
                         >
                           {d.formattedDose.split('|')[0].trim()}
-                          {d.ceilingHit && d.allowed ? ' · Teto' : ''}
-                        </div>
+                        </span>
                       </li>
                     ))}
                   </ul>

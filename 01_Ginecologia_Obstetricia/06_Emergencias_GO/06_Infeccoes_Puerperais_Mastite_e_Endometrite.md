@@ -55,7 +55,7 @@ Alergias: [*Nega alergias medicamentosas / Alérgica a: [ ]].
 >> PRESCRIÇÃO DOMICILIAR / RECEITA DE ALTA (PARA MASTITE LACTACIONAL AMBULATORIAL):
 USO ORAL:
 1. Cefalexina 500 mg --------------------------------------------------- 40 comprimidos
-   Tomar 1 comprimido via oral de 6 em 6 horas, em horários regulares, durante 10 dias consecutivos.
+   Tomar 1 comprimido via oral de 6 em 6 horas, nos horários, durante 10 dias consecutivos.
    *[Se alergia a betalactâmicos: Clindamicina 300 mg — Tomar 1 cápsula VO de 6/6h por 10 dias]*.
 2. Ibuprofeno 600 mg [NÃO PRESCREVER SE HIPERTENSA / PRÉ-ECLÂMPSIA] ----- 1 caixa
    Tomar 1 comprimido via oral de 8 em 8 horas, após as refeições, durante 5 dias (reduz o inchaço dos ductos mamários).

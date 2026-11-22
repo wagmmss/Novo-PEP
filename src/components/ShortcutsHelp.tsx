@@ -8,17 +8,24 @@ interface ShortcutsHelpProps {
 
 const GROUPS: Array<{ title: string; items: Array<{ keys: string[]; label: string }> }> = [
   {
-    title: 'Busca e navegação',
+    title: 'Busca e navegação (Protocolos e Pré-Porta)',
     items: [
-      { keys: ['Ctrl', 'K'], label: 'Busca global (protocolos e Pré-Porta)' },
-      { keys: ['Shift', 'Enter'], label: 'Na busca global: abrir e copiar tudo' },
-      { keys: ['/'], label: 'Focar o filtro da lista de protocolos' },
-      { keys: ['↑', '↓'], label: 'No filtro: trocar de protocolo' },
-      { keys: ['Enter'], label: 'No filtro: voltar ao documento' },
+      { keys: ['Ctrl', 'K'], label: 'Busca global (protocolos, Pré-Porta e 6 Intercorrências)' },
+      { keys: ['Shift', 'Enter'], label: 'Na busca global: abrir protocolo e copiar tudo' },
+      { keys: ['/'], label: 'Focar o filtro da barra lateral' },
+      { keys: ['↑', '↓'], label: 'No filtro: navegar entre itens da lista' },
+      { keys: ['Enter'], label: 'No filtro: voltar ao conteúdo' },
     ],
   },
   {
-    title: 'Copiar para o PEP (fora de campos de texto)',
+    title: 'Aba Pré-Porta (fora de campos de texto)',
+    items: [
+      { keys: ['C'], label: 'Copiar texto pronto do prontuário' },
+      { keys: ['M'], label: 'Alternar modo 30s Porta / Completo' },
+    ],
+  },
+  {
+    title: 'Copiar para o PEP — Protocolos (fora de campos de texto)',
     items: [
       { keys: ['1'], label: 'Copiar tudo' },
       { keys: ['2'], label: 'Copiar Conduta' },

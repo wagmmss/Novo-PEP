@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CornerDownLeft, FileText, Search, Stethoscope, X } from 'lucide-react';
 import type { ClinicalProtocolItem } from '../data/clinical_data.ts';
-import { getSubcategoryLabel } from '../data/protocolsRepo.ts';
 import { searchClinicalProtocols } from '../engine/search.ts';
 import type MiniSearch from 'minisearch';
 
@@ -155,7 +154,7 @@ export function CommandPalette({
                       <div className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-zinc-500 dark:text-[#9CA3AF]">
                         <span>{MOD_SHORT_LABEL[item.mod_id]}</span>
                         <span>·</span>
-                        <span className="truncate">{getSubcategoryLabel(item.category)}</span>
+                        <span className="truncate">{item.category}</span>
                         {item.cid10 && (
                           <>
                             <span>·</span>

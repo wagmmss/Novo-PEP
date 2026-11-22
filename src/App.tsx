@@ -10,11 +10,10 @@ import { BackupModal } from './components/BackupModal.tsx';
 import { QuickCaptureModal, type QuickCaptureRequest } from './components/QuickCaptureModal.tsx';
 import { ShortcutsHelp } from './components/ShortcutsHelp.tsx';
 import {
-  ALL_PROTOCOLS,
-  GLOBAL_SEARCH_INDEX,
+  COMMAND_PALETTE_ITEMS,
+  COMMAND_PALETTE_SEARCH_INDEX,
   HAB_PROTOCOLS,
   PEP_PROTOCOLS,
-  PROTOCOL_BY_ID,
   resolveKnownRouteId,
 } from './data/protocolsRepo.ts';
 import { formatHashRoute, parseHashRoute, type AppRoute } from './state/hashRoute.ts';
@@ -260,6 +259,7 @@ export function App() {
         <PrePortaView
           selectedId={selectedHabId}
           mobileShowDetail={mobileHabDetail}
+          favoriteIds={storeState.favoriteIds}
           habChecklists={storeState.habChecklists}
           onSelectHab={(id) => {
             setSelectedHabId(id);
@@ -270,6 +270,7 @@ export function App() {
           onOpenProtocol={handleOpenProtocolFromPrePorta}
           onOpenTeoria={handleOpenTeoriaFromPrePorta}
           onNotify={notify}
+          shortcutsEnabled={!anyModalOpen}
         />
       )}
 
@@ -300,8 +301,8 @@ export function App() {
 
       <CommandPalette
         open={cmdOpen}
-        items={ALL_PROTOCOLS}
-        searchIndex={GLOBAL_SEARCH_INDEX}
+        items={COMMAND_PALETTE_ITEMS}
+        searchIndex={COMMAND_PALETTE_SEARCH_INDEX}
         onClose={() => setCmdOpen(false)}
         onSelectItem={handleSelectFromPalette}
       />

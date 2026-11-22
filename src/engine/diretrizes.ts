@@ -217,46 +217,146 @@ export function renderGuiaSectionBodyHtml(bodyText: string): string {
 // RENDERIZADOR MARKDOWN/LATEX UNIFICADO (FORMAÇÃO TEÓRICA & TÉCNICA PROFUNDA)
 // ============================================================================
 
+function replaceLatexCommandWithBraces(
+  input: string,
+  command: string,
+  argCount: 1 | 2,
+  formatter: (...args: string[]) => string
+): string {
+  let result = input;
+  let guard = 0;
+  while (result.includes(command) && guard < 20) {
+    guard++;
+    const idx = result.indexOf(command);
+    let pos = idx + command.length;
+    while (pos < result.length && result[pos] === ' ') pos++;
+    const args: string[] = [];
+    let valid = true;
+    for (let a = 0; a < argCount; a++) {
+      while (pos < result.length && result[pos] === ' ') pos++;
+      if (result[pos] !== '{') {
+        valid = false;
+        break;
+      }
+      let depth = 0;
+      const start = pos + 1;
+      let end = -1;
+      for (let i = pos; i < result.length; i++) {
+        if (result[i] === '{') depth++;
+        else if (result[i] === '}') {
+          depth--;
+          if (depth === 0) {
+            end = i;
+            break;
+          }
+        }
+      }
+      if (end === -1) {
+        valid = false;
+        break;
+      }
+      args.push(result.slice(start, end));
+      pos = end + 1;
+    }
+    if (!valid) break;
+    result = result.slice(0, idx) + formatter(...args) + result.slice(pos);
+  }
+  return result;
+}
+
+function normalizeMathExpression(rawExpr: string): string {
+  let expr = String(rawExpr || '').trim();
+  // Remove wrappers \text{...}, \mathrm{...}, \mathbf{...} (inclusive aninhados)
+  for (let i = 0; i < 3; i++) {
+    expr = expr.replace(/\\(?:text|mathrm|mathbf|mathit|textbf)\{([^{}]*)\}/g, '$1');
+  }
+  // Converte \sqrt{x} e \frac{a}{b} ANTES de remover chaves
+  expr = replaceLatexCommandWithBraces(expr, '\\sqrt', 1, (inner) => `√(${inner.trim()})`);
+  expr = replaceLatexCommandWithBraces(expr, '\\frac', 2, (num, den) => {
+    const n = num.trim();
+    const d = den.trim();
+    const wrapN = /[\s+\-]/.test(n) && !/^\(.*\)$/.test(n) ? `(${n})` : n;
+    const wrapD = /[\s+\-]/.test(d) && !/^\(.*\)$/.test(d) && !/^√\(.*\)$/.test(d) ? `(${d})` : d;
+    return `${wrapN} / ${wrapD}`;
+  });
+
+  expr = expr
+    .replace(/\\rightarrow\b/g, '→')
+    .replace(/\\leftarrow\b/g, '←')
+    .replace(/\\times\b/g, '×')
+    .replace(/\\cdot\b/g, '·')
+    .replace(/\\pm\b/g, '±')
+    .replace(/\\Delta\b/g, 'Δ')
+    .replace(/\\approx\b/g, '≈')
+    .replace(/\\leq\b|\\le\b/g, '≤')
+    .replace(/\\geq\b|\\ge\b/g, '≥')
+    .replace(/\\beta\b/g, 'β')
+    .replace(/\\alpha\b/g, 'α')
+    .replace(/\\gamma\b/g, 'γ')
+    .replace(/\\mu\b/g, 'μ')
+    .replace(/\^\{\\circ\}|\^\\circ\b/g, '°')
+    .replace(/\\%/g, '%')
+    .replace(/HCO_\{?3\}?\^-/g, 'HCO₃⁻')
+    .replace(/HCO_\{?3\}?\b/g, 'HCO₃⁻')
+    .replace(/PaCO_\{?2\}?\b/g, 'PaCO₂')
+    .replace(/pCO_\{?2\}?\b/g, 'pCO₂')
+    .replace(/SpO_\{?2\}?\b/g, 'SpO₂')
+    .replace(/FiO_\{?2\}?\b/g, 'FiO₂')
+    .replace(/PaO_\{?2\}?\b/g, 'PaO₂')
+    .replace(/O_\{?2\}?\b/g, 'O₂')
+    .replace(/CO_\{?2\}?\b/g, 'CO₂')
+    .replace(/H\^\+/g, 'H⁺')
+    .replace(/Na\^\+/g, 'Na⁺')
+    .replace(/Cl\^-/g, 'Cl⁻')
+    .replace(/K\^\+/g, 'K⁺')
+    .replace(/Ca\^\{?2\+\}?/g, 'Ca²⁺')
+    .replace(/Mg\^\{?2\+\}?/g, 'Mg²⁺')
+    .replace(/Fe\^\{2\+\}/g, 'Fe²⁺')
+    .replace(/Fe\^\{3\+\}/g, 'Fe³⁺')
+    .replace(/\^\{2\}\b|\^2\b/g, '²')
+    .replace(/\^\{3\}\b|\^3\b/g, '³')
+    .replace(/\{,\}/g, ',')
+    .replace(/\\,/g, ' ')
+    .replace(/_\{([^{}]+)\}/g, ' $1')
+    .replace(/_([A-Za-zÀ-ÿ0-9]+)/g, ' $1')
+    .replace(/[{}]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  return expr;
+}
+
 function normalizeTeoriaMathInline(raw: string): string {
-  return String(raw || '').replace(/(?<!R)\$([^$\n]+)\$/g, (_, expr: string) =>
-    expr
-      .replace(/\\rightarrow/g, '→')
-      .replace(/\\leftarrow/g, '←')
-      .replace(/\\times/g, '×')
-      .replace(/\\pm/g, '±')
-      .replace(/\\Delta/g, 'Δ')
-      .replace(/\\approx/g, '≈')
-      .replace(/\\leq|\\le/g, '≤')
-      .replace(/\\geq|\\ge/g, '≥')
-      .replace(/\\beta/g, 'β')
-      .replace(/\\alpha/g, 'α')
-      .replace(/\\gamma/g, 'γ')
-      .replace(/\\text\{([^}]*)\}/g, '$1')
-      .replace(/HCO_3\^-/g, 'HCO₃⁻')
-      .replace(/pCO_2/g, 'pCO₂')
-      .replace(/Na\^\+/g, 'Na⁺')
-      .replace(/Cl\^-/g, 'Cl⁻')
-      .replace(/K\^\+/g, 'K⁺')
-      .replace(/Mg\^\{?2\+\}?/g, 'Mg²⁺')
-      .replace(/Fe\^\{2\+\}/g, 'Fe²⁺')
-      .replace(/Fe\^\{3\+\}/g, 'Fe³⁺')
-      .replace(/O_2/g, 'O₂')
-      .replace(/CO_2/g, 'CO₂')
-      .replace(/AG_\{corr\}/g, 'AG_corr')
-      .replace(/\{,\}/g, ',')
-      .replace(/\\,/g, ' ')
-      .replace(/[{}]/g, '')
-      .trim()
+  // Trata delimitadores $$...$$ primeiro e depois $...$ preservando valores monetários (R$ ...)
+  let s = String(raw || '').replace(/\$\$([^$]+)\$\$/g, (_, expr: string) =>
+    normalizeMathExpression(expr)
   );
+  s = s.replace(/(?<!R)\$([^$\n]+)\$/g, (_, expr: string) => normalizeMathExpression(expr));
+  return s;
 }
 
 function formatInlineTeoriaMd(text: string): string {
-  const codeSpans: string[] = [];
-  const protectedRaw = String(text || '').replace(/`([^`]+)`/g, (_, code: string) => {
-    const idx = codeSpans.length;
-    codeSpans.push(`<code>${escapeHtml(code)}</code>`);
-    return `@@TCODE_${idx}@@`;
-  });
+  const tokens: string[] = [];
+  const protect = (htmlFragment: string): string => {
+    const idx = tokens.length;
+    tokens.push(htmlFragment);
+    return `\u0000TTOK_${idx}\u0000`;
+  };
+
+  // 1) Protege spans de código inline `...`
+  let protectedRaw = String(text || '').replace(/`([^`]+)`/g, (_, code: string) =>
+    protect(`<code>${escapeHtml(code)}</code>`)
+  );
+
+  // 2) Converte links Markdown seguros [texto](https://...) antes de escapar HTML
+  protectedRaw = protectedRaw.replace(
+    /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    (_, label: string, url: string) =>
+      protect(
+        `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="guia-link">${escapeHtml(label)}</a>`
+      )
+  );
+
   const mathClean = normalizeTeoriaMathInline(protectedRaw);
   let html = escapeHtml(mathClean);
   html = html
@@ -264,10 +364,14 @@ function formatInlineTeoriaMd(text: string): string {
     .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/(?<!\w)\*(?!\s)([^*\n]+?)(?<!\s)\*(?!\w)/g, '<em>$1</em>');
-  codeSpans.forEach((span, idx) => {
-    html = html.replace(`@@TCODE_${idx}@@`, () => span);
+  tokens.forEach((span, idx) => {
+    html = html.replace(`\u0000TTOK_${idx}\u0000`, () => span);
   });
   return html;
+}
+
+export function formatInlineClinicalHtml(text: string): string {
+  return formatInlineTeoriaMd(text);
 }
 
 function splitMdTableRow(trimmed: string): string[] {
@@ -538,10 +642,19 @@ const PRE_PORTA_COREOGRAFIA_RE =
   /^\s*(?:\d+\.\s*)?(?:COREOGRAFIA(?:\s*\/\s*PASSO A PASSO(?:\s+T[ÉE]CNICO)?)?|PASSO A PASSO(?:\s+T[ÉE]CNICO)?)\s*:?\s*$/i;
 
 function cleanDoubleNumberingLine(line: string): string {
-  return line
+  let cleaned = line
     .replace(/^(\s*)\d+\.\s+(\d+\.\s+)/, '$1$2')
     .replace(/^(\s*)\d+\.\s+(PASSO\s+\d+\b)/i, '$1$2')
     .replace(/^(\s*)\d+\.\s+([A-F]\.\s+)/, '$1$2');
+
+  // Remove instrução interna de bot/simulação mantendo a conduta clínica à beira-leito
+  if (/^\s*[-*]\s+\*\*Na simula[çc][ãa]o v3\.1:\*\*/i.test(cleaned)) {
+    cleaned = cleaned.replace(
+      /\*\*Na simula[çc][ãa]o v3\.1:\*\*[\s\S]*?Na assist[êe]ncia,\s*/i,
+      '**Diante de instabilidade:** '
+    );
+  }
+  return cleaned;
 }
 
 /**
@@ -604,5 +717,35 @@ export function formatPrePortaTitle(rawTitle: string): string {
     .replace(/\bortopedia\b/g, 'Ortopedia')
     .replace(/\bone-minute\b/gi, 'One-Minute')
     .trim();
+}
+
+/**
+ * Remove emojis iniciais e crases inline de títulos de seções/guias (ex.: Técnica Completa).
+ */
+export function cleanHeadingText(rawHeading: string): string {
+  return String(rawHeading || '')
+    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .trim();
+}
+
+/**
+ * Encurta prefixos repetitivos dos protocolos PEP para exibição legível em chips e links cruzados
+ * (evita vários chips truncados como "Atendimento de Pronto Atendim...").
+ */
+export function formatCompactProtocolTitle(rawTitle: string): string {
+  const cleaned = String(rawTitle || '')
+    .replace(/^Atendimento de Pronto Atendimento\s*[-–—:]\s*/i, '')
+    .replace(/^Manejo de Emerg[êe]ncia\s*[-–—:]\s*/i, '')
+    .replace(/^Procedimento Ambulatorial\s*[-–—:]\s*/i, '')
+    .replace(/^Ambulat[óo]rio de\s+/i, '')
+    .replace(/^Descri[çc][ãa]o de\s+/i, '')
+    .replace(/^Evolu[çc][ãa]o Di[áa]ria SOAP\s*[-–—:]\s*/i, 'Evolução SOAP — ')
+    .replace(/^Evolu[çc][ãa]o Di[áa]ria em\s+/i, 'Evolução ')
+    .replace(/^Admiss[ãa]o em Enfermaria de\s+/i, 'Admissão ')
+    .replace(/^Sum[áa]rio de Alta Hospitalar\s*[-–—:]\s*/i, 'Sumário de Alta — ')
+    .replace(/^Ficha Mestra Universal de\s+/i, 'Ficha ')
+    .trim();
+  return cleaned || String(rawTitle || '').trim();
 }
 

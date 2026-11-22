@@ -44,11 +44,80 @@ export function TopBar({
   onToggleTheme,
   onOpenSettings,
 }: TopBarProps) {
+  const syncTitle =
+    syncStatus === 'synced'
+      ? 'Configurações, Backup e Nuvem (sincronizada)'
+      : syncStatus === 'syncing'
+        ? 'Configurações e Nuvem (sincronizando...)'
+        : syncStatus === 'conflict'
+          ? 'Conflito de sincronização — clique para resolver'
+          : syncStatus === 'offline'
+            ? 'Offline — salvando localmente (clique para Configurações e Backup)'
+            : syncStatus === 'error'
+              ? 'Erro de sincronização — clique para verificar'
+              : 'Configurações, Nuvem e Backup JSON';
+
+  const renderTabs = (mobile = false) =>
+    world === 'beira-leito'
+      ? BEIRA_LEITO_TABS.map((tab) => {
+          const active = beiraLeitoTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onChangeBeiraLeitoTab(tab.id)}
+              aria-current={active ? 'page' : undefined}
+              className={`relative flex h-full items-center justify-center whitespace-nowrap transition-colors ${
+                mobile ? 'flex-1 px-2 text-xs font-semibold' : 'px-2.5 text-sm font-medium'
+              } ${
+                active
+                  ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                  : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+              }`}
+            >
+              {tab.label}
+              {active && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
+                />
+              )}
+            </button>
+          );
+        })
+      : SEXTO_ANO_TABS.map((tab) => {
+          const active = sextoAnoTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onChangeSextoAnoTab(tab.id)}
+              aria-current={active ? 'page' : undefined}
+              className={`relative flex h-full items-center justify-center whitespace-nowrap transition-colors ${
+                mobile ? 'flex-1 px-2 text-xs font-semibold' : 'px-2.5 text-sm font-medium'
+              } ${
+                active
+                  ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                  : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+              }`}
+            >
+              {tab.label}
+              {active && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
+                />
+              )}
+            </button>
+          );
+        });
+
   return (
-    <header className="sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs sm:h-13 dark:border-white/[0.07] dark:bg-[#0F1115]/95">
-      <div className="mx-auto flex w-full flex-wrap items-center justify-between gap-x-2 px-3 sm:h-full sm:flex-nowrap sm:px-5">
-        {/* Esquerda (desktop) / Linha 1 esquerda (mobile): Switch de contexto + Abas (desktop inline, mobile linha 2) */}
-        <div className="flex h-11 min-w-0 items-center gap-3 sm:h-full sm:gap-5">
+    <header className="sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+      {/* Linha principal (única no desktop sm+; superior no mobile) */}
+      <div className="mx-auto flex h-12 w-full items-center justify-between gap-2 px-3 sm:h-13 sm:px-5">
+        {/* Esquerda: Switch de contexto + Abas inline no desktop */}
+        <div className="flex h-full min-w-0 items-center gap-3 sm:gap-5">
           {/* Switch segmentado Beira-Leito <-> 6º Ano */}
           <div
             role="group"
@@ -81,69 +150,24 @@ export function TopBar({
             </button>
           </div>
 
-          <div className="hidden h-4 w-px shrink-0 bg-zinc-200 sm:block dark:bg-white/[0.08]" aria-hidden="true" />
+          <div
+            className="hidden h-4 w-px shrink-0 bg-zinc-200 sm:block dark:bg-white/[0.08]"
+            aria-hidden="true"
+          />
 
           {/* Abas inline no desktop (sm+) */}
           <nav aria-label="Seções" className="hidden h-full items-center gap-1 sm:flex">
-            {world === 'beira-leito'
-              ? BEIRA_LEITO_TABS.map((tab) => {
-                  const active = beiraLeitoTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => onChangeBeiraLeitoTab(tab.id)}
-                      aria-current={active ? 'page' : undefined}
-                      className={`relative flex h-full items-center whitespace-nowrap px-2.5 text-sm font-medium transition-colors ${
-                        active
-                          ? 'text-[#0F766E] dark:text-[#2DD4BF]'
-                          : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
-                      }`}
-                    >
-                      {tab.label}
-                      {active && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute inset-x-1.5 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
-                        />
-                      )}
-                    </button>
-                  );
-                })
-              : SEXTO_ANO_TABS.map((tab) => {
-                  const active = sextoAnoTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => onChangeSextoAnoTab(tab.id)}
-                      aria-current={active ? 'page' : undefined}
-                      className={`relative flex h-full items-center whitespace-nowrap px-2.5 text-sm font-medium transition-colors ${
-                        active
-                          ? 'text-[#0F766E] dark:text-[#2DD4BF]'
-                          : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
-                      }`}
-                    >
-                      {tab.label}
-                      {active && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute inset-x-1.5 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
+            {renderTabs(false)}
           </nav>
         </div>
 
-        {/* Direita: Busca global (Ctrl+K), Tema e Configurações */}
-        <div className="flex h-11 shrink-0 items-center gap-1 sm:h-full sm:gap-1.5">
+        {/* Direita: Busca global (Ctrl+K), Tema e Configurações/Nuvem unificados */}
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
             type="button"
             onClick={onOpenSearch}
             aria-label="Busca global (Ctrl+K)"
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-zinc-200/80 bg-[#FAFAFA] px-2.5 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-white/[0.14] dark:hover:bg-[#1C2029]"
+            className="inline-flex h-8 items-center gap-2 whitespace-nowrap rounded-lg border border-zinc-200/80 bg-[#FAFAFA] px-2.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-white/[0.14] dark:hover:bg-[#1C2029]"
           >
             <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-[#9CA3AF]" />
             <span className="hidden sm:inline">Buscar</span>
@@ -165,27 +189,15 @@ export function TopBar({
           <button
             type="button"
             onClick={onOpenSettings}
-            aria-label="Sincronização na nuvem"
-            title={
-              syncStatus === 'synced'
-                ? 'Nuvem sincronizada'
-                : syncStatus === 'syncing'
-                  ? 'Sincronizando com a nuvem...'
-                  : syncStatus === 'conflict'
-                    ? 'Conflito de sincronização — clique para resolver'
-                    : syncStatus === 'offline'
-                      ? 'Offline — salvando localmente'
-                      : syncStatus === 'error'
-                        ? 'Erro de sincronização — clique para ver'
-                        : 'Conectar sincronização na nuvem'
-            }
-            className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+            aria-label="Configurações, Nuvem e Backup"
+            title={syncTitle}
+            className={`relative inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg px-2 transition-colors ${
               syncStatus === 'conflict'
                 ? 'bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-300'
-                : syncStatus === 'synced'
-                  ? 'text-[#0F766E] hover:bg-zinc-100 dark:text-[#2DD4BF] dark:hover:bg-[#1C2029]'
-                  : syncStatus === 'error'
-                    ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
+                : syncStatus === 'error'
+                  ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
+                  : syncStatus === 'synced'
+                    ? 'text-[#0F766E] hover:bg-zinc-100 dark:text-[#2DD4BF] dark:hover:bg-[#1C2029]'
                     : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]'
             }`}
           >
@@ -195,8 +207,10 @@ export function TopBar({
               <AlertTriangle className="h-4 w-4" />
             ) : syncStatus === 'offline' ? (
               <CloudOff className="h-4 w-4" />
-            ) : (
+            ) : syncStatus === 'synced' || syncStatus === 'error' ? (
               <Cloud className="h-4 w-4" />
+            ) : (
+              <Settings className="h-4 w-4" />
             )}
             {syncStatus === 'synced' && (
               <span
@@ -205,74 +219,16 @@ export function TopBar({
               />
             )}
           </button>
-
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            aria-label="Configurações e Backup"
-            title="Configurações, Nuvem e Backup JSON"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
-          >
-            <Settings className="h-4 w-4" />
-          </button>
         </div>
-
-        {/* Linha 2 no mobile (< 640px): abas sem colisão com os ícones da direita */}
-        <nav
-          aria-label="Seções"
-          className="flex h-9 w-full items-center gap-1 border-t border-zinc-200/60 sm:hidden dark:border-white/[0.06]"
-        >
-          {world === 'beira-leito'
-            ? BEIRA_LEITO_TABS.map((tab) => {
-                const active = beiraLeitoTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => onChangeBeiraLeitoTab(tab.id)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`relative flex h-full items-center whitespace-nowrap px-2.5 text-xs font-medium transition-colors ${
-                      active
-                        ? 'text-[#0F766E] dark:text-[#2DD4BF]'
-                        : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
-                    }`}
-                  >
-                    {tab.label}
-                    {active && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-x-1.5 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
-                      />
-                    )}
-                  </button>
-                );
-              })
-            : SEXTO_ANO_TABS.map((tab) => {
-                const active = sextoAnoTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => onChangeSextoAnoTab(tab.id)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`relative flex h-full items-center whitespace-nowrap px-2.5 text-xs font-medium transition-colors ${
-                      active
-                        ? 'text-[#0F766E] dark:text-[#2DD4BF]'
-                        : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
-                    }`}
-                  >
-                    {tab.label}
-                    {active && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-x-1.5 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-        </nav>
       </div>
+
+      {/* Segunda faixa de abas exclusiva do mobile (< sm): zero colisão e alvo confortável */}
+      <nav
+        aria-label="Seções (mobile)"
+        className="flex h-10 w-full items-center border-t border-zinc-200/70 px-2 sm:hidden dark:border-white/[0.06]"
+      >
+        {renderTabs(true)}
+      </nav>
     </header>
   );
 }

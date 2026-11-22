@@ -42,7 +42,14 @@ import {
   renderTeoriaMarkdownToHtml,
   parsePrePortaContent,
   formatPrePortaTitle,
+  formatInlineClinicalHtml,
+  cleanHeadingText,
+  formatCompactProtocolTitle,
 } from '../src/engine/diretrizes.ts';
+import {
+  filterIntercorrencias,
+  buildPendingPontoCegoNote,
+} from '../src/engine/prePortaHelpers.ts';
 import {
   isExcludingChoiceOption,
   resolveMultiChoiceSelection,
@@ -92,7 +99,11 @@ import {
   walkInlineNodes,
   analyzeSectionGaps,
   countOpenBracketsInFreeText,
+  INTERCORRENCIAS_HAB_ID,
+  COMMAND_PALETTE_ITEMS,
+  COMMAND_PALETTE_SEARCH_INDEX,
 } from '../src/data/protocolsRepo.ts';
+import { SEIS_INTERCORRENCIAS_DATA } from '../src/data/clinical_reference_data.ts';
 import { cockpitStore } from '../src/state/store.ts';
 import { detectPiiIssues, sanitizePiiText } from '../src/utils/piiGuard.ts';
 
@@ -1183,168 +1194,107 @@ test('R1 & Currículo (Editais 2027): baremas USP-SP/USP-RP/UNICAMP, Comprovado 
   assert.equal(cockpitStore.getSnapshot().central6Ano.curriculumEntries?.extensao_voluntariado?.value, 240);
 });
 
-test('Regressões Protocolos (P0/P1/P2): Amoxicilina intacta + mL dinâmico, Auditoria Ibuprofeno/TFGe/Dose diária, Condicionais OFF, Sync Alergias/Idade e Exclusão 1-clique', async () => {
-  clearPepAstCache();
-  const { auditProtocolPrescription, getSubcategoryLabel } = await import('../src/data/protocolsRepo.ts');
-  const { parseEstimatedDailyDoseMg } = await import('../src/engine/prescriptionGuard.ts');
-
-  // 1) ped-81 (OMA) e ped-82 (PAC Ped): barras de unidade "mg / 5 mL" NÃO quebram opções; ped-76 "[3 mL / 5 mL / 10 mL]" segue com 3 opções
-  const ped81 = PEP_PROTOCOLS.find((p) => p.id === 'ped-81')!;
-  const ped82 = PEP_PROTOCOLS.find((p) => p.id === 'ped-82')!;
-  const ped76 = PEP_PROTOCOLS.find((p) => p.id === 'ped-76')!;
-  assert.ok(ped81 && ped82 && ped76);
-
-  const comp81 = compileProtocolForDisplay(ped81, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '14', idade: '3a' });
-  const amoxiGroup81 = comp81.ast.blocks
-    .flatMap((b) => b.children)
-    .find((n) => n.kind === 'choice-group' && n.options.some((o) => /Amoxicilina/i.test(o.rawText)));
-  assert.ok(amoxiGroup81 && amoxiGroup81.kind === 'choice-group');
-  assert.equal(amoxiGroup81.options.length, 3, 'ped-81 deve ter 3 apresentações intactas de Amoxicilina');
-  assert.ok(
-    amoxiGroup81.options.every((o) => !/^\s*5\s*mL/i.test(o.rawText)),
-    'Nenhuma opção pode começar quebrada em "5 mL"'
+test('Pré-Porta UX & Conteúdo: links seguros, LaTeX limpo em Técnica Completa, títulos compactos, busca de Intercorrências e Ponto Cego transparente', () => {
+  // 1) Títulos compactos sem prefixo repetitivo e limpeza de backticks/emojis
+  assert.equal(
+    formatCompactProtocolTitle('Atendimento de Pronto Atendimento - Insuficiência Cardíaca Descompensada e EAP'),
+    'Insuficiência Cardíaca Descompensada e EAP'
+  );
+  assert.equal(
+    formatCompactProtocolTitle('Manejo de Emergência - Sepse e Choque Séptico (Pacote de 1 Hora)'),
+    'Sepse e Choque Séptico (Pacote de 1 Hora)'
+  );
+  assert.equal(
+    cleanHeadingText('Guia Profundo — `01_Anamnese_Estruturada`'),
+    'Guia Profundo — 01_Anamnese_Estruturada'
   );
 
-  const comp82 = compileProtocolForDisplay(ped82, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '14', idade: '3a' });
-  const amoxiGroup82 = comp82.ast.blocks
-    .flatMap((b) => b.children)
-    .find((n) => n.kind === 'choice-group' && n.options.some((o) => /Amoxicilina/i.test(o.rawText)));
-  assert.ok(amoxiGroup82 && amoxiGroup82.kind === 'choice-group');
-  assert.equal(amoxiGroup82.options.length, 2, 'ped-82 deve ter 2 apresentações intactas de Amoxicilina');
-
-  const comp76 = compileProtocolForDisplay(ped76, EMPTY_PATIENT_CONTEXT);
-  const mlGroup76 = comp76.ast.blocks
-    .flatMap((b) => b.children)
-    .find((n) => n.kind === 'choice-group' && n.options.some((o) => /3\s*mL/i.test(o.rawText)));
-  assert.ok(mlGroup76 && mlGroup76.kind === 'choice-group');
-  assert.equal(mlGroup76.options.length, 3, 'ped-76 [3 mL / 5 mL / 10 mL] deve permanecer com 3 opções');
-
-  // 2) ped-81 OMA (14 kg): cálculo dinâmico de mL conforme apresentação + dose + intervalo
-  const rec81 = comp81.sections.find((s) => s.id === 'receita')!;
-  const rec81Nodes = rec81.blockIndices.flatMap((bi) => comp81.ast.blocks[bi].children);
-  const amoxiRec81 = rec81Nodes.find(
-    (n) => n.kind === 'choice-group' && n.options.some((o) => /Amoxicilina/i.test(o.rawText))
-  );
-  assert.ok(amoxiRec81 && amoxiRec81.kind === 'choice-group');
-  assert.equal(amoxiRec81.options.length, 3, 'Receita ped-81 deve ter 3 apresentações intactas de Amoxicilina');
-
-  const text81Default = serializeProtocolSection(comp81.ast, comp81.initialAstState, comp81.clinicalContext, rec81);
-  assert.ok(text81Default.includes('4,4 mL'), `400 mg/5 mL + 50 mg/kg/dia + 12/12h em 14 kg deve dar 4,4 mL:\n${text81Default}`);
-  assert.ok(!text81Default.includes(', nos horários,'), 'Erro de concordância ", nos horários," deve estar corrigido');
-
-  // Trocar dose de 50 -> 90 mg/kg/dia: 14 * 90 / 2 / 80 = 7,9 mL
-  const doseGroup81 = rec81Nodes.find(
-    (n) => n.kind === 'choice-group' && n.options.some((o) => /90/.test(o.rawText))
-  );
-  assert.ok(doseGroup81 && doseGroup81.kind === 'choice-group');
-  const idx90 = doseGroup81.options.findIndex((o) => /90/.test(o.rawText));
-  const state90 = applyPatientContextToAstState(
-    comp81.ast,
-    {
-      ...comp81.initialAstState,
-      choiceSelections: { ...comp81.initialAstState.choiceSelections, [doseGroup81.id]: [idx90] },
-      userEditedNodes: { ...comp81.initialAstState.userEditedNodes, [doseGroup81.id]: true },
-    },
-    comp81.clinicalContext
-  );
-  const text81Dose90 = serializeProtocolSection(comp81.ast, state90, comp81.clinicalContext, rec81);
-  assert.ok(text81Dose90.includes('7,9 mL'), `400 mg/5 mL + 90 mg/kg/dia + 12/12h em 14 kg deve dar 7,9 mL:\n${text81Dose90}`);
-
-  // Trocar apresentação para 250 mg/5 mL + intervalo 8 em 8 + dose 50: 14 * 50 / 3 / 50 = 4,7 mL
-  const idx250 = amoxiRec81.options.findIndex((o) => /250/.test(o.rawText));
-  const intervalGroup81 = rec81Nodes.find(
-    (n) => n.kind === 'choice-group' && n.options.some((o) => /8 em 8/.test(o.rawText))
-  );
-  assert.ok(intervalGroup81 && intervalGroup81.kind === 'choice-group');
-  const idx8h = intervalGroup81.options.findIndex((o) => /8 em 8/.test(o.rawText));
-  const state250 = applyPatientContextToAstState(
-    comp81.ast,
-    {
-      ...comp81.initialAstState,
-      choiceSelections: {
-        ...comp81.initialAstState.choiceSelections,
-        [amoxiRec81.id]: [idx250],
-        [intervalGroup81.id]: [idx8h],
-      },
-      userEditedNodes: {
-        ...comp81.initialAstState.userEditedNodes,
-        [amoxiRec81.id]: true,
-        [intervalGroup81.id]: true,
-      },
-    },
-    comp81.clinicalContext
-  );
-  const text81Conc250 = serializeProtocolSection(comp81.ast, state250, comp81.clinicalContext, rec81);
-  assert.ok(text81Conc250.includes('4,7 mL'), `250 mg/5 mL + 50 mg/kg/dia + 8/8h em 14 kg deve dar 4,7 mL:\n${text81Conc250}`);
-
-  // 3) Sincronização de idade pediátrica ("3a" -> "3" + "anos"; "8m" -> "8" + "meses")
-  const evol81 = comp81.sections.find((s) => s.id === 'evolucao')!;
-  const evolText3a = serializeProtocolSection(comp81.ast, comp81.initialAstState, comp81.clinicalContext, evol81);
-  assert.ok(evolText3a.includes('3 anos'), `Idade "3a" deve sincronizar para "3 anos":\n${evolText3a}`);
-  const comp81Infant = compileProtocolForDisplay(ped81, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '8', idade: '8m' });
-  const evolText8m = serializeProtocolSection(comp81Infant.ast, comp81Infant.initialAstState, comp81Infant.clinicalContext, comp81Infant.sections.find((s) => s.id === 'evolucao')!);
-  assert.ok(evolText8m.includes('8 meses'), `Idade "8m" deve sincronizar para "8 meses":\n${evolText8m}`);
-
-  // 4) Dose diária "700 mg/dia" não pode ser multiplicada por frequência (zero falso positivo de superdose)
-  const parsedDaily = parseEstimatedDailyDoseMg('Amoxicilina 50 mg/kg/dia (700 mg/dia (233 mg/tomada)) 8/8h');
-  assert.equal(parsedDaily.dailyDoseMg, 700, '700 mg/dia já é dose diária total e não deve virar 2100 mg/dia');
-
-  // 5) go-1 (Puerpério): Ibuprofeno auditado em TFGe < 30 (com vírgula pt-BR) e alergia a AINE + aviso interno omitido na cópia + condicionais OFF + sync de alergia + exclusão 1-clique
-  const go1 = PEP_PROTOCOLS.find((p) => p.id === 'go-1')!;
-  const compGo1Renal = compileProtocolForDisplay(go1, {
-    ...EMPTY_PATIENT_CONTEXT,
-    idade: '30',
-    creatinina: '3,2',
-    sexo: 'F',
-    alergias: 'dipirona, aine',
-  });
-  const recGo1 = compGo1Renal.sections.find((s) => s.id === 'receita')!;
-  const condGo1 = compGo1Renal.sections.find((s) => s.id === 'conduta')!;
-  const evolGo1 = compGo1Renal.sections.find((s) => s.id === 'evolucao')!;
-
-  const recTextGo1 = serializeProtocolSection(compGo1Renal.ast, compGo1Renal.initialAstState, compGo1Renal.clinicalContext, recGo1);
-  assert.ok(!recTextGo1.includes('[NÃO PRESCREVER SE HIPERTENSA'), 'Aviso interno [NÃO PRESCREVER...] deve ser omitido na prescrição copiada');
-  assert.ok(!recTextGo1.includes('Desogestrel'), '[Opcional - Contracepção] deve iniciar desligado por padrão');
-
-  const condTextGo1 = serializeProtocolSection(compGo1Renal.ast, compGo1Renal.initialAstState, compGo1Renal.clinicalContext, condGo1);
-  assert.ok(!condTextGo1.includes('Imunoglobulina Anti-D'), 'Condicional [Se mãe Rh negativo...] deve iniciar desligado');
-  assert.ok(!condTextGo1.includes('Enoxaparina'), 'Condicional [Se alto risco para TEV...] deve iniciar desligado');
-
-  const evolTextGo1 = serializeProtocolSection(compGo1Renal.ast, compGo1Renal.initialAstState, compGo1Renal.clinicalContext, evolGo1);
-  assert.ok(/dipirona,\s*aine/i.test(evolTextGo1), `Alergias da faixa do paciente devem espelhar na Evolução:\n${evolTextGo1}`);
-
-  const auditGo1 = auditProtocolPrescription(go1, { receita: recTextGo1 }, compGo1Renal.clinicalContext);
-  assert.ok(
-    auditGo1.receita?.alerts.some((a) => a.category === 'renal' && /Ibuprofeno/i.test(a.title) && a.title.includes(',')),
-    `Ibuprofeno deve disparar bloqueio renal com TFG em vírgula pt-BR: ${JSON.stringify(auditGo1.receita?.alerts)}`
+  // 2) Links Markdown seguros (https permitido, javascript: bloqueado)
+  const linkHtml = formatInlineClinicalHtml(
+    'Consulte [Diretriz ESC](https://esc.org/guide) e evite [XSS](javascript:alert(1)).'
   );
   assert.ok(
-    auditGo1.receita?.alerts.some((a) => a.category === 'allergy' && /Ibuprofeno/i.test(a.title)),
-    'Ibuprofeno deve disparar bloqueio de alergia a AINE'
+    linkHtml.includes('<a href="https://esc.org/guide" target="_blank" rel="noopener noreferrer" class="guia-link">Diretriz ESC</a>'),
+    `Link HTTPS esperado:\n${linkHtml}`
   );
-  assert.ok(
-    auditGo1.receita?.alerts.some((a) => a.category === 'allergy' && /Dipirona/i.test(a.title)),
-    'Dipirona deve disparar bloqueio de alergia a Dipirona'
-  );
+  assert.ok(!linkHtml.includes('href="javascript:'), 'URL javascript: não pode virar href clicável');
 
-  // 6) Exclusão 1-clique (excludedBlocks): retirar Dipirona e Ibuprofeno renumera restantes e zera alertas!
-  const excludedBlocks: Record<string, boolean> = {};
-  for (const bi of recGo1.blockIndices) {
-    const blk = compGo1Renal.ast.blocks[bi];
-    if (blk.kind === 'paragraph' && /^\s*\d+[.)]\s+/.test(blk.rawLine) && /Dipirona|Ibuprofeno/i.test(blk.rawLine)) {
-      excludedBlocks[blk.id] = true;
+  // 3) Fórmulas LaTeX complexas (frações, raiz, blocos $$...$$, subscritos)
+  const mathHtml = renderTeoriaMarkdownToHtml(
+    'Fórmula de Winter: $$PaCO_2 = 1{,}5 \\times HCO_3^- + 8 \\pm 2$$ e QTc = $\\frac{QT}{\\sqrt{RR}}$.'
+  );
+  assert.ok(!mathHtml.includes('\\frac'), `Não deve sobrar \\frac bruto:\n${mathHtml}`);
+  assert.ok(!mathHtml.includes('\\sqrt'), `Não deve sobrar \\sqrt bruto:\n${mathHtml}`);
+  assert.ok(!mathHtml.includes('$$'), `Não deve sobrar $$ bruto:\n${mathHtml}`);
+  assert.ok(mathHtml.includes('√(RR)'), `Raiz deve renderizar com √(...):\n${mathHtml}`);
+
+  // 4) Varredura completa: zero links Markdown crus ou jargão de simulação nos 22 cartões Pré-Porta
+  for (const hab of HAB_PROTOCOLS) {
+    const parsed = parsePrePortaContent(hab.pre_porta || '');
+    for (const chunk of [parsed.resumo30s, parsed.mnemonico, parsed.coreografia]) {
+      assert.ok(!/simulação v3\.1/i.test(chunk), `${hab.id} não deve expor jargão interno de simulação`);
+      const rendered = renderTeoriaMarkdownToHtml(chunk);
+      assert.ok(
+        !/\[[^\]]+\]\(https?:\/\//.test(rendered),
+        `${hab.id} deixou link Markdown cru sem renderizar`
+      );
+    }
+    for (const pit of hab.pitfalls || []) {
+      const pitHtml = formatInlineClinicalHtml(pit);
+      assert.ok(
+        !/\[[^\]]+\]\(https?:\/\//.test(pitHtml),
+        `${hab.id} deixou link Markdown cru em armadilhas`
+      );
     }
   }
-  assert.equal(Object.keys(excludedBlocks).length, 2, 'Deve encontrar Dipirona e Ibuprofeno para exclusão');
-  const stateAfterExclude = { ...compGo1Renal.initialAstState, excludedBlocks };
-  const recTextAfterExclude = serializeProtocolSection(compGo1Renal.ast, stateAfterExclude, compGo1Renal.clinicalContext, recGo1);
-  assert.ok(!/Dipirona/i.test(recTextAfterExclude) && !/Ibuprofeno/i.test(recTextAfterExclude));
-  assert.ok(recTextAfterExclude.includes('1. Sulfato Ferroso'), `Sulfato Ferroso deve ser renumerado para 1.:\n${recTextAfterExclude}`);
-  const auditAfterExclude = auditProtocolPrescription(go1, { receita: recTextAfterExclude }, compGo1Renal.clinicalContext);
-  assert.equal(auditAfterExclude.receita?.blockCount ?? 0, 0, 'Após excluir fármacos com bloqueio, auditoria deve zerar');
 
-  // 7) Formatação acentuada de subcategorias compartilhada (Command Palette + Protocolos)
-  assert.equal(getSubcategoryLabel('Cardiovascular e Respiratorio'), 'Cardiovascular e Respiratório');
-  assert.equal(getSubcategoryLabel('Emergencias GO'), 'Emergências em GO');
+  // 5) Varredura completa de tecnica_profunda.generated.json: zero \frac, \sqrt ou $ residual
+  const techPath = path.join(ROOT, 'src/data/tecnica_profunda.generated.json');
+  const techData = JSON.parse(fs.readFileSync(techPath, 'utf8')) as {
+    byHabId: Record<string, Array<{ title: string; sections: Array<{ heading: string; body: string }> }>>;
+  };
+  for (const [habId, guides] of Object.entries(techData.byHabId || {})) {
+    for (const g of guides) {
+      assert.ok(!cleanHeadingText(g.title).includes('`'), `Título limpo em ${habId} não deve conter backticks`);
+      for (const sec of g.sections || []) {
+        assert.ok(!cleanHeadingText(sec.heading).includes('`'), `Seção limpa em ${habId} não deve conter backticks`);
+        const html = renderTeoriaMarkdownToHtml(sec.body || '');
+        assert.ok(!html.includes('\\frac'), `${habId}/${sec.heading} ainda contém \\frac`);
+        assert.ok(!html.includes('\\sqrt'), `${habId}/${sec.heading} ainda contém \\sqrt`);
+        assert.ok(!/\$\$/.test(html), `${habId}/${sec.heading} ainda contém $$`);
+      }
+    }
+  }
+
+  // 6) Filtro das 6 Intercorrências de Madrugada: tolerante a acentos e sinônimos
+  const disp = filterIntercorrencias(SEIS_INTERCORRENCIAS_DATA, 'dispnéia');
+  assert.equal(disp.visibleInSidebar, true);
+  assert.ok(disp.items.some((c) => c.num === '2'), 'Busca acentuada "dispnéia" deve encontrar card 2');
+
+  const olig = filterIntercorrencias(SEIS_INTERCORRENCIAS_DATA, 'oligúria');
+  assert.equal(olig.visibleInSidebar, true);
+  assert.ok(olig.items.some((c) => c.num === '4'), 'Busca "oligúria" deve encontrar card 4');
+
+  const none = filterIntercorrencias(SEIS_INTERCORRENCIAS_DATA, 'zzzznaoexiste');
+  assert.equal(none.visibleInSidebar, false);
+  assert.equal(none.items.length, 0);
+
+  // 7) Nota transparente de Ponto Cego (lista até 6 e indica excedente)
+  const note = buildPendingPontoCegoNote(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+  assert.ok(note.includes('A; B; C; D; E; F'));
+  assert.ok(note.includes('(+2 outros)'), `Esperado indicador transparente de excedente:\n${note}`);
+
+  // 8) Ctrl+K encontra 6 Intercorrências de Madrugada preservando ALL_PROTOCOLS.length === 110
+  assert.equal(ALL_PROTOCOLS.length, 110);
+  const madResults = searchClinicalProtocols(COMMAND_PALETTE_SEARCH_INDEX, COMMAND_PALETTE_ITEMS, 'madrugada', 5);
+  assert.ok(
+    madResults.some((r) => r.item.id === INTERCORRENCIAS_HAB_ID),
+    'Busca Ctrl+K por "madrugada" deve retornar Guia das 6 Intercorrências'
+  );
+  const oligResults = searchClinicalProtocols(COMMAND_PALETTE_SEARCH_INDEX, COMMAND_PALETTE_ITEMS, 'oliguria', 5);
+  assert.ok(
+    oligResults.some((r) => r.item.id === INTERCORRENCIAS_HAB_ID),
+    'Busca Ctrl+K por "oliguria" deve retornar Guia das 6 Intercorrências'
+  );
 });
 

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, RotateCcw, X } from 'lucide-react';
+import { Check } from 'lucide-react';
 import {
   computeAstDisplayLayout,
   evaluateDoseFormula,
@@ -31,7 +31,6 @@ interface PepBlockRendererProps {
   onToggleTrava: (travaId: string) => void;
   onToggleOptional: (optionalId: string) => void;
   onToggleCheckbox: (blockId: string) => void;
-  onToggleExcludeBlock?: (blockId: string) => void;
 }
 
 const STANDALONE_SUBHEADER_REGEX =
@@ -98,32 +97,6 @@ function optionHasEmbeddedInput(opt: ChoiceOptionAst): boolean {
   return opt.children.some((c) => c.kind === 'inline-input');
 }
 
-function formatCurrentDateOrTime(maskType: InlineInputNode['maskType']): string | null {
-  if (!maskType) return null;
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, '0');
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yyyy = String(now.getFullYear());
-  const hh = String(now.getHours()).padStart(2, '0');
-  const min = String(now.getMinutes()).padStart(2, '0');
-  if (maskType === 'date-full') return `${dd}/${mm}/${yyyy}`;
-  if (maskType === 'date-short') return `${dd}/${mm}`;
-  if (maskType === 'time') return `${hh}:${min}`;
-  return null;
-}
-
-function summarizeExcludedItemLabel(block: ParagraphNode): string {
-  const cleaned = stripMarkdownTokens(block.rawLine)
-    .replace(/^\s*\d+[.)]\s*/, '')
-    .replace(/\[(?:NÃO\s+PRESCREVER|CONTRAINDICAD|EVITAR\s+SE|APENAS\s+P[ÓO]S-ABORTAMENTO)[^\]]*\]/gi, '')
-    .replace(/\s*-{2,}.*$/, '')
-    .replace(/\s*[—–]\s*\d+.*$/, '')
-    .replace(/\[[^\]]*\]/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  return cleaned.length > 42 ? `${cleaned.slice(0, 39).trimEnd()}…` : cleaned || 'Item retirado';
-}
-
 export function PepBlockRenderer({
   ast,
   section,
@@ -134,61 +107,37 @@ export function PepBlockRenderer({
   onToggleTrava,
   onToggleOptional,
   onToggleCheckbox,
-  onToggleExcludeBlock,
 }: PepBlockRendererProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
   const [popoverAlignRight, setPopoverAlignRight] = useState<boolean>(false);
-  const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const layout = useMemo(
     () => computeAstDisplayLayout(ast, state, section.blockIndexSet),
     [ast, state, section.blockIndexSet]
   );
 
-  // Fechar popover ao clicar fora ou apertar Escape e focar opção ativa ao abrir
+  // Fechar popover ao clicar fora ou apertar Escape
   useEffect(() => {
     if (!openPopoverId) return;
-    const raf = window.requestAnimationFrame(() => {
-      const popover = containerRef.current?.querySelector<HTMLElement>(
-        `[data-choice-popover="${openPopoverId}"] [role="listbox"]`
-      );
-      if (!popover) return;
-      const selectedOpt =
-        popover.querySelector<HTMLButtonElement>('[role="option"][aria-selected="true"]') ??
-        popover.querySelector<HTMLButtonElement>('[role="option"]');
-      selectedOpt?.focus();
-    });
     const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest(`[data-choice-popover="${openPopoverId}"]`)) return;
       setOpenPopoverId(null);
     };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpenPopoverId(null);
-        lastTriggerRef.current?.focus();
-      }
+      if (e.key === 'Escape') setOpenPopoverId(null);
     };
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('keydown', handleKey);
     return () => {
-      window.cancelAnimationFrame(raf);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKey);
     };
   }, [openPopoverId]);
 
-  // Navegação fluida por Tab entre lacunas inline do bloco + Enter em data/hora vazia preenche Hoje/Agora
-  const handleGapKeyDown = (node: InlineInputNode, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && node.maskType && !(state.inputValues[node.id] || '').trim()) {
-      const quickVal = formatCurrentDateOrTime(node.maskType);
-      if (quickVal) {
-        e.preventDefault();
-        onInputChange(node, quickVal);
-        return;
-      }
-    }
+  // Navegação fluida por Tab entre lacunas inline do bloco
+  const handleGapKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Tab') return;
     const container = containerRef.current;
     if (!container) return;
@@ -223,31 +172,11 @@ export function PepBlockRenderer({
     );
 
     const isFilled = val.trim().length > 0;
-    const isSuggested = !isFilled && isSuggestedValueInput(node);
-    const isIdent = !isFilled && isIdentificationInput(node);
-    const fallbackSize = Math.min(48, Math.max(val.length || displayPlaceholder.length, 3));
-
-    const toneClass = isFilled
-      ? 'border-teal-500/50 bg-teal-500/[0.07] text-zinc-950 hover:border-teal-600/70 dark:border-teal-400/45 dark:bg-teal-400/[0.10] dark:text-[#F3F4F6] dark:hover:border-teal-300/70'
-      : isSuggested
-        ? 'border-dashed border-zinc-300 bg-zinc-100/65 text-zinc-900 placeholder:font-normal placeholder:text-zinc-500 hover:border-zinc-400 dark:border-white/[0.16] dark:bg-white/[0.04] dark:text-[#F3F4F6] dark:placeholder:text-[#9CA3AF] dark:hover:border-white/[0.26]'
-        : isIdent
-          ? 'border-dashed border-amber-500/45 bg-amber-500/[0.05] text-zinc-950 placeholder:font-normal placeholder:text-amber-800/60 hover:border-amber-600/70 dark:border-amber-400/35 dark:bg-amber-400/[0.07] dark:text-[#F3F4F6] dark:placeholder:text-amber-300/60'
-          : 'border-amber-500/60 bg-amber-500/[0.10] text-zinc-950 placeholder:font-normal placeholder:text-amber-800/70 hover:border-amber-600/80 dark:border-amber-400/50 dark:bg-amber-400/[0.12] dark:text-[#F3F4F6] dark:placeholder:text-amber-300/70 dark:hover:border-amber-300/80';
-
-    const titleHint = node.maskType
-      ? node.maskType === 'time'
-        ? 'Duplo clique ou Enter (vazio) para preencher hora atual'
-        : 'Duplo clique ou Enter (vazio) para preencher data de hoje'
-      : isSuggested
-        ? 'Valor sugerido — digite para personalizar ou mantenha'
-        : undefined;
 
     return (
       <input
         key={node.id}
         type="text"
-        size={fallbackSize}
         data-pep-gap="true"
         data-pep-gap-kind={
           isIdentificationInput(node) ? 'ident' : isSuggestedValueInput(node) ? 'suggested' : 'clinical'
@@ -255,17 +184,14 @@ export function PepBlockRenderer({
         data-gap-id={node.id}
         value={val}
         onChange={(e) => onInputChange(node, e.target.value)}
-        onKeyDown={(e) => handleGapKeyDown(node, e)}
-        onDoubleClick={() => {
-          if (node.maskType && !val.trim()) {
-            const quickVal = formatCurrentDateOrTime(node.maskType);
-            if (quickVal) onInputChange(node, quickVal);
-          }
-        }}
+        onKeyDown={handleGapKeyDown}
         placeholder={displayPlaceholder}
-        title={titleHint}
         aria-label={rawPlaceholder && rawPlaceholder !== '...' ? `Preencher ${rawPlaceholder}` : 'Preencher lacuna'}
-        className={`pep-inline-input mx-[1px] inline w-auto rounded border-0 border-b px-1.5 py-[1px] leading-snug outline-none transition-colors focus:border-solid focus:border-[#0F766E] focus:bg-teal-500/12 dark:focus:border-[#2DD4BF] dark:focus:bg-teal-400/15 ${toneClass} ${
+        className={`pep-inline-input mx-[1px] inline w-auto rounded border-0 border-b px-1.5 py-[1px] leading-snug outline-none transition-colors focus:border-solid focus:border-[#0F766E] focus:bg-teal-500/12 dark:focus:border-[#2DD4BF] dark:focus:bg-teal-400/15 ${
+          isFilled
+            ? 'border-teal-500/50 bg-teal-500/[0.07] text-zinc-950 hover:border-teal-600/70 dark:border-teal-400/45 dark:bg-teal-400/[0.10] dark:text-[#F3F4F6] dark:hover:border-teal-300/70'
+            : 'border-amber-500/60 bg-amber-500/[0.10] text-zinc-950 placeholder:font-normal placeholder:text-amber-800/70 hover:border-amber-600/80 dark:border-amber-400/50 dark:bg-amber-400/[0.12] dark:text-[#F3F4F6] dark:placeholder:text-amber-300/70 dark:hover:border-amber-300/80'
+        } ${
           isNumericLike ? 'font-mono text-[13px] font-medium tabular-nums' : 'font-sans text-[14px] font-medium'
         }`}
       />
@@ -325,7 +251,6 @@ export function PepBlockRenderer({
         setOpenPopoverId(null);
         return;
       }
-      lastTriggerRef.current = e.currentTarget;
       const triggerRect = e.currentTarget.getBoundingClientRect();
       const containerRight = containerRef.current?.getBoundingClientRect().right;
       const boundaryRight = Math.min(
@@ -343,28 +268,6 @@ export function PepBlockRenderer({
         onChoiceSelect(group, next);
       } else {
         onChoiceSelect(group, [optIdx]);
-        setOpenPopoverId(null);
-        lastTriggerRef.current?.focus();
-      }
-    };
-
-    const handleListboxKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const options = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]'));
-      if (options.length === 0) return;
-      const curIdx = options.indexOf(document.activeElement as HTMLButtonElement);
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        options[(curIdx + 1 + options.length) % options.length].focus();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        options[(curIdx - 1 + options.length) % options.length].focus();
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        options[0].focus();
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        options[options.length - 1].focus();
-      } else if (e.key === 'Tab') {
         setOpenPopoverId(null);
       }
     };
@@ -479,19 +382,18 @@ export function PepBlockRenderer({
           </button>
         )}
 
-        {/* Mini-popover neutro (3+ opções ou multi-escolha) com alinhamento anti-clipping e navegação por teclado */}
+        {/* Mini-popover neutro (3+ opções ou multi-escolha) com alinhamento anti-clipping */}
         {isOpen && !isSimpleBinary && (
           <div
             role="listbox"
             aria-multiselectable={isMulti || undefined}
-            onKeyDown={handleListboxKeyDown}
-            className={`absolute top-full z-40 mt-1.5 max-h-64 min-w-[210px] max-w-[min(340px,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-white/[0.12] dark:bg-[#1C2029] ${
+            className={`absolute top-full z-40 mt-1.5 max-h-64 min-w-[210px] max-w-[min(320px,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-white/[0.12] dark:bg-[#1C2029] ${
               popoverAlignRight ? 'right-0' : 'left-0'
             }`}
           >
             {isMulti && (
               <div className="border-b border-zinc-100 px-3 py-1 text-[10px] font-medium tracking-wide text-zinc-400 uppercase dark:border-white/[0.06] dark:text-[#9CA3AF]">
-                Seleção múltipla · Enter para marcar · Esc fechar
+                Seleção múltipla
               </div>
             )}
             {group.options.map((opt) => {
@@ -504,7 +406,7 @@ export function PepBlockRenderer({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleOptionClick(opt.index)}
-                  className={`flex w-full items-start gap-2 px-3 py-1.5 text-left text-xs leading-snug transition-colors outline-none focus:bg-teal-50/90 focus:text-[#0F766E] dark:focus:bg-teal-500/20 dark:focus:text-[#2DD4BF] ${
+                  className={`flex w-full items-start gap-2 px-3 py-1.5 text-left text-xs leading-snug transition-colors ${
                     isSelected
                       ? 'bg-teal-50/70 font-medium text-[#0F766E] dark:bg-teal-500/15 dark:text-[#2DD4BF]'
                       : 'text-zinc-700 hover:bg-zinc-100/80 dark:text-[#D1D5DB] dark:hover:bg-white/[0.06]'
@@ -529,14 +431,13 @@ export function PepBlockRenderer({
       stripLeadingNumber?: boolean;
       stripLeadingBullet?: boolean;
       highlightDrugName?: boolean;
-      highlightLabelColon?: boolean;
       stripOuterItalic?: boolean;
     }
   ): React.ReactNode => {
     let strippedPrefix = false;
     let strippedLeadingItalic = !options?.stripOuterItalic;
     let justOmittedTrava = false;
-    let drugBoldDone = !options?.highlightDrugName && !options?.highlightLabelColon;
+    let drugBoldDone = !options?.highlightDrugName;
 
     let lastNonEmptyTextIdx = -1;
     if (options?.stripOuterItalic) {
@@ -592,8 +493,8 @@ export function PepBlockRenderer({
         }
         if (!txt) return null;
 
-        // Formatação editorial de item de prescrição com separador "--" / "-----" (ex: "Dipirona 500 mg ------ 1 caixa")
-        const dashMatch = txt.match(/^(.*?)\s*-{2,}\s*(.+)$/);
+        // Formatação editorial de item de prescrição com separador "-----" (ex: "Dipirona 500 mg ------ 1 caixa")
+        const dashMatch = txt.match(/^(.*?)\s*-{3,}\s*(.+)$/);
         if (dashMatch && options?.highlightDrugName) {
           drugBoldDone = true;
           const leftPart = dashMatch[1].trimEnd();
@@ -614,7 +515,7 @@ export function PepBlockRenderer({
           );
         }
 
-        // Destaque sutil do nome do medicamento (em Receita) ou rótulo inicial antes de ":" (em Conduta/Evolução)
+        // Destaque sutil do nome do medicamento ou rótulo inicial antes de ":" em itens numerados
         if (!drugBoldDone) {
           const colonIdx = txt.indexOf(':');
           if (colonIdx > 1 && colonIdx <= 48) {
@@ -628,14 +529,13 @@ export function PepBlockRenderer({
               </Fragment>
             );
           }
+          // Se toda a porção inicial do item numerado é o nome do fármaco (antes de escolha ou lacuna)
           drugBoldDone = true;
-          if (options?.highlightDrugName) {
-            return (
-              <span key={node.id} className="font-medium text-zinc-950 dark:text-[#F3F4F6]">
-                {txt}
-              </span>
-            );
-          }
+          return (
+            <span key={node.id} className="font-medium text-zinc-950 dark:text-[#F3F4F6]">
+              {txt}
+            </span>
+          );
         }
 
         // Destaque sutil de rótulos clínicos no início de parágrafo (ex: "ID:", "PA:", "Comorbidades:")
@@ -796,39 +696,25 @@ export function PepBlockRenderer({
               );
             }
 
-            // Item numerado (prescrição ou conduta) com numeração tabular alinhada, renumeração automática e retirada em 1 clique na receita
+            // Item numerado (prescrição ou conduta) com numeração tabular alinhada e renumeração automática
             const assignedNum = layout.renumberedByBlockIndex.get(bi);
             if (assignedNum !== undefined) {
               const isPromoted = layout.promotedNumberedBlocks.has(bi);
-              const isReceita = section.id === 'receita';
-              const canExcludeItem = isReceita && Boolean(onToggleExcludeBlock);
               return (
                 <div
                   key={block.id}
-                  className={`group/rxitem flex items-baseline gap-2 ${visIdx === 0 ? '' : 'pt-1.5'}`}
+                  className={`flex items-baseline gap-2 ${visIdx === 0 ? '' : 'pt-1.5'}`}
                 >
                   <span className="w-5 shrink-0 text-right font-mono text-[13px] font-semibold tabular-nums text-zinc-400 select-none dark:text-[#6B7280]">
                     {assignedNum}.
                   </span>
-                  <div className={`min-w-0 flex-1 ${isReceita ? 'text-zinc-900 dark:text-[#F3F4F6]' : 'text-zinc-800 dark:text-[#D1D5DB]'}`}>
+                  <div className="min-w-0 flex-1 text-zinc-900 dark:text-[#F3F4F6]">
                     {renderInlineNodes(block.children, {
                       stripLeadingNumber: !isPromoted,
                       stripLeadingBullet: isPromoted,
-                      highlightDrugName: isReceita,
-                      highlightLabelColon: !isReceita,
+                      highlightDrugName: true,
                     })}
                   </div>
-                  {canExcludeItem && (
-                    <button
-                      type="button"
-                      onClick={() => onToggleExcludeBlock?.(block.id)}
-                      title="Retirar este item da prescrição"
-                      aria-label={`Retirar item ${assignedNum} da prescrição`}
-                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-300 opacity-70 transition-all hover:bg-red-50 hover:text-red-600 focus:opacity-100 group-hover/rxitem:opacity-100 dark:text-[#6B7280] dark:hover:bg-red-500/15 dark:hover:text-red-400"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  )}
                 </div>
               );
             }
@@ -893,44 +779,17 @@ export function PepBlockRenderer({
               );
             }
 
-            // Parágrafo clínico padrão (usa <div> em vez de <p> pois pode conter popovers de ChoiceGroup)
+            // Parágrafo clínico padrão
             return (
-              <div
+              <p
                 key={block.id}
                 className={`leading-[1.7] ${isItalicNote ? 'italic text-zinc-500 dark:text-[#9CA3AF]' : ''}`}
               >
                 {renderInlineNodes(block.children, { stripOuterItalic: isItalicNote })}
-              </div>
+              </p>
             );
           })
         )}
-
-        {/* Itens manualmente retirados desta seção (ex.: fármaco retirado por alergia) com restauração em 1 clique */}
-        {section.id === 'receita' && onToggleExcludeBlock && (() => {
-          const manuallyExcluded = section.blockIndices
-            .map((bi) => ast.blocks[bi])
-            .filter((b): b is ParagraphNode => b.kind === 'paragraph' && Boolean(state.excludedBlocks?.[b.id]));
-          if (manuallyExcluded.length === 0) return null;
-          return (
-            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-zinc-200/80 pt-2.5 text-xs dark:border-white/[0.08]">
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-[#9CA3AF]">
-                Retirados:
-              </span>
-              {manuallyExcluded.map((blk) => (
-                <button
-                  key={blk.id}
-                  type="button"
-                  onClick={() => onToggleExcludeBlock(blk.id)}
-                  title="Restaurar item na prescrição"
-                  className="inline-flex items-center gap-1 rounded-md border border-zinc-200/80 bg-zinc-50 px-2 py-0.5 text-[11px] text-zinc-600 transition-colors hover:border-[#0F766E]/40 hover:bg-teal-50/70 hover:text-[#0F766E] dark:border-white/[0.08] dark:bg-[#1C2029] dark:text-[#9CA3AF] dark:hover:border-[#2DD4BF]/40 dark:hover:text-[#2DD4BF]"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  <span className="line-through opacity-75">{summarizeExcludedItemLabel(blk)}</span>
-                </button>
-              ))}
-            </div>
-          );
-        })()}
       </div>
     </div>
   );

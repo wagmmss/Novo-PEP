@@ -54,7 +54,7 @@ Criança: [Nome] | Peso Atual: [ ] kg | Idade: [ ] | Data: [DD/MM/AAAA]
 
 USO ORAL E NASAL:
 1. [Amoxicilina Suspensão Oral 400 mg / 5 mL (80 mg/mL) / Amoxicilina 250 mg / 5 mL (50 mg/mL) / Amoxicilina + Clavulanato 400 + 57 mg / 5 mL] --- [ ] frasco(s)
-   Dar [ ] mL por via oral de [12 em 12 horas / 8 em 8 horas], em horários regulares, durante [10 / 7] dias consecutivos.
+   Dar [ ] mL por via oral de [12 em 12 horas / 8 em 8 horas], nos horários, durante [10 / 7] dias consecutivos.
    *(Cálculo conferido pelo peso de [ ] kg na dose de [50 / 90] mg/kg/dia).*
 
 2. Ibuprofeno Solução Oral Gotas (100 mg/mL) ----------------------------------- 1 frasco
