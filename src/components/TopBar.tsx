@@ -45,10 +45,10 @@ export function TopBar({
   onOpenSettings,
 }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-30 h-13 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs dark:border-white/[0.07] dark:bg-[#0F1115]/95">
-      <div className="mx-auto flex h-full w-full items-center justify-between gap-2 px-3 sm:px-5">
-        {/* Esquerda: Switch de contexto + Abas do contexto ativo */}
-        <div className="flex h-full min-w-0 items-center gap-3 sm:gap-5">
+    <header className="sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xs sm:h-13 dark:border-white/[0.07] dark:bg-[#0F1115]/95">
+      <div className="mx-auto flex w-full flex-wrap items-center justify-between gap-x-2 px-3 sm:h-full sm:flex-nowrap sm:px-5">
+        {/* Esquerda (desktop) / Linha 1 esquerda (mobile): Switch de contexto + Abas (desktop inline, mobile linha 2) */}
+        <div className="flex h-11 min-w-0 items-center gap-3 sm:h-full sm:gap-5">
           {/* Switch segmentado Beira-Leito <-> 6º Ano */}
           <div
             role="group"
@@ -83,8 +83,8 @@ export function TopBar({
 
           <div className="hidden h-4 w-px shrink-0 bg-zinc-200 sm:block dark:bg-white/[0.08]" aria-hidden="true" />
 
-          {/* Abas do contexto ativo (sem overflow-x-auto; indicador interno bottom-0 em h-full) */}
-          <nav aria-label="Seções" className="flex h-full items-center gap-1">
+          {/* Abas inline no desktop (sm+) */}
+          <nav aria-label="Seções" className="hidden h-full items-center gap-1 sm:flex">
             {world === 'beira-leito'
               ? BEIRA_LEITO_TABS.map((tab) => {
                   const active = beiraLeitoTab === tab.id;
@@ -138,7 +138,7 @@ export function TopBar({
         </div>
 
         {/* Direita: Busca global (Ctrl+K), Tema e Configurações */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex h-11 shrink-0 items-center gap-1 sm:h-full sm:gap-1.5">
           <button
             type="button"
             onClick={onOpenSearch}
@@ -216,6 +216,62 @@ export function TopBar({
             <Settings className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Linha 2 no mobile (< 640px): abas sem colisão com os ícones da direita */}
+        <nav
+          aria-label="Seções"
+          className="flex h-9 w-full items-center gap-1 border-t border-zinc-200/60 sm:hidden dark:border-white/[0.06]"
+        >
+          {world === 'beira-leito'
+            ? BEIRA_LEITO_TABS.map((tab) => {
+                const active = beiraLeitoTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => onChangeBeiraLeitoTab(tab.id)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative flex h-full items-center whitespace-nowrap px-2.5 text-xs font-medium transition-colors ${
+                      active
+                        ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                        : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+                    }`}
+                  >
+                    {tab.label}
+                    {active && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-1.5 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
+                      />
+                    )}
+                  </button>
+                );
+              })
+            : SEXTO_ANO_TABS.map((tab) => {
+                const active = sextoAnoTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => onChangeSextoAnoTab(tab.id)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative flex h-full items-center whitespace-nowrap px-2.5 text-xs font-medium transition-colors ${
+                      active
+                        ? 'text-[#0F766E] dark:text-[#2DD4BF]'
+                        : 'text-zinc-600 hover:text-zinc-950 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+                    }`}
+                  >
+                    {tab.label}
+                    {active && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-1.5 bottom-0 h-0.5 rounded-full bg-[#0F766E] dark:bg-[#2DD4BF]"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+        </nav>
       </div>
     </header>
   );

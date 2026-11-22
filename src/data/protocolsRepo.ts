@@ -20,6 +20,8 @@ import {
   formatConditionalToggleLabel,
   serializeAstToClinicalText,
   type AstSelectionState,
+  type ChoiceGroupNode,
+  type PepBlockNode,
   type PepDocumentAst,
   type PepInlineNode,
 } from '../engine/pepAst.ts';
@@ -161,6 +163,39 @@ export function resolveKnownRouteId(tab: 'protocolos' | 'pre-porta', rawId: stri
 }
 
 export const GLOBAL_SEARCH_INDEX = createClinicalSearchIndex(ALL_PROTOCOLS);
+
+export const SUBCAT_DISPLAY_MAP: Record<string, string> = {
+  'Enfermaria Puerperio': 'Enfermaria / Puerpério',
+  'Ambulatorio GO': 'Ambulatório GO',
+  'Procedimentos Ambulatoriais': 'Procedimentos Ambulatoriais',
+  'Centro Obstetrico Cirurgias': 'Centro Obstétrico e Cirurgias',
+  'Emergencias GO': 'Emergências em GO',
+  'Triagem e Ficha Mestra': 'Triagem e Ficha Mestra',
+  'Infeccoes e Vias Aereas': 'Infecções e Vias Aéreas',
+  'Gastrointestinal e Abdominal': 'Gastrointestinal e Abdominal',
+  'Cardiovascular e Respiratorio': 'Cardiovascular e Respiratório',
+  'Neurologia e Saude Mental': 'Neurologia e Saúde Mental',
+  'Nefrologia Urologia e Dermatologia': 'Nefrologia, Urologia e Dermatologia',
+  'Emergencias Graves e Procedimentos': 'Emergências Graves e Procedimentos',
+  'Admissao e Avaliacao Inicial': 'Admissão e Avaliação Inicial',
+  'Evolucao Diaria SOAP': 'Evolução Diária (SOAP)',
+  'Passagem de Plantao e Rounds': 'Passagem de Plantão e Rounds',
+  'Altas e Desospitalizacao': 'Altas e Desospitalização',
+  'Declaracao de Obito e Cuidados': 'Declaração de Óbito e Cuidados',
+  'Ficha Mestra e Triagem': 'Ficha Mestra e Triagem',
+  'Puericultura e Ambulatorio': 'Puericultura e Ambulatório',
+  'Respiratorio e IVAS': 'Respiratório e IVAS',
+  'Gastrointestinal e Desidratacao': 'Gastrointestinal e Desidratação',
+  'Febre e Infeccoes Sistemicas': 'Febre e Infecções Sistêmicas',
+};
+
+export function getSubcategoryLabel(rawSubcat: string): string {
+  const clean = String(rawSubcat || '')
+    .replace(/^\d+_/, '')
+    .replace(/_/g, ' ')
+    .trim();
+  return SUBCAT_DISPLAY_MAP[clean] || clean || 'Geral';
+}
 
 export function walkInlineNodes(
   nodes: readonly PepInlineNode[],
@@ -349,8 +384,42 @@ export function partitionAstIntoSections(
   return sections;
 }
 
+function renderBlockSelectedContext(block: PepBlockNode | undefined, state: AstSelectionState): string {
+  if (!block) return '';
+  let out = '';
+  for (const node of block.children) {
+    if (node.kind === 'text') {
+      out += node.value;
+    } else if (node.kind === 'choice-group') {
+      const sel = state.choiceSelections[node.id] || [];
+      const chosen = sel.length > 0 ? sel : node.options.length > 0 ? [0] : [];
+      out += chosen
+        .map((idx) => node.options[idx]?.rawText || '')
+        .filter(Boolean)
+        .join(' / ');
+    } else if (node.kind === 'inline-input') {
+      out += state.inputValues[node.id] || node.origBracket;
+    } else if (node.kind === 'trava-alert') {
+      out += node.rawBracket;
+    } else if (node.kind === 'dose-formula') {
+      out += node.raw;
+    }
+  }
+  return out || block.rawLine || '';
+}
+
+function parsePediatricAgeParts(rawAge: string): { value: string; unit: 'meses' | 'anos' | null } {
+  const clean = String(rawAge || '').trim();
+  if (!clean) return { value: '', unit: null };
+  const mMatch = clean.match(/^(\d+(?:[.,]\d+)?)\s*(?:m|mes|meses)\b/i);
+  if (mMatch) return { value: mMatch[1], unit: 'meses' };
+  const aMatch = clean.match(/^(\d+(?:[.,]\d+)?)\s*(?:a|ano|anos)\b/i);
+  if (aMatch) return { value: aMatch[1], unit: 'anos' };
+  return { value: clean, unit: null };
+}
+
 /**
- * Sincroniza dados do paciente (idade, peso, gestante/IG) nos nós não editados manualmente da AST.
+ * Sincroniza dados do paciente (idade, peso, alergias, gestante/IG) nos nós não editados manualmente da AST.
  */
 export function applyPatientContextToAstState(
   ast: PepDocumentAst,
@@ -364,97 +433,193 @@ export function applyPatientContextToAstState(
     optionalOpen: { ...baseState.optionalOpen },
     travaExcluded: { ...baseState.travaExcluded },
     checkboxStates: { ...baseState.checkboxStates },
+    excludedBlocks: { ...(baseState.excludedBlocks || {}) },
     userEditedNodes: { ...baseState.userEditedNodes },
   };
 
-  let prevLineContext = '';
+  // Passo 1: garantir seleções default em choice-groups, sincronizar Alergias e unidade de idade (meses/anos)
   for (const block of ast.blocks) {
-    const lineContext = block.rawLine || '';
+    const topNodes = block.children;
+    for (let ni = 0; ni < topNodes.length; ni++) {
+      const node = topNodes[ni];
+      if (node.kind === 'choice-group') {
+        const currentSel = nextState.choiceSelections[node.id] || [];
+        if (currentSel.length === 0 && node.options.length > 0 && !isBloodTypeChoiceGroup(node.options)) {
+          nextState.choiceSelections[node.id] = [0];
+        }
+
+        // Sincronizar Alergias da barra do paciente com o grupo "Alergias: [*Nega / Alérgico(a) a: [ ]]"
+        if (/\balergia/i.test(node.beforeText) && !nextState.userEditedNodes[node.id]) {
+          const allergyOption =
+            node.options.find((o) => o.children.some((c) => c.kind === 'inline-input') && /al[eé]rg/i.test(o.rawText)) ||
+            node.options.find((o) => o.children.some((c) => c.kind === 'inline-input'));
+          const negaOption = node.options.find((o) => /\bnega\b/i.test(o.rawText)) || node.options[0];
+
+          if (clinicalContext.allergiesNormalized.length > 0 && allergyOption) {
+            nextState.choiceSelections[node.id] = [allergyOption.index];
+            const subInput = allergyOption.children.find((c) => c.kind === 'inline-input');
+            if (subInput && !nextState.userEditedNodes[subInput.id]) {
+              nextState.inputValues[subInput.id] = clinicalContext.allergiesRaw;
+            }
+          } else if (clinicalContext.allergiesNormalized.length === 0 && negaOption) {
+            nextState.choiceSelections[node.id] = [negaOption.index];
+            if (allergyOption) {
+              const subInput = allergyOption.children.find((c) => c.kind === 'inline-input');
+              if (subInput && !nextState.userEditedNodes[subInput.id]) {
+                delete nextState.inputValues[subInput.id];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Garantir defaults também em choice-groups aninhados dentro de opcionais
     walkInlineNodes(block.children, (node) => {
-      if (node.kind === 'inline-input') {
-        if (nextState.userEditedNodes[node.id]) return;
-
-        // Espelhamento de idade
-        if (node.mirrorRole === 'idade') {
-          if (clinicalContext.idadeText) {
-            nextState.inputValues[node.id] = clinicalContext.idadeText;
-          } else {
-            delete nextState.inputValues[node.id];
-          }
-          return;
+      if (node.kind === 'choice-group') {
+        const currentSel = nextState.choiceSelections[node.id] || [];
+        if (currentSel.length === 0 && node.options.length > 0 && !isBloodTypeChoiceGroup(node.options)) {
+          nextState.choiceSelections[node.id] = [0];
         }
+      }
+    });
+  }
 
-        // Espelhamento de IG (semanas)
+  // Passo 2: pré-seleção clínica inteligente (antes do cálculo de doses, para refletir fármaco escolhido)
+  applySmartContextPreselection(ast, nextState, clinicalContext);
+
+  // Passo 3: espelhar idade (com unidade meses/anos em pediatria), IG, peso e recalcular doses ponderais
+  // usando o texto das escolhas efetivamente selecionadas nas linhas anterior/atual/seguinte.
+  let prevEffectiveLine = '';
+  for (let bi = 0; bi < ast.blocks.length; bi++) {
+    const block = ast.blocks[bi];
+    const effectiveLine = renderBlockSelectedContext(block, nextState);
+    let nextEffectiveLine = '';
+    for (let nb = bi + 1; nb < ast.blocks.length; nb++) {
+      const candidate = ast.blocks[nb];
+      if (candidate.kind === 'paragraph' && candidate.isEmptyLine) continue;
+      if (candidate.kind === 'paragraph' && /^\s+/.test(candidate.rawLine)) {
+        nextEffectiveLine = renderBlockSelectedContext(candidate, nextState);
+      }
+      break;
+    }
+
+    // Detectar padrão pediátrico "[ ] [meses / anos]" na linha atual
+    const topNodes = block.children;
+    const ageUnitGroupByInputId = new Map<string, ChoiceGroupNode>();
+    for (let ni = 0; ni < topNodes.length; ni++) {
+      const n = topNodes[ni];
+      if (n.kind === 'inline-input' && n.mirrorRole === 'idade') {
+        const next1 = topNodes[ni + 1];
+        const next2 = topNodes[ni + 2];
+        const candidateGroup =
+          next1?.kind === 'choice-group'
+            ? next1
+            : next1?.kind === 'text' && next1.value.trim() === '' && next2?.kind === 'choice-group'
+              ? next2
+              : null;
         if (
-          node.obstetricRole === 'ig-def-w' ||
-          node.obstetricRole === 'ig-dum-w' ||
-          node.obstetricRole === 'ig-usg-w'
+          candidateGroup &&
+          candidateGroup.options.some((o) => /\bmes(?:es)?\b/i.test(o.rawText)) &&
+          candidateGroup.options.some((o) => /\banos?\b/i.test(o.rawText))
         ) {
-          if (clinicalContext.igWeeks !== null) {
-            nextState.inputValues[node.id] = String(Math.floor(clinicalContext.igWeeks));
-          } else {
-            delete nextState.inputValues[node.id];
-          }
-          return;
+          ageUnitGroupByInputId.set(n.id, candidateGroup);
         }
+      }
+    }
 
-        // Espelhamento de peso e recálculo ponderal inline
-        const isWeightSource = node.anthroRole === 'peso' || node.mirrorRole === 'peso';
-        if (isWeightSource) {
-          if (clinicalContext.weightKg !== null) {
-            nextState.inputValues[node.id] = String(clinicalContext.weightKg).replace('.', ',');
+    walkInlineNodes(block.children, (node) => {
+      if (node.kind !== 'inline-input') return;
+      if (nextState.userEditedNodes[node.id]) return;
+
+      // Espelhamento de idade (suportando "3a" -> "3" + "anos" e "8m" -> "8" + "meses")
+      if (node.mirrorRole === 'idade') {
+        const unitGroup = ageUnitGroupByInputId.get(node.id);
+        if (clinicalContext.idadeText) {
+          if (unitGroup) {
+            const parsed = parsePediatricAgeParts(clinicalContext.idadeText);
+            nextState.inputValues[node.id] = parsed.value;
+            if (parsed.unit && !nextState.userEditedNodes[unitGroup.id]) {
+              const unitOpt = unitGroup.options.find((o) =>
+                parsed.unit === 'meses' ? /\bmes(?:es)?\b/i.test(o.rawText) : /\banos?\b/i.test(o.rawText)
+              );
+              if (unitOpt) {
+                nextState.choiceSelections[unitGroup.id] = [unitOpt.index];
+              }
+            }
           } else {
-            delete nextState.inputValues[node.id];
-          }
-          return;
-        }
-
-        if (clinicalContext.weightKg !== null && clinicalContext.weightDoses) {
-          const autoDose = resolvePediatricDoseFieldValue({
-            isWeightSourceInput: false,
-            lineContext,
-            prevLineContext,
-            beforeText: node.beforeText,
-            afterText: node.afterText,
-            placeholder: node.placeholder,
-            weightKg: clinicalContext.weightKg,
-            doses: clinicalContext.weightDoses,
-          });
-          if (autoDose !== null) {
-            nextState.inputValues[node.id] = autoDose;
+            nextState.inputValues[node.id] = clinicalContext.idadeText;
           }
         } else {
-          // Se o peso foi limpo, limpar doses pediátricas auto-preenchidas (preservando defaults fixos)
-          const probe = resolvePediatricDoseFieldValue({
-            isWeightSourceInput: false,
-            lineContext,
-            prevLineContext,
-            beforeText: node.beforeText,
-            afterText: node.afterText,
-            placeholder: node.placeholder,
-            weightKg: 15,
-            doses: buildClinicalContext({ pesoKg: '15' }, { modId: 'ped' }).weightDoses!,
-          });
-          if (probe !== null) {
-            delete nextState.inputValues[node.id];
-          }
+          delete nextState.inputValues[node.id];
         }
-      } else if (node.kind === 'choice-group') {
-        const currentSel = nextState.choiceSelections[node.id] || [];
-        if (currentSel.length === 0 && node.options.length > 0) {
-          if (!isBloodTypeChoiceGroup(node.options)) {
-            nextState.choiceSelections[node.id] = [0];
-          }
+        return;
+      }
+
+      // Espelhamento de IG (semanas)
+      if (
+        node.obstetricRole === 'ig-def-w' ||
+        node.obstetricRole === 'ig-dum-w' ||
+        node.obstetricRole === 'ig-usg-w'
+      ) {
+        if (clinicalContext.igWeeks !== null) {
+          nextState.inputValues[node.id] = String(Math.floor(clinicalContext.igWeeks));
+        } else {
+          delete nextState.inputValues[node.id];
+        }
+        return;
+      }
+
+      // Espelhamento de peso e recálculo ponderal inline
+      const isWeightSource = node.anthroRole === 'peso' || node.mirrorRole === 'peso';
+      if (isWeightSource) {
+        if (clinicalContext.weightKg !== null) {
+          nextState.inputValues[node.id] = String(clinicalContext.weightKg).replace('.', ',');
+        } else {
+          delete nextState.inputValues[node.id];
+        }
+        return;
+      }
+
+      if (clinicalContext.weightKg !== null && clinicalContext.weightDoses) {
+        const autoDose = resolvePediatricDoseFieldValue({
+          isWeightSourceInput: false,
+          lineContext: effectiveLine,
+          prevLineContext: prevEffectiveLine,
+          nextLineContext: nextEffectiveLine,
+          beforeText: node.beforeText,
+          afterText: node.afterText,
+          placeholder: node.placeholder,
+          weightKg: clinicalContext.weightKg,
+          doses: clinicalContext.weightDoses,
+        });
+        if (autoDose !== null) {
+          nextState.inputValues[node.id] = autoDose;
+        }
+      } else {
+        // Se o peso foi limpo, limpar doses pediátricas auto-preenchidas (preservando defaults fixos)
+        const probe = resolvePediatricDoseFieldValue({
+          isWeightSourceInput: false,
+          lineContext: effectiveLine,
+          prevLineContext: prevEffectiveLine,
+          nextLineContext: nextEffectiveLine,
+          beforeText: node.beforeText,
+          afterText: node.afterText,
+          placeholder: node.placeholder,
+          weightKg: 15,
+          doses: buildClinicalContext({ pesoKg: '15' }, { modId: 'ped' }).weightDoses!,
+        });
+        if (probe !== null) {
+          delete nextState.inputValues[node.id];
         }
       }
     });
 
-    if (lineContext.trim()) {
-      prevLineContext = lineContext;
+    if (effectiveLine.trim()) {
+      prevEffectiveLine = effectiveLine;
     }
   }
 
-  applySmartContextPreselection(ast, nextState, clinicalContext);
   return nextState;
 }
 
@@ -470,6 +635,7 @@ export function serializeProtocolSection(
   return serializeAstToClinicalText(ast, state, clinicalContext, {
     keepEmptyBrackets: true,
     includeDoseFormulaCalc: true,
+    stripSafetyWarnings: section.id === 'receita',
     blockSubsetIndices: section.blockIndexSet,
   }).replace(/\*(\([^*\n]+\)\.?)\*/g, '$1');
 }
@@ -570,12 +736,15 @@ export function auditProtocolPrescription(
   clinicalContext: ClinicalContext
 ): ProtocolPrescriptionAudit {
   const hints = resolveProtocolPharmaHints(item);
+  const triggerLower = String(item.trigger || '').toLowerCase();
+  const isDeliveryPostpartumRx = triggerLower === ';cesarea' || triggerLower === ';pn-eutocico';
   const run = (zone: 'receita' | 'conduta'): PrescriptionAuditReport | null => {
     const text = sectionTexts[zone];
     if (!text || !text.trim()) return null;
     const items = extractPrescriptionItemsFromText(text, { defaultZone: zone }).map((it) => ({
       ...it,
       scope: zone,
+      postpartumScenario: it.postpartumScenario || (zone === 'receita' && isDeliveryPostpartumRx),
     }));
     if (items.length === 0) return null;
     return auditPrescription(items, clinicalContext, hints);

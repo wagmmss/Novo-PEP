@@ -319,6 +319,6 @@
 .pep-inline-input {
   field-sizing: content;
   min-width: 2.4ch;
-  max-width: 26ch;
+  max-width: 100%;
 }
 
