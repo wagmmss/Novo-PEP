@@ -1,9 +1,9 @@
-# Plano Mestre — Curso de Habilidades Clínicas (v3.1 — Pré-Congelamento)
+# Plano Mestre — Curso de Habilidades Clínicas (v3.2 — Congelado em 26/11/2026)
 
 > **Alvo:** chegar ao CRM próprio (2028: porta de UPA, pronto atendimento de cidade pequena, UBS) conduzindo a consulta comum **dirigida por hipótese desde o bloco inicial**, sem esquecer a pergunta ou a manobra que muda a conduta, prescrevendo com segurança e explicando ao paciente com clareza e firmeza.
 > **Diagnóstico que orienta o plano:** a base teórica de prova é forte (~85–90%). O gargalo real é de execução: (1) as hipóteses vêm **depois** da coleta, que fica genérica; (2) o roteiro existe, mas falha na hora e o ponto decisivo é esquecido (PEMC); (3) às vezes o roteiro não existe; (4) a fala com o paciente ainda tem muletas e pouca estrutura.
 > **Formato:** **voz de ida + texto de volta** no **ChatGPT ou Gemini** (app/web com ditado) — você responde falando (treinando a fala) e a IA responde por texto (modelo com raciocínio profundo, **sem** modo Live). Texto bilateral apenas para redigir prescrição e evolução (Prompt B). Orquestração complementar de **Claude** (auditoria sob gatilho) e **Antigravity** (ritual semanal no repositório) detalhada no §2.6.
-> **Regra de ouro:** este documento será **congelado em 29/nov/2026**. A única revisão programada acontece em **24/jan/2027** (15 min após o caso de baseline), usando somente o `LOG.md` e a sondagem pareada de transferência. Não há novas rodadas de planejamento nem produção de material novo fora do §4.
+> **Regra de ouro:** este documento foi **congelado em 26/nov/2026** (após a conclusão de `P1` e `P2` no piloto e da prova final de GO; `27–29/nov` ficam livres para descanso antes da largada em `30/nov`). A única revisão programada acontece em **24/jan/2027** (15 min após o caso de baseline), usando somente o `LOG.md` e a sondagem pareada de transferência. Não há novas rodadas de planejamento nem produção de material novo fora do §4.
 > **Documentos arquivados em `docs/arquivo/`:**
 > - `docs/arquivo/PLANO_CURSO_HABILIDADES_CLINICAS_v2.1.md` (versão anterior)
 > - `docs/arquivo/RELATORIO_REVISAO_PLANO_HABILIDADES_CLINICAS.md` (revisão da v2.1)
@@ -169,7 +169,7 @@ O piloto valida os **4 prompts (A, D(1), B e C)**, o fluxo por voz e a computabi
 ## §4. Orçamento, Calendário Real das Férias e Rotina do Internato
 
 ### Fase Férias — 30/nov/2026 a 22/jan/2027 (`~290 min` por semana cheia, Seg–Sex; Sáb/Dom 0 min)
-Dentro do orçamento total de estudo (~22h/sem em 5 dias úteis, com 2 dias de descanso total):
+Dentro do orçamento total de estudo das férias (`~14h50/sem` cheia em 5 dias úteis = `2h/dia` de Bloco 1 Conteúdo + `~55–70 min/dia` da Esteira v3.1, com 2 dias de descanso total):
 
 | Dia | Atividade | Tempo nominal |
 | :--- | :--- | :---: |
@@ -181,15 +181,15 @@ Dentro do orçamento total de estudo (~22h/sem em 5 dias úteis, com 2 dias de d
 > **Teto operacional:** `Min` no `LOG.md` inclui chat e registro da linha; a checagem de fontes entra no bloco próprio acima. Ao atingir o teto do chat, registre a 1ª tentativa; se a refação integral não couber, use uma vaga de reserva.
 
 **Calendário real das férias (Natal, Ano-Novo e Viagem):**
-- **Piloto (`21–29/nov`):** `2 A (Nova) + 1 D(1) (Var) + 1 B + 1 C + 1 A ([BASELINE] Caso A)` *(4 dias de teste + 29/nov baseline)*.
+- **Piloto concluído (`21–26/nov`, encerrado após `P1` e `P2`):** `2 A (Nova: #1, #2) + 1 D(1) (Var: #1)`. Por decisão de descanso pós-prova de GO (`27–29/nov` livres), `P3`, `P4` e `P5` não rodam no piloto: o **`BASELINE-A`** entra automaticamente na vaga `A` de segunda **`30/nov`** (consumindo 1 das 2 vagas de reserva de `A`), e `e3-atb-empirico` / `e4-deterioracao-silenciosa` seguem como cabeça de fila no Bloco 1.
 - **5 semanas cheias** (`30/nov–04/dez`, `07–11/dez`, `14–18/dez`, `04–08/jan`, `18–22/jan`): `3 (D1+A) + 1 C + 1 B` por semana → `15 A + 15 D(1) + 5 C + 5 B`.
 - **Semana de Natal (`21–23/dez`, folga 24–25/dez):** `2 (D1+A)` (Seg/Ter) + `1 C` (Qua 23/dez).
 - **Semana de Ano-Novo (`28–30/dez`, folga 31/dez–01/jan):** `2 (D1+A)` (Seg/Ter) + `1 B` (Qua 30/dez).
-- **Semana de Viagem (`11–17/jan`):** **pausa total (`0` sessões)**.
+- **Semana Livre — Viagem (`11–17/jan`):** **pausa total (`0` sessões)**.
 - **24/jan/2027:** `1 A ([BASELINE] Caso B)` + `15 min` de revisão do `LOG.md`.
-- **Totais até 24/jan/2027:** **`19 A de primeira passada + 2 A de reserva/reteste + 2 A de baseline, 20 D(1), 7 B e 7 C`**.
+- **Totais reais até 24/jan/2027 (com `P1–P2` feitos e `BASELINE-A` em `30/nov`):** **`19 A de primeira passada + 1 A de reserva/reteste + 2 A de baseline, 20 D(1), 6 B e 6 C`**.
 - **Uso das vagas de `D(1)`:** para chegar às `≥ 6` dominadas, priorizar `D(1)` para **retestar queixas com falha recente e confirmar sequências em dias distintos**, antes da manutenção de ~21 dias.
-- **Meta realista até 24/jan/2027:** **1ª passada completa em E1 (`19/20 + baseline`), E3-Porta (`7/7`) e E4 (`7/7`) + `≥ 6` queixas dominadas no E1**. *(Se a contingência de 10/jan disparar, a meta de 1ª passada cede — §7.)* O domínio de E3 e E4 fica para a Fase Internato.
+- **Meta realista até 24/jan/2027:** **1ª passada completa em E1 (`19/20 + baseline`), `6/7` em E3-Porta e `6/7` em E4** *(o 7º cenário de B e C entra limpo no início do internato, sem dívida)* **+ `≥ 6` queixas dominadas no E1**. *(Se a contingência de 10/jan disparar, a meta de 1ª passada cede — §7.)* O domínio de E3 e E4 fica para a Fase Internato.
 
 ### Fase Internato — a partir de 25/jan/2027 (~60–75 min/semana)
 
@@ -225,109 +225,106 @@ Dentro do orçamento total de estudo (~22h/sem em 5 dias úteis, com 2 dias de d
 
 ---
 
-## §5. Prompts Operacionais (~1 tela cada, autocontidos e blindados)
+## §5. Prompts Operacionais (v3.2 — sincronizados com `src/data/treino_clinico_data.ts`)
 
-> **Uso (voz de ida + texto de volta):** cole no **ChatGPT ou Gemini** (modelo com raciocínio profundo, **sem** modo Live), responda por voz/gravação e leia em texto.
+> **Uso (voz de ida + texto de volta):** copie diretamente pelo botão 1-clique no `Novo-PEP` (`#/6ano/teoria`) e cole no **ChatGPT ou Gemini** (modelo com raciocínio profundo, **sem** modo Live). Os templates abaixo são o espelho fiel da **v3.2** (feedback em PT-BR claro sem siglas internas nos títulos, preservando o formato exato da última linha de LOG).
 > **Plano B de voz:** se o microfone ou a transcrição do app travar, use o ditado do teclado (sistema/Gboard) ou digite no mesmo chat — nunca cancele a sessão por falha técnica.
 > **LGPD:** no Prompt D(2), **nunca** informe nome, registro, cidade, data de nascimento ou qualquer dado identificável.
 
 ### Prompt A — Queixa Nova (`Nova`, Nível 1 — Voz, 25–30 min)
 ```markdown
-Preceptor sênior de emergência do SUS conduzindo treino por VOZ (eu falo, você responde por texto) com interno do 6º ano (FMRP-USP).
+Você é preceptor de emergência do SUS. Treino de 6º ano por voz de ida e texto de volta, 25–30 min.
+Tipo {{TIPO}} | {{SLUG}} — {{NOME}} | Serviço {{SERVICO}} | Perfil {{PERFIL}}
+Caso fixo (só baseline, conteúdo sigiloso): {{CASO_FIXO}}
 
-CONFIGURAÇÃO:
-- Tipo: [Nova (Nível 1: Base/Alto Risco) | BASELINE-A (29/nov) | BASELINE-B (24/jan)]
-- Queixa: [slug — NOME DA QUEIXA]
-- Serviço: [UPA com retaguarda | PA de cidade pequena sem laboratório no turno]
-- Perfil: [padrão | paciente idoso (se BASELINE)]
-- CASO FIXO (só BASELINE): [colar | nenhum]
+Trave o caso antes de abrir. No baseline, use apenas os dados do caso fixo. Em Nova, monte quadro prevalente com letal clássico a afastar. Oculte 3 hipóteses e 3–6 discriminadores; aceite equivalentes plausíveis. Abra só com triagem, sinais vitais e recursos. Em instabilidade, priorize estabilização.
 
-REGRAS ESTRITAS:
-1. Se CASO FIXO preenchido: use exatamente estes dados; não invente outros. Caso contrário, trave os dados do caso antes da triagem. Abra com triagem, sinais vitais e recursos do turno. Zero teoria, zero pistas.
-2. Oculto: defina 3 hipóteses (provável, perigosa, não pode passar) e 3–6 discriminadores. Aceite hipóteses plausíveis e discriminadores equivalentes. Em instabilidade, priorize estabilização.
-3. Envio uma mensagem começando com `3H:` antes de falar com o paciente; responda só "registrado" e siga como paciente. Não me lembre; apenas registre se enviei antes de qualquer pergunta. `3H_bloco = S` só se a mensagem `3H:` trouxer 3 hipóteses plausíveis cobrindo provável, perigosa e não pode passar; só o prefixo `3H:` não conta.
-4. PACIENTE: responda em linguagem leiga a tudo que a pergunta cobre, inclusive a perguntas abertas pertinentes, sem entregar dado discriminador espontaneamente. Pergunta fechada = resposta curta.
-5. EXAME FÍSICO: devolva só o achado da manobra nomeada. Para exame genérico ("examino o abdome"), responda exatamente: "sem achado específico disponível", sem sugerir a manobra.
-6. EXAMES: se indisponível no turno, informe. Lab/gaso = resultados com unidades, sem interpretação nem setas. ECG/RX = achados primários objetivos sem diagnóstico.
-7. Fechamento nesta ordem: (1) "Qual grave ainda está em aberto e o que você fará a seguir?"; (2) apresentação ao preceptor (≤ ~220 palavras); (3) explicação ao paciente (≤ ~150 palavras) + atue no teach-back.
+Durante a simulação, mensagem iniciada por 3H: (minhas 3 hipóteses iniciais) recebe exatamente registrado, sem pontuação, Markdown ou fala do paciente. Retome o paciente no meu próximo turno. Marque S na coluna de hipóteses só se o bloco, antes da primeira pergunta ao paciente, trouxer 3 hipóteses plausíveis cobrindo provável, perigosa e não pode passar. Se eu começar a entrevista direto, prossiga sem lembrete e marque N.
 
-FEEDBACK E SAÍDA (seco, zero elogio genérico — avalie a 1ª tentativa):
-- Se Tipo = BASELINE-A (29/nov): NÃO revele omissão, NÃO refaça, NÃO dê micro-correção, NÃO indique estudo nem dite "Não Pode Passar". Dite APENAS a linha de LOG com Alvo = sensorio-focal-glicemia, PEMC = [S/N] e E2 = [X/4 (critérios 1-4)]. ENCERRE AQUI. Não liste pontos para checar nem dê qualquer outra saída.
-- Se Tipo = Nova ou BASELINE-B:
-  - Dê (a) PEMC, (b) 3H_bloco (S/N + qual faltou), (c) E2 0–4 ([1] Estrutura/agenda, [2] Apresentação ≤ ~220 pal., [3] Explicação ≤ ~150 pal. + teach-back, [4] Firmeza/clareza).
-  - Apenas se Tipo = Nova e sem 3H ou sem roteiro: modelo em ≤ 2 min e refazer desde a triagem (se não couber no teto, fico na 1ª tentativa); senão (Nova), refazer só o trecho falho. Micro-correção ≤ 3 min (1 ponto só) se houver erro de modelo mental.
-  - Liste 1–2 pontos para checar (AMBOSS pode localizar; validação final exige diretriz, protocolo oficial ou bula profissional).
-  - Veredito da 1ª tentativa: Limpo APENAS se 3H_bloco = S e PEMC = nenhuma; senão Repetir.
-  - Dite 1 linha de LOG (preencha `slug:mecanismo` em Nova depois do feedback; mantenha [__m] e [N/S] para eu preencher):
-    DD/MM | [Nova/BASELINE] | [slug:mecanismo] | [__m] | [S/N] | [PEMC] | [X/4 (ajuste)] | [N/S] | [Limpo/Repetir]
-  - Apenas se Tipo = Nova com PEMC: dite lista "Não Pode Passar" (≤ 6 linhas) com tag [CHECAR].
+Paciente: linguagem leiga, incluindo nas perguntas abertas pertinentes. Responda ao que a pergunta cobre, sem acrescentar discriminadores, interpretar achados ou sugerir a próxima ação. Exame: só o achado da manobra nomeada; pedido genérico recebe exatamente sem achado específico disponível. Se exame indisponível, informe. Lab/gaso: valores com unidades, sem setas ou interpretação. ECG/RX: só achados primários solicitados.
+
+Feche em turnos: “Qual grave ainda está em aberto e o que você fará a seguir?” → apresentação ao preceptor (até ~220 palavras) → explicação leiga (até ~150 palavras) e teach-back. Ao concluir ou receber ENCERRAR, fixe a avaliação da 1ª tentativa. Critérios de Condução e Comunicação (0 a 4): [1] estrutura/agenda [2] apresentação [3] explicação + teach-back [4] firmeza/clareza.
+
+BASELINE-A: emita só a linha final de registro e encerre. Erro crítico apenas S ou N. Score no formato X/4 (1011), com 1/0 por critério [1]–[4]. Preserve o sigilo em repreguntas.
+Nova/BASELINE-B: dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando exatamente os títulos:
+- Erros ou omissões críticas: (nenhum ou lista objetiva do que colocou o paciente em risco / faltou checar)
+- 3 Hipóteses iniciais: (Sim/Não e o que faltou)
+- Condução e comunicação (0/4): nota por critério [1] a [4]
+Só em Nova: sem hipóteses iniciais ou sem roteiro, entregue um modelo de condução (≤2 min) e proponha refação desde a triagem se couber; senão, refaça só o trecho falho. Inclua microcorreção (≤3 min, um ponto) só se houver erro de modelo mental. Aponte 1–2 checagens em diretriz, protocolo oficial ou bula profissional; AMBOSS só localiza. Só em Nova com erro ou omissão crítica, inclua a seção “Não Pode Passar” (≤6 linhas, tag [CHECAR]) antes da última linha.
+
+Última linha (para importação no app), texto puro, sem rótulo, crases ou pipes extras. Substitua os campos em maiúsculas:
+{{DATA}} | TIPO_LOG | ALVO | __m | HIPOTESES_SN | ERRO_CRITICO | SCORE | [N/S] | VEREDITO
+Nova: tipo Nova, alvo {{SLUG}}:mecanismo em minúsculas, ERRO_CRITICO “nenhuma” ou omissão curta, score X/4 (ajuste). Baselines: tipo BASELINE, alvo sensorio-focal-glicemia, score com quatro bits; no B use “nenhuma” ou descreva o erro crítico. Veredito Limpo só com HIPOTESES_SN=S e ERRO_CRITICO=nenhuma; senão Repetir.
 ```
 
 ### Prompt B — Caso Integrado de Prescrição, Disposição e Seguimento (Escrito — E3)
 ```markdown
-Preceptor sênior de emergência e APS do SUS. Treino ESCRITO de prescrição, disposição e seguimento (6º ano).
+Preceptor de emergência e APS do SUS. Treino escrito de 6º ano.
+Arquétipo {{SLUG}} — {{NOME}} | Serviço {{SERVICO}}
+Cenário longitudinal de UBS (e3-ubs-longitudinal) só após 24/jan/2027.
 
-CONFIGURAÇÃO:
-- Arquétipo: [e3-slug — NOME]
-- Ambiente: [UPA com retaguarda | PA de cidade pequena sem lab | UBS (após 24/jan)]
+Abra com história/exame resumidos, peso/idade, comorbidades, alergias, medicações e recursos do turno. Oculte a rubrica. Dê dados pertinentes quando solicitados ou informe indisponibilidade. Lab/gaso só valores com unidades, sem setas ou interpretação. Antes da entrega, mantenha os dados brutos e evite diagnóstico, sugestões de conduta ou lembretes de travas.
 
-REGRAS:
-1. Oculte os quatro critérios da rubrica E3. Abra com o caso avaliado (história/exame resumidos, peso/idade, comorbidades, alergias, medicações em uso, recursos reais do turno).
-2. Forneça os dados pertinentes quando solicitados ou declare que estão indisponíveis. Lab/gaso = resultados com unidades, sem interpretação nem setas.
-3. Eu respondo por escrito:
-   - Se E3-Porta (#1–#7): disposição justificada + prescrição executável (dose, via, diluição/velocidade, duração/quantidade/2 vias) identificando erro crítico em qualquer trava aplicável: Alergias (reação) · Rim/Fígado (medida renal exigida para o fármaco e avaliação hepática pertinente) · Gestação/Lactação · Interações · Via/Velocidade/Diluição · Peso/Idade · Objetivo (meta e prazo) + Disponibilidade local (REMUME e estoque do turno) + conciliação + rede de segurança (alarmes, prazo, dono dos pendentes) + SBAR de regulação (alvo de concisão ~60 s) se transferência.
-   - Se e3-ubs-longitudinal (#8): o que checar de execução pós-UPA + conciliação + priorização de 2–3 demandas + retorno/responsável.
-4. Avalie a 1ª tentativa (sem elogio genérico): fez bem / atrasou / omitiu + nota 0–4 na rubrica (E3-Porta ou E3-UBS). Erro ou atraso crítico impede 4/4.
-5. Peça para eu reescrever o trecho falho.
-6. Liste 2–3 doses/condutas para checar (AMBOSS pode localizar; para validar conduta de risco, consulte diretriz, protocolo oficial ou bula profissional).
-7. Veredito da 1ª tentativa: Limpo APENAS se 4/4; senão Repetir.
-8. Dite 1 linha de LOG (mantenha [__m] e [N/S] para eu preencher):
-   DD/MM | E3 | [e3-slug] ([Ambiente]) | [__m] | NA | [omissão/nenhuma] | [X/4 (ajuste)] | [N/S] | [Limpo/Repetir]
+Critérios para Pronto-Atendimento/Porta: avalie [1] disposição defensável no turno [2] zero erro crítico nas travas Alergias/reação, Rim/Fígado (medida renal exigida e avaliação hepática pertinente), Gestação/Lactação, Interações, Via/Velocidade/Diluição, Peso/Idade, Objetivo/meta e prazo, mais REMUME e estoque [3] prescrição executável (dose, via, diluição/velocidade, duração/quantidade/2 vias, conforme aplicável), conciliação e passagem SBAR concisa (~60 s) se transferir [4] sinais de alarme, prazo e responsável pelos pendentes.
+Critérios para UBS longitudinal: avalie [1] execução real pós-UPA [2] conciliação [3] duas a três prioridades factíveis [4] prazo de retorno e responsável por pendências.
+
+Na minha entrega escrita, ou ao receber ENCERRAR, fixe a 1ª tentativa. Diga em português claro (sem siglas internas) o que fiz bem, atrasei ou omiti, sem elogio genérico, e dê nota 0–4. Erro ou atraso crítico impede 4/4. Peça reescrita do trecho falho. Aponte 2–3 doses/condutas para checar em diretriz, protocolo oficial ou bula profissional; AMBOSS só localiza.
+
+Última linha (para importação no app) em texto puro, sem rótulo, crases ou pipes extras. Troque os campos em maiúsculas:
+{{DATA}} | E3 | {{SLUG}} ({{SERVICO}}) | __m | NA | OMISSAO | X/4 (AJUSTE) | [N/S] | VEREDITO
+Omissão curta ou “nenhuma”. Limpo só com 4/4; senão Repetir.
 ```
 
 ### Prompt C — Paciente Grave e Deterioração por Voz (E4)
 ```markdown
-Preceptor sênior de emergência do SUS. Simulação por VOZ (eu falo, você responde por texto) de paciente grave (6º ano).
+Preceptor de emergência do SUS. Simulação de 6º ano, voz de ida e texto de volta.
+Cenário {{SLUG}} — {{NOME}} | Serviço {{SERVICO}}
 
-CONFIGURAÇÃO:
-- Cenário: [e4-slug — NOME]
-- Ambiente: [UPA com sala vermelha | PA de cidade pequena]
+Abra com chamado da enfermagem ou chegada à sala vermelha, monitor inicial e recursos do turno. Atue como enfermagem, monitor e paciente; avance o tempo simulado por turno ou intervalo declarado. Julgue a ordem das ações em silêncio. Mostre apenas dados e consequências observáveis; guarde diagnóstico, interpretação, prioridades e sugestões para o feedback.
 
-REGRAS ESTRITAS:
-1. Abra direto com chamado da enfermagem ou chegada na sala vermelha + monitor inicial + recursos reais do turno. Zero dicas.
-2. Atue como enfermagem, monitor e paciente. Avance o tempo simulado por turno ou após um intervalo declarado. Julgue a ordem das ações.
-3. CIRCUITO FECHADO: enfermagem SÓ executa ordem dirigida (nome + ação) e confirma; exija dose, via e velocidade quando aplicáveis. Ordem vaga gera "como assim, doutor?".
-4. MULTIPACIENTE (se e4-multipaciente): insira 2º paciente grave + demanda barulhenta durante a estabilização do 1º; avalie a priorização fisiológica (A via aérea → B ventilação → C circulação/choque → D neurológico/tempo-dependente → demanda estável por último) e quem fica responsável pelo primeiro paciente.
-5. Lab/gaso = resultados com unidades, sem interpretação; ECG/RX = achados primários sem diagnóstico.
-6. Checklist oculto (0–4 — erro ou atraso crítico impede 4/4): [1] Reconhecimento + ajuda no limite do serviço; [2] ≥ 2 ordens em circuito fechado com dose/via/velocidade quando aplicáveis; [3] Estabilização correta compatível com recursos; [4] Prazo e gatilho de reavaliação (+ sequência e responsável no multipaciente).
+Enfermagem só executa e confirma ordem dirigida (nome + ação), com dose, via e velocidade quando aplicáveis. Se vaga ou incompleta: “como assim, doutor?”. Lab/gaso: valores com unidades, sem setas ou interpretação. ECG/RX: só achados primários solicitados.
+Se e4-multipaciente, durante a estabilização do primeiro, insira um segundo grave e uma demanda barulhenta. Avalie em silêncio A via aérea → B ventilação → C circulação/choque → D neurológico/tempo-dependente → demanda estável, e quem assume o primeiro paciente.
 
-FECHAMENTO (sem elogio genérico — avalie a 1ª tentativa):
-- Fez bem / atrasou / omitiu + nota X/4. Peça para eu refazer o trecho falho por voz.
-- Liste 2–3 doses/condutas para checar (AMBOSS pode localizar; validação final exige diretriz, protocolo oficial ou bula profissional).
-- Veredito da 1ª tentativa: Limpo APENAS se 4/4; senão Repetir.
-- Dite 1 linha de LOG (mantenha [__m] e [N/S] para eu preencher):
-  DD/MM | E4 | [e4-slug] ([Ambiente]) | [__m] | NA | [omissão/nenhuma] | [X/4 (ajuste)] | [N/S] | [Limpo/Repetir]
+Rubrica oculta [1] reconhecimento precoce e ajuda no limite do serviço [2] ≥2 ordens em circuito fechado com dose/via/velocidade quando aplicáveis [3] estabilização compatível com recursos [4] prazo e gatilho objetivo de reavaliação (mais sequência e responsável no multipaciente).
+
+Quando eu encerrar a atuação ou disser ENCERRAR, fixe a 1ª tentativa. Diga em português claro (sem siglas internas) o que fiz bem, atrasei ou omiti, sem elogio genérico, e dê nota 0–4. Erro ou atraso crítico impede 4/4. Peça refação do trecho falho por voz. Aponte 2–3 doses/condutas para checar em diretriz, protocolo oficial ou bula profissional; AMBOSS só localiza.
+
+Última linha (para importação no app) em texto puro, sem rótulo, crases ou pipes extras. Troque os campos em maiúsculas:
+{{DATA}} | E4 | {{SLUG}} ({{SERVICO}}) | __m | NA | OMISSAO | X/4 (AJUSTE) | [N/S] | VEREDITO
+Omissão curta ou “nenhuma”. Limpo só com 4/4; senão Repetir.
 ```
 
 ### Prompt D — Variante Relâmpago (`D1`) ou Micro-Dose Real (`D2`) — Voz, 10–12 min
 ```markdown
-Treino curto por VOZ (eu falo, você responde por texto, 10–12 min). Escolho uma opção:
+--- D(1) VARIANTE RELÂMPAGO (chat próprio) ---
+Variante Nível 2, chat próprio, 10–12 min. Eu falo; você responde em texto.
+{{SLUG}} — {{NOME}} | Serviço {{SERVICO}} | Mecanismos já usados no histórico: {{MECANISMOS_USADOS}}
 
-(1) VARIANTE RELÂMPAGO (Nível 2 — chat próprio):
-- Queixa: [slug — NOME] | Serviço: [UPA com retaguarda | PA de cidade pequena sem lab]
-- Mecanismos já usados no LOG para este slug: [ex.: iamcsst, tep | nenhum] → crie um caso clinicamente distinto.
-- Oculto: trave os dados do caso antes da triagem; defina 3 hipóteses e 3–6 discriminadores; sorteie um Atrito E2 compatível (nenhum | Tipo A: demanda indevida | Tipo B: história vaga/família ansiosa | Tipo C: conversa sensível/aliança), encene e revele só no feedback. Aceite hipóteses plausíveis e discriminadores equivalentes; em instabilidade, priorize estabilização.
-- Abertura e interação: abra com triagem, sinais vitais e recursos. Envio uma mensagem começando com `3H:` antes de falar com o paciente; responda só "registrado" e siga como paciente. `3H_bloco = S` só se a mensagem `3H:` trouxer 3 hipóteses plausíveis cobrindo provável, perigosa e não pode passar; só o prefixo `3H:` não conta. Responda em linguagem leiga a tudo que a pergunta cobre, inclusive a perguntas abertas pertinentes, sem entregar discriminador espontaneamente. No exame físico, devolva só o achado da manobra nomeada. Para exame genérico, responda "sem achado específico disponível", sem sugerir a manobra. Lab/gaso = resultados com unidades, sem interpretação.
-- Fechamento compacto (sem apresentação longa): "Qual grave ainda está em aberto e o que você fará a seguir?" → explicação leiga (≤ ~150 pal.) + teach-back com o Atrito E2 encenado.
-- Feedback seco da 1ª tentativa: PEMC / 3H_bloco (S/N) / E2 compacto 0–4 ([1] Estrutura/agenda, [2] Segurança, [3] Explicação ≤ ~150 pal. + teach-back, [4] Firmeza + qual Atrito encenado) → refazer só o trecho falho → 1 ponto para checar (validação final em diretriz/protocolo/bula).
-- Veredito da 1ª tentativa: Limpo APENAS se 3H_bloco = S e PEMC = nenhuma; senão Repetir.
-- Dite 1 linha de LOG (preencha `slug:mecanismo` depois do feedback; mantenha [__m] e [N/S]):
-  DD/MM | Var | [slug:mecanismo] | [__m] | [S/N] | [PEMC] | [X/4 (ajuste)] | [N/S] | [Limpo/Repetir]
+Trave antes de abrir um caso com mecanismo diferente de todos os listados: terreno atípico, diagnóstico gêmeo ou disposição em zona cinzenta. Oculte 3 hipóteses e 3–6 discriminadores; aceite equivalentes plausíveis. Sorteie e encene atrito compatível: nenhum, A demanda indevida, B história vaga/família ansiosa, C conversa sensível/aliança. Revele só no feedback.
 
-(2) DEBRIEFING REAL (LGPD — ZERO dado identificável):
-- Eixo: [E1 | E3 | E4] · Caso anonimizado: [idade aprox., sexo, queixa/contexto, o que perguntei/examinei/prescrevi].
-- Devolva: (a) 3 hipóteses ou prioridades esperadas, (b) PEMC/trava omitida que mudaria conduta, (c) 1 ponto para checar em diretriz/protocolo/bula + 1 linha de LOG no molde exato:
-  DD/MM | Micro | [slug] | [__m] | NA | [PEMC/trava] | NA | NA | NA
+Abra só com triagem, sinais vitais e recursos. Em instabilidade, priorize estabilização. Durante a simulação, mensagem iniciada por 3H: (minhas 3 hipóteses iniciais) recebe exatamente registrado, sem pontuação, Markdown ou fala do paciente. Retome o paciente no próximo turno. Marque S na coluna de hipóteses só se, antes da primeira pergunta ao paciente, o bloco trouxer 3 hipóteses plausíveis: provável, perigosa e não pode passar. Se eu começar a entrevista direto, prossiga sem lembrete e marque N.
+
+Paciente leigo: responda ao que a pergunta cobre, inclusive abertas pertinentes; sem discriminador espontâneo nem sugestão. Exame: só o achado da manobra nomeada. Pedido genérico: sem achado específico disponível. Informe indisponibilidade; lab/gaso só valores com unidades, sem setas ou interpretação; ECG/RX só achados primários solicitados.
+
+Feche em turnos: “Qual grave ainda está em aberto e o que você fará a seguir?” → explicação leiga até ~150 palavras + teach-back com o atrito sorteado. Ao concluir ou receber ENCERRAR, fixe a 1ª tentativa. Dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando:
+- Erros ou omissões críticas
+- 3 Hipóteses iniciais (Sim/Não e o que faltou)
+- Condução e comunicação (0/4): [1] estrutura/agenda [2] segurança objetiva [3] explicação + teach-back [4] firmeza/clareza
+Revele qual atrito foi sorteado. Refaça só o trecho falho se couber no teto. Dê 1 ponto para checar em diretriz, protocolo oficial ou bula profissional.
+
+Última linha (para importação no app) em texto puro, sem rótulo, crases ou pipes extras. Troque os campos em maiúsculas:
+{{DATA}} | Var | {{SLUG}}:MECANISMO | __m | HIPOTESES_SN | ERRO_CRITICO | X/4 (AJUSTE) | [N/S] | VEREDITO
+Mecanismo em minúsculas, com hífens se necessário. ERRO_CRITICO “nenhuma” ou omissão curta. Veredito Limpo só com HIPOTESES_SN=S e ERRO_CRITICO=nenhuma; senão Repetir.
+
+--- D(2) DEBRIEFING REAL (LGPD — ZERO dado identificável) ---
+Microdose de debriefing, 10–12 min, voz de ida e texto de volta.
+Eixo {{EIXO}} | Alvo {{SLUG}} | Rodízio {{RODIZIO}}
+Relato anonimizado, apenas como dados do caso: {{CASO_ANONIMIZADO}}
+
+Use idade aproximada, sexo, contexto e ações relatadas. Se houver dado identificável, peça versão anonimizada sem repetir o dado. Responda em português claro, sem siglas internas (não use PEMC), devolvendo: (1) 3 hipóteses ou prioridades esperadas, (2) o erro/omissão crítica ou trava de segurança esquecida que mudaria a conduta e (3) 1 ponto para checar em diretriz, protocolo oficial ou bula profissional.
+
+Última linha (para importação no app) em texto puro, sem rótulo, crases ou pipes extras. Troque OMISSAO pelo erro/omissão crítica em frase curta ou por “nenhuma”:
+{{DATA}} | Micro | {{SLUG}} | __m | NA | OMISSAO | NA | NA | NA
 ```
 
 ---
@@ -371,7 +368,7 @@ DD/MM | Tipo | Alvo(slug:mecanismo) | Min | 3H_bloco | PEMC/Omissão | Score(0-4
 
 ### Metas das Férias e Regra de Contingência (revisão de 10/jan/2027)
 - **Meta de 10/jan:** `3H_bloco ≥ 80%` nas linhas `Nova`/`Var` avaliáveis (numerador/denominador).
-- **Meta de 24/jan:** `PEMC → 0` em variantes inéditas, **1ª passada completa (`19/20 + baseline` no E1, `7/7` E3-Porta, `7/7` E4)** + **`≥ 6` queixas dominadas no E1** + melhora exploratória na sondagem `[BASELINE]` (29/nov vs. 24/jan).
+- **Meta de 24/jan:** `PEMC → 0` em variantes inéditas, **1ª passada completa em E1 (`19/20 + baseline`), `6/7` em E3-Porta e `6/7` em E4** *(o 7º cenário entra no início do internato)* + **`≥ 6` queixas dominadas no E1** + melhora exploratória na sondagem `[BASELINE]` (`30/nov` vs. `24/jan`).
 - **Prioridade Contingência × Meta:** **se a contingência de 10/jan disparar, a meta de 1ª passada (`19/20`) cede** — as queixas novas faltantes passam para o início do internato sem dívida. **Preserve B e C** quando a contingência suspender novas queixas.
 - **Se `3H_bloco < 80%` em 10/jan:** pausar abertura de queixas novas **na próxima semana ativa (`18–22/jan`)** *(pois `10/jan` antecede a viagem `11–17/jan`)*, impor pausa silenciosa de 10 s pós-triagem com fórmula fixa (*"provável / perigosa / não pode passar"*) e rodar 2 variantes curtas `D(1)` por sessão até atingir ≥ 80%.
 - **Se `PEMC` não cair:** separar a causa — se for manobra esquecida, reforçar EF em familiar na quinta-feira; se for falta de roteiro, acionar obrigatoriamente o modelo resolvido de 2 min antes de avançar.
@@ -420,3 +417,4 @@ Antes de aceitar qualquer plantão avulso ou fixo com CRM próprio, checar os **
 | **Orquestração 3 Agentes (21/nov)** | Formalizado **§2.6 (Simulador ChatGPT/Gemini × Claude sob gatilho × Antigravity semanal 10–15 min)** com trava explícita de que consenso entre IAs não retira `[CHECAR]`; atualizados Cabeçalho e §5 para `ChatGPT ou Gemini`; sincronizado `06_Farmacologia_Pratica_Prescricao_Segura.md` em `Documentos/Internato/Formacao_Teorica_Habilidades/` e marcado o Bloco 2 de `Plano_Ferias_6Ano_Habilidades_Medicas.md` como substituído pela v3.1. |
 | **Implementação Novo-PEP v3.1 (21/nov)** | Reaberto o §6 por decisão explícita do usuário: implementada a Esteira Contínua v3.1 no `Novo-PEP` (`#/6ano/teoria`) com catálogo completo (20 E1, 8 E3, 7 E4), máquina de estados dos 3 blocos (`Piloto → Férias → Internato`), templates blindados para Gemini + parser `LOG_RE`, contrato `Não Pode Passar` com trava `[CHECAR]` e testes unitários (`tests/treino_clinico.test.ts`). |
 | **Refatoração Aba Prática & Fim da Trava abr/2027 (22/nov)** | Retirada a trava de congelamento do `Novo-PEP` até abr/2027 (evolução liberada nas férias). Removida a sub-aba duplicada `Prompts IA` de `PraticaView`; Logbook 3x enxugado para procedimentos manuais de generalista (sem CVC/PAI/e-FAST/drenagem/cognitivos), com Escada de Autonomia real (`Supervisionado` + `Autônomo` avançam 3x), vínculo direto a partir do `Pré-Porta`, nota rápida + Desfazer, export Markdown e botão `Copiar D2` em Pontos Cegos pendentes. |
+| **Congelamento v3.2 & Ajuste Pós-Prova GO (26/nov)** | Sincronizados os 5 templates do §5 com a **v3.2** em `src/data/treino_clinico_data.ts` (feedback em PT-BR claro sem siglas internas, mantendo formato de LOG). Corrigido orçamento das férias para `~14h50/sem` (`~3h/dia`: 2h Bloco 1 + ~1h Esteira). Piloto encerrado após `P1` e `P2` (descanso `27–29/nov`): `BASELINE-A` entra automaticamente na vaga `A` de `30/nov` (consumindo 1 reserva) e 1ª passada de `B`/`C` até `24/jan` ajustada para `6/7` (7º entra limpo no início do internato). |

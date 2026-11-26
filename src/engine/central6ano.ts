@@ -1134,6 +1134,83 @@ export function buildDailyTimeline(state: Central6AnoState): TimelineStep[] {
     ];
   }
 
+  if (state.rodizioId === 'ferias' || state.arquetipoId === 'ferias_4h') {
+    const semAtual = FERIAS_SEMANAS.find((s) => s.id === state.feriasSemana) || FERIAS_SEMANAS[0];
+
+    if (semAtual?.isFreeWeek) {
+      return [
+        {
+          id: 'ferias-livre',
+          horario: 'Dia Todo',
+          titulo: 'Semana Livre — Viagem & Pausa Total (11–17/01)',
+          detalhe: 'Zero teoria nova, zero questões e zero Esteira v3.1. Anki pausado (Postpone FSRS em 18/01).',
+          categoria: 'DESCANSO',
+          corCategoria: '#818cf8',
+        },
+      ];
+    }
+
+    if (state.arquetipoId === 'fds' || state.diaSemana === 'sab' || state.diaSemana === 'dom') {
+      return [
+        {
+          id: 'ferias-fds-descanso',
+          horario: 'Fim de Semana',
+          titulo: 'Descanso de Férias (0 min Esteira · 0 teoria nova)',
+          detalhe: 'Sem blocos de conteúdo nem treino de habilidades no FDS (exceto Baseline B em 24/01).',
+          categoria: 'DESCANSO',
+          corCategoria: '#818cf8',
+        },
+        {
+          id: 'ferias-fds-anki',
+          horario: 'Opcional (15–20m)',
+          titulo: 'Manutenção Anki FSRS (ou Easy Days)',
+          detalhe: 'Fila leve para evitar acúmulo na segunda-feira, ou modo Easy Days no FSRS.',
+          categoria: 'ANKI',
+          corCategoria: '#10b981',
+        },
+      ];
+    }
+
+    const isSexta = state.diaSemana === 'sex';
+    const isQuinta = state.diaSemana === 'qui';
+    const blocoEsteira = isQuinta
+      ? 'Prompt C (30m) + 10m EF em familiar + 5m gravação semanal + 5–10m checagem de fontes.'
+      : isSexta
+        ? 'Prompt B escrito (40m) + 10–15m checagem de fontes.'
+        : 'Prompt D(1) (10–12m) + Prompt A (25–30m) + 10–15m checagem de fontes (+10m visual se aplicável).';
+
+    return [
+      {
+        id: 'ferias-anki',
+        horario: '08h30 · 30 min',
+        titulo: 'Bloco 1 · Anki (Fila FSRS do Dia)',
+        detalhe: 'Revisão focada (teto 80–120 cards). Na S6, zerar cards novos a partir de 06/01.',
+        categoria: 'ANKI',
+        corCategoria: '#10b981',
+      },
+      {
+        id: 'ferias-conteudo',
+        horario: '09h00 · 1h30',
+        titulo: isSexta
+          ? 'Bloco 1 · 60m MedQuest + 30m Refazer Erradas da Semana'
+          : 'Bloco 1 · 60m MedQuest + 30m Medway/Diretriz no Erro Principal',
+        detalhe: `Foco da semana: ${semAtual.focoConteudo}.`,
+        categoria: 'CONTEÚDO (2h)',
+        corCategoria: '#0284c7',
+      },
+      {
+        id: 'ferias-esteira',
+        horario: '10h45 · ~55–70m',
+        titulo: 'Bloco 2 · Esteira Contínua v3.1 (Habilidades)',
+        detalhe: blocoEsteira,
+        categoria: 'ESTEIRA v3.1',
+        corCategoria: '#2dd4bf',
+        atalhoSecao: 'teoria',
+        atalhoLabel: 'Abrir Esteira v3.1',
+      },
+    ];
+  }
+
   return [
     {
       id: 'dc-hospital',

@@ -899,6 +899,25 @@ test('Plano 6º Ano: persistência de rodízio, semana de férias, arquétipo de
     assert.equal(sched.days.ter.recommendedAnkiCards, 0);
     const posSteps = buildDailyTimeline(migrateCentral6AnoState({ arquetipoId: 'pos_plantao' }));
     assert.ok(posSteps.every((s) => !/anki/i.test(s.titulo) && !/anki/i.test(s.detalhe)));
+
+    // Férias: timeline deve refletir Bloco 1 (~2h) + Esteira v3.1 (~1h), e não "Turnos no Hospital"
+    const feriasUtil = buildDailyTimeline(
+      migrateCentral6AnoState({ rodizioId: 'ferias', feriasSemana: 'sem1', arquetipoId: 'ferias_4h', diaSemana: 'seg' })
+    );
+    assert.equal(feriasUtil.length, 3);
+    assert.ok(feriasUtil.every((s) => !/hospital/i.test(s.titulo)));
+    assert.ok(feriasUtil.some((s) => s.id === 'ferias-esteira' && s.atalhoSecao === 'teoria'));
+
+    const feriasLivre = buildDailyTimeline(
+      migrateCentral6AnoState({ rodizioId: 'ferias', feriasSemana: 'sem7', arquetipoId: 'ferias_4h', diaSemana: 'seg' })
+    );
+    assert.equal(feriasLivre.length, 1);
+    assert.equal(feriasLivre[0].id, 'ferias-livre');
+
+    const feriasFds = buildDailyTimeline(
+      migrateCentral6AnoState({ rodizioId: 'ferias', feriasSemana: 'sem1', arquetipoId: 'fds', diaSemana: 'sab' })
+    );
+    assert.equal(feriasFds[0].id, 'ferias-fds-descanso');
   } finally {
     (globalThis as Record<string, unknown>).window = originalWindow;
   }
