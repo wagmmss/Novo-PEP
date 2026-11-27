@@ -78,8 +78,14 @@
   color: #3f3f46;
   font-size: 0.9375rem;
   line-height: 1.68;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+@media (min-width: 640px) {
+  .editorial-prose {
+    font-size: 1rem;
+  }
 }
 
 .dark .editorial-prose {
@@ -261,6 +267,7 @@ a.guia-link:hover {
 .editorial-prose .mq-table-wrap {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin: 0.85rem 0;
   border: 1px solid rgba(228, 228, 231, 0.85);
   border-radius: 0.5rem;
@@ -275,9 +282,27 @@ a.guia-link:hover {
 .editorial-prose .guia-table,
 .editorial-prose .mq-table {
   width: 100%;
+  min-width: 520px;
   border-collapse: collapse;
   font-size: 0.84rem;
   text-align: left;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.editorial-prose th,
+.editorial-prose td {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+@media (max-width: 639px) {
+  .editorial-prose .guia-table-wrap th:first-child,
+  .editorial-prose .guia-table-wrap td:first-child,
+  .editorial-prose .mq-table-wrap th:first-child,
+  .editorial-prose .mq-table-wrap td:first-child {
+    min-width: 112px;
+  }
 }
 
 .editorial-prose th {
@@ -431,6 +456,61 @@ a.guia-link:hover {
 .dark .editorial-prose mark.teoria-search-mark-active {
   background-color: #f59e0b;
   color: #0f1115;
+}
+
+.editorial-prose .teoria-drill-inline-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  margin-top: 0.65rem;
+  border-top: 1px dashed rgba(212, 212, 216, 0.85);
+}
+
+.dark .editorial-prose .teoria-drill-inline-bar {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.editorial-prose .teoria-drill-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(212, 212, 216, 0.95);
+  background-color: #ffffff;
+  color: #3f3f46;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.editorial-prose .teoria-drill-inline-btn:hover {
+  border-color: rgba(15, 118, 110, 0.5);
+  color: #0f766e;
+}
+
+.editorial-prose .teoria-drill-inline-btn.teoria-drill-inline-btn-done {
+  border-color: rgba(15, 118, 110, 0.45);
+  background-color: rgba(240, 253, 250, 0.95);
+  color: #0f766e;
+}
+
+.dark .editorial-prose .teoria-drill-inline-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: #0f1115;
+  color: #d1d5db;
+}
+
+.dark .editorial-prose .teoria-drill-inline-btn:hover {
+  border-color: rgba(45, 212, 191, 0.5);
+  color: #2dd4bf;
+}
+
+.dark .editorial-prose .teoria-drill-inline-btn.teoria-drill-inline-btn-done {
+  border-color: rgba(45, 212, 191, 0.45);
+  background-color: rgba(45, 212, 191, 0.14);
+  color: #2dd4bf;
 }
 
 @media print {

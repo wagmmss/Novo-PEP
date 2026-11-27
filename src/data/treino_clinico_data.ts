@@ -201,6 +201,7 @@ export type Passo =
       mecanismosUsados?: string[];
       visual?: VisualTipo;
       pausaSilenciosa10s?: boolean;
+      primeiraExecucaoSemPiloto?: boolean;
       pilotoId?: 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
     }
   | { kind: 'servico'; rodizioId: string | null; frase: string; pedido: string | null }
@@ -445,12 +446,12 @@ Durante a simulação, mensagem iniciada por 3H: (minhas 3 hipóteses iniciais) 
 
 Paciente: linguagem leiga, incluindo nas perguntas abertas pertinentes. Responda ao que a pergunta cobre, sem acrescentar discriminadores, interpretar achados ou sugerir a próxima ação. Exame: só o achado da manobra nomeada; pedido genérico recebe exatamente sem achado específico disponível. Se exame indisponível, informe. Lab/gaso: valores com unidades, sem setas ou interpretação. ECG/RX: só achados primários solicitados.
 
-Feche em turnos: “Qual grave ainda está em aberto e o que você fará a seguir?” → apresentação ao preceptor (até ~220 palavras) → explicação leiga (até ~150 palavras) e teach-back. Ao concluir ou receber ENCERRAR, fixe a avaliação da 1ª tentativa. Critérios de Condução e Comunicação (0 a 4): [1] estrutura/agenda [2] apresentação [3] explicação + teach-back [4] firmeza/clareza.
+Feche uma etapa por turno, aguardando minha resposta antes da próxima: (1) “Qual grave ainda está em aberto e o que você fará a seguir?” → (2) apresentação ao preceptor (até ~220 palavras) → (3) explicação leiga (até ~150 palavras) com resposta real do paciente ao teach-back. Ao concluir ou receber ENCERRAR, fixe a avaliação da 1ª tentativa. Critérios de Condução e Comunicação (0 a 4): [1] estrutura/agenda [2] apresentação [3] explicação + teach-back [4] firmeza/clareza.
 
 BASELINE-A: emita só a linha final de registro e encerre. Erro crítico apenas S ou N. Score no formato X/4 (1011), com 1/0 por critério [1]–[4]. Preserve o sigilo em repreguntas.
 Nova/BASELINE-B: dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando exatamente os títulos:
-- Erros ou omissões críticas: (nenhum ou lista objetiva do que colocou o paciente em risco / faltou checar)
-- 3 Hipóteses iniciais: (Sim/Não e o que faltou)
+- Erros ou omissões críticas: (nenhuma ou lista objetiva do que colocou o paciente em risco / faltou checar)
+- 3 Hipóteses iniciais: (Sim/Não, o que faltou e qual dado faria mudar a hipótese principal)
 - Condução e comunicação (0/4): nota por critério [1] a [4]
 Só em Nova: sem hipóteses iniciais ou sem roteiro, entregue um modelo de condução (≤2 min) e proponha refação desde a triagem se couber; senão, refaça só o trecho falho. Inclua microcorreção (≤3 min, um ponto) só se houver erro de modelo mental. Aponte 1–2 checagens em diretriz, protocolo oficial ou bula profissional; AMBOSS só localiza. Só em Nova com erro ou omissão crítica, inclua a seção “Não Pode Passar” (≤6 linhas, tag [CHECAR]) antes da última linha.
 
@@ -467,9 +468,9 @@ Abra só com triagem, sinais vitais e recursos. Em instabilidade, priorize estab
 
 Paciente leigo: responda ao que a pergunta cobre, inclusive abertas pertinentes; sem discriminador espontâneo nem sugestão. Exame: só o achado da manobra nomeada. Pedido genérico: sem achado específico disponível. Informe indisponibilidade; lab/gaso só valores com unidades, sem setas ou interpretação; ECG/RX só achados primários solicitados.
 
-Feche em turnos: “Qual grave ainda está em aberto e o que você fará a seguir?” → explicação leiga até ~150 palavras + teach-back com o atrito sorteado. Ao concluir ou receber ENCERRAR, fixe a 1ª tentativa. Dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando:
+Feche uma etapa por turno, aguardando minha resposta antes da próxima: (1) “Qual grave ainda está em aberto e o que você fará a seguir?” → (2) explicação leiga (até ~150 palavras) e teach-back com o paciente reagindo ao atrito sorteado. Ao concluir ou receber ENCERRAR, fixe a 1ª tentativa. Dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando:
 - Erros ou omissões críticas
-- 3 Hipóteses iniciais (Sim/Não e o que faltou)
+- 3 Hipóteses iniciais (Sim/Não, o que faltou e qual dado mudaria a hipótese principal)
 - Condução e comunicação (0/4): [1] estrutura/agenda [2] segurança objetiva [3] explicação + teach-back [4] firmeza/clareza
 Revele qual atrito foi sorteado. Refaça só o trecho falho se couber no teto. Dê 1 ponto para checar em diretriz, protocolo oficial ou bula profissional.
 

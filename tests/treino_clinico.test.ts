@@ -451,9 +451,25 @@ test('10. 9 Guias Teóricos v2.0 renderizam 27 Micro-Drills (<details>) e conect
   }
 
   assert.equal(guiaTeoricoDaSemana('2026-11-22')?.modId, 'mod-01');
-  assert.equal(guiaTeoricoDaSemana('2026-12-01')?.modId, 'mod-03');
-  assert.equal(guiaTeoricoDaSemana('2026-12-08')?.modId, 'mod-02');
+  assert.equal(guiaTeoricoDaSemana('2026-12-01')?.modId, 'mod-06');
+  assert.equal(guiaTeoricoDaSemana('2026-12-08')?.modId, 'mod-08');
   assert.equal(guiaTeoricoDaSemana('2026-12-15')?.modId, 'mod-05');
+  assert.equal(guiaTeoricoDaSemana('2026-12-22')?.modId, 'mod-03');
+  assert.equal(guiaTeoricoDaSemana('2026-12-29')?.modId, 'mod-04');
+  assert.equal(guiaTeoricoDaSemana('2027-01-05')?.modId, 'mod-09');
+  assert.equal(guiaTeoricoDaSemana('2027-01-20')?.modId, 'mod-02');
+  assert.equal(guiaTeoricoDaSemana('2027-01-24')?.modId, 'mod-07');
+  assert.equal(guiaTeoricoDaSemana('2027-05-20', 'mfc')?.modId, 'mod-09');
+  assert.equal(guiaTeoricoDaSemana('2027-07-15', 'ped')?.modId, 'mod-06');
+
+  // Conferência das 3 correções clínicas aplicadas nos módulos 02, 03 e 06
+  const mod02 = FORMACAO_TEORICA_MODULOS.find((m) => m.id === 'mod-02')!;
+  assert.ok(!mod02.markdown.includes('cristaloide 30 mL/kg se hipoperfusão/lactato ≥ 2'));
+  assert.ok(mod02.markdown.includes('primeiras 3 h'));
+  const mod03 = FORMACAO_TEORICA_MODULOS.find((m) => m.id === 'mod-03')!;
+  assert.ok(!mod03.markdown.includes('TEP submaciço/maciço'));
+  const mod06 = FORMACAO_TEORICA_MODULOS.find((m) => m.id === 'mod-06')!;
+  assert.ok(mod06.markdown.includes('2 g/dose'));
 
   const st = createInitialTreinoClinicoState();
   st.logs.push(
@@ -607,5 +623,114 @@ test('11. Regressões Treino Clínico (P0/P1/P2): parser Markdown, recálculo co
     cockpitStore.restoreTreinoLogEntry(delLog.deleted, delLog.index);
     assert.equal(cockpitStore.getSnapshot().central6Ano.treinoClinico?.contingencia10jan?.disparou, true);
   }
+});
+
+test('12. Auditoria v3.2: descanso 27–29/11, BASELINE-A a frio em 30/11, parser resiliente com texto após LOG e métricas E2', () => {
+  const st = createInitialTreinoClinicoState();
+  // Descanso pós-prova GO em 27–29/11
+  for (const dt of ['2026-11-27', '2026-11-28', '2026-11-29']) {
+    const passos = proximosPassos(dt, st);
+    assert.deepEqual(passos, [{ kind: 'descanso', motivo: 'aguardando_data', proximaDataIso: '2026-11-30' }]);
+  }
+
+  // Em 30/11 sem BASELINE-A: roda SOMENTE BASELINE-A a frio (sem D1 prévio)
+  const p30 = proximosPassos('2026-11-30', st);
+  assert.equal(p30.length, 1);
+  assert.equal(p30[0].kind, 'sessao');
+  if (p30[0].kind === 'sessao') {
+    assert.equal(p30[0].tipoLog, 'BASELINE');
+    assert.equal(p30[0].baseline, 'A');
+  }
+
+  // Após registrar BASELINE-A em 30/11, dia 30/11 fica concluído
+  st.logs.push(makeLog({ dateIso: '2026-11-30', tipo: 'BASELINE', slug: 'sensorio-focal-glicemia', baselineFase: 'A', min: 26 }));
+  const p30Pos = proximosPassos('2026-11-30', st);
+  assert.deepEqual(p30Pos, [{ kind: 'descanso', motivo: 'meta_semana_cumprida' }]);
+
+  // Parser resiliente encontra linha do LOG mesmo se a IA escrever frase depois
+  const withTrailing = [
+    'Feedback resumido acima.',
+    '01/12 | Nova | cefaleia:hsa | __m | S | nenhuma | 2/4 (encurtar explicação) | [N/S] | Limpo',
+    'Quer fazer a refação do trecho de explicação agora?',
+  ].join('\n');
+  const parsedTrailing = parseLogLineFromGemini(withTrailing, '2026-12-01');
+  assert.equal(parsedTrailing.ok, true);
+  if (parsedTrailing.ok) {
+    assert.equal(parsedTrailing.draft.slug, 'cefaleia');
+    assert.equal(parsedTrailing.draft.mecanismo, 'hsa');
+  }
+
+  // Métricas E2 agregadas separadas do veredito E1
+  const stE2 = createInitialTreinoClinicoState();
+  stE2.logs.push(
+    makeLog({ dateIso: '2026-12-01', tipo: 'Nova', slug: 'cefaleia', mecanismo: 'hsa', score: { kind: 'rubrica', valor: 2, ajuste: 'teach-back' } }),
+    makeLog({ dateIso: '2026-12-02', tipo: 'Var', slug: 'cefaleia', mecanismo: 'meningite', score: { kind: 'rubrica', valor: 4, ajuste: 'ok' } })
+  );
+  const m = computeTreinoMetrics(stE2, '2026-12-02');
+  assert.equal(m.e2Den, 2);
+  assert.equal(m.e2Gte3Num, 1);
+  assert.equal(m.e2Avg, 3);
+});
+
+test('13. UI/UX & Parser v3.2: parser tolera acento/espaço no mecanismo e diagnostica campo exato; selo 1ª execução B/C; drills inline', () => {
+  // U1: acento e espaço no mecanismo + "|" sem espaços + "38 min" + case misto
+  const messy = '21/11|Nova|dor-toracica:dissecção aórtica|38 min|s|nenhuma|3/4 (teach-back curto)|n|limpo';
+  const okMessy = parseLogLineFromGemini(messy, '2026-11-26');
+  assert.equal(okMessy.ok, true);
+  if (okMessy.ok) {
+    assert.equal(okMessy.draft.mecanismo, 'disseccao-aortica');
+    assert.equal(okMessy.draft.min, 38);
+    assert.equal(okMessy.draft.h3Bloco, 'S');
+    assert.equal(okMessy.draft.iaPista, false);
+    assert.equal(okMessy.draft.vereditoIA, 'Limpo');
+  }
+
+  // Erro específico por campo (9 campos com tipo inválido / Nova sem mecanismo / falta campo)
+  const badTipo = parseLogLineFromGemini(
+    '21/11 | Invalido | dor-toracica:iam | 25m | S | nenhuma | 3/4 (ok) | N | Limpo',
+    '2026-11-26'
+  );
+  assert.equal(badTipo.ok, false);
+  if (!badTipo.ok) assert.ok(badTipo.error.includes('Campo 2'));
+
+  const missingMec = parseLogLineFromGemini(
+    '21/11 | Nova | dor-toracica | 25m | S | nenhuma | 3/4 (ok) | N | Limpo',
+    '2026-11-26'
+  );
+  assert.equal(missingMec.ok, false);
+  if (!missingMec.ok) assert.ok(missingMec.error.includes('Campo 3'));
+
+  const missingField = parseLogLineFromGemini(
+    '21/11 | Nova | dor-toracica:iam | 25m | S | nenhuma | N | Limpo',
+    '2026-11-26'
+  );
+  assert.equal(missingField.ok, false);
+  if (!missingField.ok) assert.ok(missingField.error.includes('8'));
+
+  // D3: 1ª execução de E4 (03/12) e E3 (04/12) trazem selo teto flexível sem piloto
+  const st = createInitialTreinoClinicoState();
+  const passos03 = proximosPassos('2026-12-03', st);
+  const passoC = passos03.find((p) => p.kind === 'sessao' && p.prompt === 'C');
+  assert.ok(passoC && passoC.kind === 'sessao' && passoC.primeiraExecucaoSemPiloto === true);
+
+  const passos04 = proximosPassos('2026-12-04', st);
+  const passoB = passos04.find((p) => p.kind === 'sessao' && p.prompt === 'B');
+  assert.ok(passoB && passoB.kind === 'sessao' && passoB.primeiraExecucaoSemPiloto === true);
+
+  // Após registrar uma sessão E3/E4, o selo de 1ª execução desaparece nas seguintes
+  st.logs.push(makeLog({ dateIso: '2026-12-03', tipo: 'E4', slug: 'e4-deterioracao-silenciosa' }));
+  st.logs.push(makeLog({ dateIso: '2026-12-04', tipo: 'E3', slug: 'e3-atb-empirico' }));
+  const passos10 = proximosPassos('2026-12-10', st);
+  const nextC = passos10.find((p) => p.kind === 'sessao' && p.prompt === 'C');
+  assert.ok(!nextC || (nextC.kind === 'sessao' && nextC.primeiraExecucaoSemPiloto === false));
+
+  // U7 + drills inline no HTML renderizado
+  const mod01 = FORMACAO_TEORICA_MODULOS[0];
+  const htmlDrills = renderTeoriaMarkdownToHtml(mod01.markdown, {
+    includeHeadingIds: true,
+    includeDrillDoneButtons: true,
+  });
+  const btns = htmlDrills.match(/class="teoria-drill-inline-btn" data-drill-index="[1-3]"/g) || [];
+  assert.equal(btns.length, 3);
 });
 

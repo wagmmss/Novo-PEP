@@ -30,3 +30,4 @@
 ---
 
 <!-- Registre abaixo a partir da Sessão 1 (21/nov) -->
+<!-- Nota de auditoria (26/11/2026): P1 (21/11) e P2 (24/11) foram concluídos no piloto, porém sem linhas recuperadas do histórico; nenhum registro retroativo foi inventado. Pela v3.2, o piloto foi encerrado após P2 com retomada a frio em 30/11 (BASELINE-A). Exporte o LOG pela aba "Histórico" do Novo-PEP quando houver novas sessões. -->

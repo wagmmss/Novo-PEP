@@ -454,6 +454,12 @@ export function BackupModal({ open, onClose }: BackupModalProps) {
               <span>{feedback.text}</span>
             </div>
           )}
+
+          <div className="border-t border-zinc-200/70 pt-3 text-center font-mono text-[11px] text-zinc-400 dark:border-white/[0.06] dark:text-[#6B7280]">
+            Versão {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'} · build{' '}
+            {typeof __APP_BUILD_TIME__ !== 'undefined' ? __APP_BUILD_TIME__ : 'dev'} (
+            {typeof __APP_GIT_SHA__ !== 'undefined' ? __APP_GIT_SHA__ : 'local'})
+          </div>
         </div>
       </div>
     </div>

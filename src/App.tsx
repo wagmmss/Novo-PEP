@@ -443,7 +443,7 @@ export function App() {
               role="status"
               className="flex items-center gap-3 rounded-lg border border-teal-200 bg-white px-3.5 py-2.5 text-xs text-zinc-800 shadow-lg dark:border-teal-500/30 dark:bg-[#15181F] dark:text-[#F3F4F6]"
             >
-              <span className="flex-1">Nova versão dos protocolos disponível.</span>
+              <span className="flex-1">Nova versão disponível.</span>
               <button
                 type="button"
                 onClick={() => applyUpdate()}

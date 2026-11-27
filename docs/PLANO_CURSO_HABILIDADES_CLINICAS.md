@@ -243,12 +243,12 @@ Durante a simulação, mensagem iniciada por 3H: (minhas 3 hipóteses iniciais) 
 
 Paciente: linguagem leiga, incluindo nas perguntas abertas pertinentes. Responda ao que a pergunta cobre, sem acrescentar discriminadores, interpretar achados ou sugerir a próxima ação. Exame: só o achado da manobra nomeada; pedido genérico recebe exatamente sem achado específico disponível. Se exame indisponível, informe. Lab/gaso: valores com unidades, sem setas ou interpretação. ECG/RX: só achados primários solicitados.
 
-Feche em turnos: “Qual grave ainda está em aberto e o que você fará a seguir?” → apresentação ao preceptor (até ~220 palavras) → explicação leiga (até ~150 palavras) e teach-back. Ao concluir ou receber ENCERRAR, fixe a avaliação da 1ª tentativa. Critérios de Condução e Comunicação (0 a 4): [1] estrutura/agenda [2] apresentação [3] explicação + teach-back [4] firmeza/clareza.
+Feche uma etapa por turno, aguardando minha resposta antes da próxima: (1) “Qual grave ainda está em aberto e o que você fará a seguir?” → (2) apresentação ao preceptor (até ~220 palavras) → (3) explicação leiga (até ~150 palavras) com resposta real do paciente ao teach-back. Ao concluir ou receber ENCERRAR, fixe a avaliação da 1ª tentativa. Critérios de Condução e Comunicação (0 a 4): [1] estrutura/agenda [2] apresentação [3] explicação + teach-back [4] firmeza/clareza.
 
 BASELINE-A: emita só a linha final de registro e encerre. Erro crítico apenas S ou N. Score no formato X/4 (1011), com 1/0 por critério [1]–[4]. Preserve o sigilo em repreguntas.
 Nova/BASELINE-B: dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando exatamente os títulos:
-- Erros ou omissões críticas: (nenhum ou lista objetiva do que colocou o paciente em risco / faltou checar)
-- 3 Hipóteses iniciais: (Sim/Não e o que faltou)
+- Erros ou omissões críticas: (nenhuma ou lista objetiva do que colocou o paciente em risco / faltou checar)
+- 3 Hipóteses iniciais: (Sim/Não, o que faltou e qual dado faria mudar a hipótese principal)
 - Condução e comunicação (0/4): nota por critério [1] a [4]
 Só em Nova: sem hipóteses iniciais ou sem roteiro, entregue um modelo de condução (≤2 min) e proponha refação desde a triagem se couber; senão, refaça só o trecho falho. Inclua microcorreção (≤3 min, um ponto) só se houver erro de modelo mental. Aponte 1–2 checagens em diretriz, protocolo oficial ou bula profissional; AMBOSS só localiza. Só em Nova com erro ou omissão crítica, inclua a seção “Não Pode Passar” (≤6 linhas, tag [CHECAR]) antes da última linha.
 
@@ -306,9 +306,9 @@ Abra só com triagem, sinais vitais e recursos. Em instabilidade, priorize estab
 
 Paciente leigo: responda ao que a pergunta cobre, inclusive abertas pertinentes; sem discriminador espontâneo nem sugestão. Exame: só o achado da manobra nomeada. Pedido genérico: sem achado específico disponível. Informe indisponibilidade; lab/gaso só valores com unidades, sem setas ou interpretação; ECG/RX só achados primários solicitados.
 
-Feche em turnos: “Qual grave ainda está em aberto e o que você fará a seguir?” → explicação leiga até ~150 palavras + teach-back com o atrito sorteado. Ao concluir ou receber ENCERRAR, fixe a 1ª tentativa. Dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando:
+Feche uma etapa por turno, aguardando minha resposta antes da próxima: (1) “Qual grave ainda está em aberto e o que você fará a seguir?” → (2) explicação leiga (até ~150 palavras) e teach-back com o paciente reagindo ao atrito sorteado. Ao concluir ou receber ENCERRAR, fixe a 1ª tentativa. Dê feedback objetivo em português claro, SEM siglas internas (não escreva PEMC, E2 ou 3H como títulos), usando:
 - Erros ou omissões críticas
-- 3 Hipóteses iniciais (Sim/Não e o que faltou)
+- 3 Hipóteses iniciais (Sim/Não, o que faltou e qual dado mudaria a hipótese principal)
 - Condução e comunicação (0/4): [1] estrutura/agenda [2] segurança objetiva [3] explicação + teach-back [4] firmeza/clareza
 Revele qual atrito foi sorteado. Refaça só o trecho falho se couber no teto. Dê 1 ponto para checar em diretriz, protocolo oficial ou bula profissional.
 
@@ -418,3 +418,4 @@ Antes de aceitar qualquer plantão avulso ou fixo com CRM próprio, checar os **
 | **Implementação Novo-PEP v3.1 (21/nov)** | Reaberto o §6 por decisão explícita do usuário: implementada a Esteira Contínua v3.1 no `Novo-PEP` (`#/6ano/teoria`) com catálogo completo (20 E1, 8 E3, 7 E4), máquina de estados dos 3 blocos (`Piloto → Férias → Internato`), templates blindados para Gemini + parser `LOG_RE`, contrato `Não Pode Passar` com trava `[CHECAR]` e testes unitários (`tests/treino_clinico.test.ts`). |
 | **Refatoração Aba Prática & Fim da Trava abr/2027 (22/nov)** | Retirada a trava de congelamento do `Novo-PEP` até abr/2027 (evolução liberada nas férias). Removida a sub-aba duplicada `Prompts IA` de `PraticaView`; Logbook 3x enxugado para procedimentos manuais de generalista (sem CVC/PAI/e-FAST/drenagem/cognitivos), com Escada de Autonomia real (`Supervisionado` + `Autônomo` avançam 3x), vínculo direto a partir do `Pré-Porta`, nota rápida + Desfazer, export Markdown e botão `Copiar D2` em Pontos Cegos pendentes. |
 | **Congelamento v3.2 & Ajuste Pós-Prova GO (26/nov)** | Sincronizados os 5 templates do §5 com a **v3.2** em `src/data/treino_clinico_data.ts` (feedback em PT-BR claro sem siglas internas, mantendo formato de LOG). Corrigido orçamento das férias para `~14h50/sem` (`~3h/dia`: 2h Bloco 1 + ~1h Esteira). Piloto encerrado após `P1` e `P2` (descanso `27–29/nov`): `BASELINE-A` entra automaticamente na vaga `A` de `30/nov` (consumindo 1 reserva) e 1ª passada de `B`/`C` até `24/jan` ajustada para `6/7` (7º entra limpo no início do internato). |
+| **Refino UI/UX & Parser Tolerante (26/nov)** | Marcada a 1ª execução de `Prompt B` (`04/12`) e `Prompt C` (`03/12`) com selo `"1ª execução · teto flexível (sem piloto)"` (sem consumo de reserva se estourar o teto). Melhorado `parseLogLineFromGemini` (normalização prévia de acentos/espaços em mecanismos, `\|` sem espaço, `min`/`minutos` e erro específico por campo); formulário de registro sem defaults que enviesam (`Min` e `A IA deu pista?` só quando pendentes e obrigatórios), botão `Registrar tentativa` + retorno automático ao campo; rótulos claros nas abas (`Hoje`, `Porta (20)`, `Prescrição (8)`, `Grave (7)`, `Histórico`), remoção de `"Expandir gabaritos"` nos Guias, marcação inline por drill e correção de quebra de tabelas no mobile. |

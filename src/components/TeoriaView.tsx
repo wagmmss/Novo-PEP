@@ -58,13 +58,13 @@ interface TeoriaViewProps {
 const STATUS_OPTIONS: Array<{ value: TeoriaModuleStatus; label: string }> = [
   { value: 'nao_iniciado', label: 'Não iniciado' },
   { value: 'estudado', label: 'Em andamento' },
-  { value: 'dominado', label: 'Dominado' },
+  { value: 'dominado', label: 'Concluído' },
 ];
 
 const STATUS_LABEL_MAP: Record<TeoriaModuleStatus, string> = {
   nao_iniciado: 'Não iniciado',
   estudado: 'Em andamento',
-  dominado: 'Dominado',
+  dominado: 'Concluído',
 };
 
 const HAB_BY_ID = new Map(HAB_PROTOCOLS.map((h) => [h.id, h]));
@@ -168,7 +168,6 @@ export function TeoriaView({
   const [statusFilter, setStatusFilter] = useState<'todos' | TeoriaModuleStatus>('todos');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [habsExpanded, setHabsExpanded] = useState(false);
-  const [allDrillsExpanded, setAllDrillsExpanded] = useState(false);
   const [readProgressPct, setReadProgressPct] = useState(0);
   const [activeHeadingId, setActiveHeadingId] = useState<string>('');
   const [cameFromTreino, setCameFromTreino] = useState(false);
@@ -286,6 +285,7 @@ export function TeoriaView({
     return renderTeoriaMarkdownToHtml(strippedMarkdown, {
       linkTreinoSlugs: true,
       includeHeadingIds: true,
+      includeDrillDoneButtons: true,
     });
   }, [activeMod, strippedMarkdown]);
 
@@ -294,7 +294,6 @@ export function TeoriaView({
   // Restaura posição de rolagem por módulo na sessão e reseta estado local de expansão
   useEffect(() => {
     setHabsExpanded(false);
-    setAllDrillsExpanded(false);
     const el = detailScrollRef.current;
     if (!el || !activeMod) return;
     const savedTop = scrollPositionsRef.current[activeMod.id] || 0;
@@ -355,6 +354,23 @@ export function TeoriaView({
     }
   }, [renderedHtml, query, subMode]);
 
+  // Sincroniza estado visual dos botões inline de cada Micro-Drill sem reescrever o DOM
+  useEffect(() => {
+    const container = proseContainerRef.current;
+    if (!container || subMode !== 'guias' || !activeMod) return;
+    const drillButtons = container.querySelectorAll<HTMLButtonElement>('button.teoria-drill-inline-btn[data-drill-index]');
+    drillButtons.forEach((btn) => {
+      const idx = parseInt(btn.dataset.drillIndex || '0', 10);
+      if (!idx) return;
+      const done = Boolean(exercisesDone[getTeoriaDrillKey(activeMod.id, idx)]);
+      btn.setAttribute('aria-pressed', done ? 'true' : 'false');
+      btn.classList.toggle('teoria-drill-inline-btn-done', done);
+      btn.textContent = done
+        ? `✓ Drill ${idx} praticado (clique para desmarcar)`
+        : `○ Marcar Drill ${idx} como praticado`;
+    });
+  }, [renderedHtml, query, subMode, activeMod, exercisesDone]);
+
   const jumpToMatch = useCallback((direction: 1 | -1) => {
     const marks = marksRef.current;
     if (marks.length === 0) return;
@@ -373,17 +389,6 @@ export function TeoriaView({
     });
   }, []);
 
-  const handleToggleAllDrills = useCallback(() => {
-    const container = proseContainerRef.current;
-    if (!container) return;
-    const nextOpen = !allDrillsExpanded;
-    const detailsList = container.querySelectorAll<HTMLDetailsElement>('details.guia-drill-details');
-    detailsList.forEach((d) => {
-      d.open = nextOpen;
-    });
-    setAllDrillsExpanded(nextOpen);
-  }, [allDrillsExpanded]);
-
   const handleJumpToHeading = useCallback((headingId: string) => {
     const container = proseContainerRef.current;
     const target = container?.querySelector<HTMLElement>(`#${CSS.escape(headingId)}`);
@@ -391,6 +396,20 @@ export function TeoriaView({
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setActiveHeadingId(headingId);
   }, []);
+
+  const handleToggleDrillDone = useCallback(
+    (drillIndex: number) => {
+      if (!activeMod) return;
+      const key = getTeoriaDrillKey(activeMod.id, drillIndex);
+      const nowDone = cockpitStore.toggleTeoriaExerciseDone(key);
+      onNotify?.(
+        nowDone
+          ? `Drill ${drillIndex} marcado como praticado.`
+          : `Drill ${drillIndex} desmarcado.`
+      );
+    },
+    [activeMod, onNotify]
+  );
 
   const handleJumpToTreinoScenario = useCallback(
     (eixo: 'e1' | 'e3' | 'e4', slug?: string) => {
@@ -406,10 +425,16 @@ export function TeoriaView({
     [onChangeSubMode, onChangeTreinoRoute, onNotify]
   );
 
-  // Delegação de clique dentro do HTML renderizado (chips de cenário do Treino Clínico)
+  // Delegação de clique dentro do HTML renderizado (chips de cenário + botão inline dos drills)
   const handleProseClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const targetEl = e.target as HTMLElement | null;
+      const drillBtn = targetEl?.closest<HTMLButtonElement>('button[data-drill-index]');
+      if (drillBtn) {
+        const idx = parseInt(drillBtn.dataset.drillIndex || '0', 10);
+        if (idx > 0) handleToggleDrillDone(idx);
+        return;
+      }
       const btn = targetEl?.closest<HTMLButtonElement>('button[data-treino-slug]');
       if (!btn) return;
       const slug = btn.dataset.treinoSlug;
@@ -418,7 +443,7 @@ export function TeoriaView({
       if (!scenario) return;
       handleJumpToTreinoScenario(scenario.eixo, scenario.slug);
     },
-    [handleJumpToTreinoScenario]
+    [handleJumpToTreinoScenario, handleToggleDrillDone]
   );
 
   // Atalhos de teclado dos Guias Teóricos (/, [, Alt+←/→)
@@ -496,17 +521,6 @@ export function TeoriaView({
     onNotify?.(`Módulo marcado como "${STATUS_LABEL_MAP[nextStatus]}".`);
   };
 
-  const handleToggleDrillDone = (drillIndex: number) => {
-    if (!activeMod) return;
-    const key = getTeoriaDrillKey(activeMod.id, drillIndex);
-    const nowDone = cockpitStore.toggleTeoriaExerciseDone(key);
-    onNotify?.(
-      nowDone
-        ? `Drill ${drillIndex} marcado como praticado.`
-        : `Drill ${drillIndex} desmarcado.`
-    );
-  };
-
   const handlePrint = () => {
     window.print();
   };
@@ -521,7 +535,7 @@ export function TeoriaView({
   return (
     <div className="teoria-print-shell flex min-h-0 flex-1 flex-col overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Switch segmentado discreto: Treino Clínico | Guias Teóricos (9) */}
-      <div className="no-print flex items-center justify-between gap-3 border-b border-zinc-200/80 bg-[#FAFAFA] px-4 py-2 dark:border-white/[0.07] dark:bg-[#0F1115]">
+      <div className="no-print flex items-center justify-between gap-3 border-b border-zinc-200/80 bg-[#FAFAFA] px-4 py-1.5 sm:py-2 dark:border-white/[0.07] dark:bg-[#0F1115]">
         <div
           role="group"
           aria-label="Modo da aba Treino e Teoria"
@@ -534,7 +548,7 @@ export function TeoriaView({
               onChangeSubMode('treino');
             }}
             aria-pressed={subMode === 'treino'}
-            className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+            className={`min-h-[34px] rounded-md px-3 py-1 text-xs font-semibold transition-colors sm:min-h-0 ${
               subMode === 'treino'
                 ? 'bg-white text-zinc-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-[#1C2029] dark:text-[#F3F4F6]'
                 : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
@@ -546,7 +560,7 @@ export function TeoriaView({
             type="button"
             onClick={() => onChangeSubMode('guias')}
             aria-pressed={subMode === 'guias'}
-            className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+            className={`min-h-[34px] rounded-md px-3 py-1 text-xs font-semibold transition-colors sm:min-h-0 ${
               subMode === 'guias'
                 ? 'bg-white text-zinc-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-[#1C2029] dark:text-[#F3F4F6]'
                 : 'text-zinc-600 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
@@ -563,7 +577,7 @@ export function TeoriaView({
               setCameFromTreino(false);
               onChangeSubMode('treino');
             }}
-            className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
+            className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] sm:min-h-0 dark:border-white/[0.09] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Voltar ao Treino
@@ -578,6 +592,7 @@ export function TeoriaView({
           section={treinoSection}
           routeSlug={treinoSlug}
           mobileShowDetail={mobileTreinoDetail}
+          shortcutsEnabled={shortcutsEnabled && subMode === 'treino'}
           onChangeRoute={onChangeTreinoRoute}
           onOpenPrePorta={onOpenPrePorta}
           onNotify={onNotify || (() => {})}
@@ -606,14 +621,14 @@ export function TeoriaView({
                   Formação Teórica
                 </span>
                 <span className="font-mono text-[11px] tabular-nums">
-                  {counts.dominado}/{counts.total} dominados
+                  {counts.dominado}/{counts.total} concluídos
                   {counts.estudado > 0 ? ` · ${counts.estudado} em and.` : ''}
                 </span>
               </div>
 
               {/* Barra fina de progresso geral dos 9 módulos */}
               <div
-                aria-label={`${counts.dominado} de ${counts.total} módulos dominados`}
+                aria-label={`${counts.dominado} de ${counts.total} módulos concluídos`}
                 className="flex h-1.5 w-full overflow-hidden rounded-full bg-zinc-200/80 dark:bg-white/[0.07]"
               >
                 <div
@@ -669,7 +684,7 @@ export function TeoriaView({
                     { id: 'todos', label: 'Todos', count: counts.total },
                     { id: 'nao_iniciado', label: 'Pendentes', count: counts.nao_iniciado },
                     { id: 'estudado', label: 'Andamento', count: counts.estudado },
-                    { id: 'dominado', label: 'Dominados', count: counts.dominado },
+                    { id: 'dominado', label: 'Concluídos', count: counts.dominado },
                   ] as const
                 ).map((opt) => {
                   const pressed = statusFilter === opt.id;
@@ -679,7 +694,7 @@ export function TeoriaView({
                       type="button"
                       aria-pressed={pressed}
                       onClick={() => setStatusFilter(opt.id)}
-                      className={`flex items-center justify-between gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                      className={`flex min-h-[34px] items-center justify-between gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors sm:min-h-0 ${
                         pressed
                           ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
                           : 'bg-zinc-100/70 text-zinc-600 hover:bg-zinc-200/70 dark:bg-[#15181F] dark:text-[#9CA3AF] dark:hover:bg-[#1C2029]'
@@ -822,7 +837,7 @@ export function TeoriaView({
                     <button
                       type="button"
                       onClick={onBackToList}
-                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 lg:hidden dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
+                      className="inline-flex min-h-[36px] items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 lg:hidden dark:text-[#9CA3AF] dark:hover:bg-[#1C2029] dark:hover:text-[#F3F4F6]"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" />
                       Módulos
@@ -843,8 +858,11 @@ export function TeoriaView({
                         {sidebarOpen ? 'Recolher lista' : 'Mostrar módulos'}
                       </span>
                     </button>
-                    <span className="hidden font-mono text-[11px] text-zinc-400 sm:inline dark:text-[#6B7280]">
-                      Módulo {activeMod.num} · {readProgressPct}% lido
+                    <span
+                      title="Posição atual da rolagem no guia (não equivale a leitura concluída)"
+                      className="hidden font-mono text-[11px] text-zinc-400 sm:inline dark:text-[#6B7280]"
+                    >
+                      Módulo {activeMod.num} · Posição: {readProgressPct}%
                     </span>
                   </div>
 
@@ -882,7 +900,7 @@ export function TeoriaView({
                           moduleTreinoTargets[0]?.slug
                         )
                       }
-                      className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
+                      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] sm:min-h-0 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
                     >
                       <Dumbbell className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
                       <span className="hidden sm:inline">Praticar no Treino</span>
@@ -894,7 +912,7 @@ export function TeoriaView({
                       onClick={handlePrint}
                       title="Imprimir ou salvar guia em PDF"
                       aria-label="Imprimir guia teórico"
-                      className="inline-flex items-center gap-1 rounded-md border border-zinc-200/90 bg-white px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#9CA3AF] dark:hover:border-white/[0.15] dark:hover:text-[#F3F4F6]"
+                      className="inline-flex min-h-[36px] min-w-[36px] items-center justify-center gap-1 rounded-md border border-zinc-200/90 bg-white px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 sm:min-h-0 sm:min-w-0 dark:border-white/[0.08] dark:bg-[#15181F] dark:text-[#9CA3AF] dark:hover:border-white/[0.15] dark:hover:text-[#F3F4F6]"
                     >
                       <Printer className="h-3.5 w-3.5" />
                     </button>
@@ -916,20 +934,15 @@ export function TeoriaView({
                       <span>{activeMod.pilar}</span>
                       <span aria-hidden="true">·</span>
                       <span className="inline-flex items-center gap-1 font-mono text-[11px]">
-                        <Clock className="h-3 w-3" />~{readingStats.minutes} min
+                        <Clock className="h-3 w-3" />~{readingStats.minutes} min leitura
+                        {totalDrillsInMod > 0 ? ' · ~30–40 min c/ drills' : ''}
                       </span>
                       {totalDrillsInMod > 0 && (
                         <>
                           <span aria-hidden="true">·</span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              drillsHeading && handleJumpToHeading(drillsHeading.id)
-                            }
-                            className="font-mono text-[11px] font-medium text-[#0F766E] hover:underline dark:text-[#2DD4BF]"
-                          >
-                            {doneDrillsInMod}/{totalDrillsInMod} drills praticados
-                          </button>
+                          <span className="font-mono text-[11px] font-medium text-[#0F766E] dark:text-[#2DD4BF]">
+                            Exercícios praticados · {doneDrillsInMod} de {totalDrillsInMod}
+                          </span>
                         </>
                       )}
                     </div>
@@ -938,8 +951,8 @@ export function TeoriaView({
                       {stripModuleTitlePrefix(activeMod.title)}
                     </h1>
 
-                    {/* Controle de status do módulo */}
-                    <div className="no-print mt-4 flex flex-wrap items-center justify-between gap-3">
+                    {/* Controle de status do módulo + atalho direto aos exercícios */}
+                    <div className="no-print mt-4 flex flex-wrap items-center justify-between gap-2.5">
                       <div
                         role="group"
                         aria-label="Status do módulo"
@@ -953,7 +966,7 @@ export function TeoriaView({
                               type="button"
                               aria-pressed={active}
                               onClick={() => handleSetStatus(activeMod.id, opt.value)}
-                              className={`whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                              className={`min-h-[34px] whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors sm:min-h-0 ${
                                 active
                                   ? opt.value === 'estudado'
                                     ? 'bg-amber-500 text-white dark:bg-amber-400 dark:text-[#0F1115]'
@@ -966,6 +979,17 @@ export function TeoriaView({
                           );
                         })}
                       </div>
+
+                      {totalDrillsInMod > 0 && drillsHeading && (
+                        <button
+                          type="button"
+                          onClick={() => handleJumpToHeading(drillsHeading.id)}
+                          className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[#0F766E]/30 bg-teal-50/70 px-3 py-1.5 text-xs font-semibold text-[#0F766E] transition-colors hover:bg-teal-100/80 sm:min-h-0 dark:border-[#2DD4BF]/30 dark:bg-teal-500/10 dark:text-[#2DD4BF] dark:hover:bg-teal-500/20"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                          Fazer os {totalDrillsInMod} exercícios
+                        </button>
+                      )}
                     </div>
 
                     {/* Atalhos compactos e sem overflow para cartões Pré-Porta vinculados */}
@@ -1030,32 +1054,13 @@ export function TeoriaView({
                       aria-label="Controle de estudo ativo dos micro-drills"
                       className="no-print mt-8 rounded-xl border border-zinc-200/90 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.08] dark:bg-[#15181F]"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
-                            Estudo Ativo · Micro-Drills ({doneDrillsInMod}/{totalDrillsInMod})
-                          </h2>
-                          <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
-                            Fale em voz alta antes de abrir o gabarito e marque cada caso concluído.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleToggleAllDrills}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.09] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
-                        >
-                          {allDrillsExpanded ? (
-                            <>
-                              <ChevronUp className="h-3.5 w-3.5" />
-                              Recolher todos os gabaritos
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-3.5 w-3.5" />
-                              Expandir todos os gabaritos
-                            </>
-                          )}
-                        </button>
+                      <div>
+                        <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                          Estudo Ativo · Micro-Drills ({doneDrillsInMod}/{totalDrillsInMod})
+                        </h2>
+                        <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#9CA3AF]">
+                          Fale em voz alta antes de abrir cada gabarito e marque os casos concluídos.
+                        </p>
                       </div>
 
                       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1119,7 +1124,7 @@ export function TeoriaView({
                           className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-800 dark:bg-[#2DD4BF] dark:text-[#0F1115] dark:hover:bg-teal-300"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" />
-                          Marcar como Dominado
+                          Marcar guia como Concluído
                         </button>
                       </div>
                     )}
@@ -1178,7 +1183,10 @@ export function TeoriaView({
                           <ListTree className="h-3.5 w-3.5" />
                           Neste guia
                         </span>
-                        <span className="font-mono text-[10px] text-zinc-400 dark:text-[#6B7280]">
+                        <span
+                          title="Posição da rolagem no guia"
+                          className="font-mono text-[10px] text-zinc-400 dark:text-[#6B7280]"
+                        >
                           {readProgressPct}%
                         </span>
                       </div>
@@ -1208,18 +1216,11 @@ export function TeoriaView({
                       {totalDrillsInMod > 0 && (
                         <div className="mt-3 border-t border-zinc-200/80 pt-2.5 dark:border-white/[0.07]">
                           <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-                            <span>Micro-Drills</span>
+                            <span>Exercícios praticados</span>
                             <span className="font-mono font-medium text-[#0F766E] dark:text-[#2DD4BF]">
                               {doneDrillsInMod}/{totalDrillsInMod}
                             </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleToggleAllDrills}
-                            className="mt-1.5 w-full rounded-md border border-zinc-200/80 bg-zinc-50 px-2 py-1 text-[11px] font-medium text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.08] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
-                          >
-                            {allDrillsExpanded ? 'Recolher gabaritos' : 'Expandir gabaritos'}
-                          </button>
                         </div>
                       )}
                     </div>

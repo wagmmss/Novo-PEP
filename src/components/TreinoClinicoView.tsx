@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowUpRight,
+  Calendar,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -10,6 +11,7 @@ import {
   ClipboardCopy,
   Edit3,
   FileDown,
+  HelpCircle,
   Lock,
   Play,
   Plus,
@@ -92,6 +94,7 @@ interface TreinoClinicoViewProps {
   section?: TreinoSectionRoute;
   routeSlug?: string | null;
   mobileShowDetail?: boolean;
+  shortcutsEnabled?: boolean;
   onChangeRoute?: (
     sec: TreinoSectionRoute,
     slug: string | null | undefined,
@@ -145,9 +148,9 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 const BLOCO_LABEL: Record<string, string> = {
-  BLOCO0_PILOTO: 'Bloco 0 · Piloto (21–29/nov)',
-  BLOCO1_FERIAS: 'Bloco 1 · Férias (30/nov–24/jan)',
-  BLOCO2_INTERNATO: 'Bloco 2 · Internato (25/jan+)',
+  BLOCO0_PILOTO: 'Piloto (21–29/nov)',
+  BLOCO1_FERIAS: 'Férias (30/nov–24/jan)',
+  BLOCO2_INTERNATO: 'Internato (25/jan+)',
 };
 
 const ORIGEM_LABEL: Record<string, string> = {
@@ -175,15 +178,6 @@ const INPUT_BASE_CLS =
 
 const WHITE_INPUT_CLS =
   'rounded-lg border border-zinc-200 bg-white text-xs text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/15 dark:border-white/[0.10] dark:bg-[#15181F] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#2DD4BF] dark:focus:ring-[#2DD4BF]/15';
-
-function defaultMinForTipo(tipo: TipoLog): string {
-  if (tipo === 'Var') return '12';
-  if (tipo === 'E3') return '35';
-  if (tipo === 'E4') return '25';
-  if (tipo === 'Micro') return '10';
-  if (tipo === 'SERVIÇO' || tipo === 'GRAVAÇÃO') return '5';
-  return '25';
-}
 
 function PiiInlineAlert({
   text,
@@ -222,6 +216,7 @@ export function TreinoClinicoView({
   section: controlledSection,
   routeSlug,
   mobileShowDetail: controlledMobileDetail,
+  shortcutsEnabled = true,
   onChangeRoute,
   onOpenPrePorta,
   onNotify,
@@ -278,17 +273,23 @@ export function TreinoClinicoView({
   const [d2Eixo, setD2Eixo] = useState<Eixo>('E1');
   const [d2Relato, setD2Relato] = useState('');
 
-  // Import rápido da linha do Gemini
+  // Import rápido da linha final da simulação (sem defaults que enviesam dados)
   const [geminiLineRaw, setGeminiLineRaw] = useState('');
-  const [quickMin, setQuickMin] = useState('25');
-  const [userEditedMin, setUserEditedMin] = useState(false);
-  const [quickIaPista, setQuickIaPista] = useState<'N' | 'S'>('N');
+  const [quickMin, setQuickMin] = useState('');
+  const [quickIaPista, setQuickIaPista] = useState<'' | 'N' | 'S'>('');
   const [quickErroCritico, setQuickErroCritico] = useState(false);
   const [quickRefacaoPendente, setQuickRefacaoPendente] = useState(false);
   const [quickLinha2min, setQuickLinha2min] = useState(true);
   const [quickBaselineHint, setQuickBaselineHint] = useState<'' | 'A' | 'B'>('');
+  const [showLogExample, setShowLogExample] = useState(false);
+  const [showDatePopover, setShowDatePopover] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [recentPemcShortcut, setRecentPemcShortcut] = useState<RecentPemcShortcut | null>(null);
+
+  const importCardRef = useRef<HTMLDivElement | null>(null);
+  const importTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const datePopoverRef = useRef<HTMLDivElement | null>(null);
+  const pendingReturnToImportRef = useRef<boolean>(false);
 
   // Registro rápido de SERVIÇO / GRAVAÇÃO
   const [servicoSlug, setServicoSlug] = useState('dor-toracica');
@@ -386,7 +387,10 @@ export function TreinoClinicoView({
     [treino, todayIso]
   );
   const relatorioBaseline = useMemo(() => computeRelatorioBaseline(treino), [treino]);
-  const guiaSemana = useMemo(() => guiaTeoricoDaSemana(todayIso), [todayIso]);
+  const guiaSemana = useMemo(
+    () => guiaTeoricoDaSemana(todayIso, rodizio?.id),
+    [todayIso, rodizio?.id]
+  );
   const guiasGargalo = useMemo(() => recomendarGuiasPorGargalo(treino), [treino]);
 
   // Pré-seleciona alvo sugerido do rodízio / dia atual para [SERVIÇO]
@@ -402,25 +406,47 @@ export function TreinoClinicoView({
     }
   }, [rodizio, passosHoje, userPickedServicoSlug]);
 
-  // Preview instantâneo da linha colada do Gemini (P2) + ajuste inteligente de quickMin (P0.10)
+  const passoBaselineHoje = useMemo(
+    () =>
+      passosHoje.find(
+        (p): p is Extract<Passo, { kind: 'sessao' }> => p.kind === 'sessao' && Boolean(p.baseline)
+      ),
+    [passosHoje]
+  );
+
+  const effectiveBaselineHint = useMemo((): 'A' | 'B' | undefined => {
+    if (quickBaselineHint) return quickBaselineHint;
+    if (!passoBaselineHoje?.baseline) return undefined;
+    // Aplica automaticamente o baseline do passo ativo a menos que o texto colado seja claramente outro tipo
+    if (/\|\s*(?:Nova|Var|E3|E4|Micro|SERVIÇO|GRAVAÇÃO)\s*\|/.test(geminiLineRaw)) {
+      return undefined;
+    }
+    return passoBaselineHoje.baseline;
+  }, [quickBaselineHint, passoBaselineHoje?.baseline, geminiLineRaw]);
+
+  // Preview instantâneo da linha colada (sem defaults que enviesam métricas)
   const parsedGeminiPreview = useMemo(() => {
     if (!geminiLineRaw.trim()) return null;
-    return parseLogLineFromGemini(geminiLineRaw, todayIso, quickBaselineHint || undefined);
-  }, [geminiLineRaw, todayIso, quickBaselineHint]);
+    return parseLogLineFromGemini(geminiLineRaw, todayIso, effectiveBaselineHint);
+  }, [geminiLineRaw, todayIso, effectiveBaselineHint]);
 
   const detectedTipo = parsedGeminiPreview?.ok ? parsedGeminiPreview.draft.tipo : null;
-  const erroCriticoApplies = !detectedTipo || detectedTipo === 'E3' || detectedTipo === 'E4';
-  const refacaoApplies = !detectedTipo || detectedTipo === 'Nova';
+  const needsMinInput = Boolean(parsedGeminiPreview?.ok && parsedGeminiPreview.draft.minPendente);
+  const needsIaPistaInput = Boolean(
+    parsedGeminiPreview?.ok && parsedGeminiPreview.draft.iaPistaPendente
+  );
+  const erroCriticoApplies = Boolean(
+    parsedGeminiPreview?.ok && (detectedTipo === 'E3' || detectedTipo === 'E4')
+  );
+  const refacaoApplies = Boolean(parsedGeminiPreview?.ok && detectedTipo === 'Nova');
 
-  useEffect(() => {
-    if (!geminiLineRaw.trim()) {
-      setUserEditedMin(false);
-      return;
-    }
-    if (parsedGeminiPreview?.ok && !userEditedMin) {
-      setQuickMin(defaultMinForTipo(parsedGeminiPreview.draft.tipo));
-    }
-  }, [parsedGeminiPreview, geminiLineRaw, userEditedMin]);
+  const quickMinTrim = quickMin.trim();
+  const quickMinValid =
+    !needsMinInput ||
+    (/^[1-9][0-9]*$/.test(quickMinTrim) && Number(quickMinTrim) >= 1 && Number(quickMinTrim) <= 180);
+  const quickIaPistaValid =
+    !needsIaPistaInput || quickIaPista === 'N' || quickIaPista === 'S';
+  const canSaveImport = Boolean(parsedGeminiPreview?.ok && quickMinValid && quickIaPistaValid);
 
   const activeE1 = E1_BY_SLUG.get(selectedE1Slug) || QUEIXAS_E1[0];
   const activeE3 = E3_BY_SLUG.get(selectedE3Slug) || ARQUETIPOS_E3[0];
@@ -513,22 +539,33 @@ export function TreinoClinicoView({
     [origensNppValidas, nppOrigemId]
   );
 
-  const handleCopy = async (text: string, msg: string) => {
+  const handleCopy = async (text: string, msg: string, markReturnToImport = false) => {
     const ok = await copyToClipboard(text);
+    if (ok && markReturnToImport) {
+      pendingReturnToImportRef.current = true;
+    }
     onNotify(ok ? msg : 'Não foi possível copiar para a área de transferência.');
     return ok;
   };
 
   const handleImportGeminiLine = (overrideBaseline?: 'A' | 'B') => {
     setImportError(null);
-    const hint = overrideBaseline || (quickBaselineHint || undefined);
+    const hint = overrideBaseline || effectiveBaselineHint;
     const parsed = parseLogLineFromGemini(geminiLineRaw, todayIso, hint);
     if (!parsed.ok) {
       setImportError(parsed.error);
       return;
     }
     const d = parsed.draft;
-    const minVal = d.minPendente ? parseInt(quickMin, 10) : d.min;
+    if (d.minPendente && !quickMinValid) {
+      setImportError('Informe os minutos reais gastos na sessão (1 a 180).');
+      return;
+    }
+    if (d.iaPistaPendente && quickIaPista !== 'N' && quickIaPista !== 'S') {
+      setImportError('Informe se a IA deu pista antes de salvar (Não ou Sim).');
+      return;
+    }
+    const minVal = d.minPendente ? parseInt(quickMinTrim, 10) : d.min;
     const pistaVal = d.iaPistaPendente ? quickIaPista === 'S' : d.iaPista;
     const allowErroCritico = d.tipo === 'E3' || d.tipo === 'E4';
 
@@ -575,9 +612,12 @@ export function TreinoClinicoView({
     }
 
     setGeminiLineRaw('');
-    setUserEditedMin(false);
+    setQuickMin('');
+    setQuickIaPista('');
+    setQuickBaselineHint('');
     setQuickErroCritico(false);
     setQuickRefacaoPendente(false);
+    pendingReturnToImportRef.current = false;
     const warnSuffix = res.warnings.length > 0 ? ` · Aviso: ${res.warnings[0]}` : '';
     onNotify(`Sessão registrada (${res.entry.veredito})${warnSuffix}`);
   };
@@ -719,54 +759,148 @@ export function TreinoClinicoView({
     );
   };
 
-  const buildPromptForPasso = (
-    p: Extract<Passo, { kind: 'sessao' }>,
-    maskCasoFixo = false
-  ): string => {
-    if (p.prompt === 'A') {
-      const tipo = p.baseline === 'A' ? 'BASELINE-A' : p.baseline === 'B' ? 'BASELINE-B' : 'Nova';
-      return buildPromptA({
+  const buildPromptForPasso = useCallback(
+    (p: Extract<Passo, { kind: 'sessao' }>, maskCasoFixo = false): string => {
+      if (p.prompt === 'A') {
+        const tipo = p.baseline === 'A' ? 'BASELINE-A' : p.baseline === 'B' ? 'BASELINE-B' : 'Nova';
+        return buildPromptA({
+          dateIso: todayIso,
+          tipo,
+          slug: p.slug,
+          servico: ambienteE1Sel,
+          casoFixo: maskCasoFixo
+            ? casoFixoMasked
+              ? '[CONTEÚDO SIGILOSO MASCARADO]'
+              : '[COLAR CASO SELADO SEM LER]'
+            : casoFixoMasked,
+        });
+      }
+      if (p.prompt === 'D1') {
+        return buildPromptD1({
+          dateIso: todayIso,
+          slug: p.slug,
+          servico: ambienteE1Sel,
+          mecanismosUsados: p.mecanismosUsados || mecanismosUsadosDe(p.slug, treino.logs),
+        });
+      }
+      if (p.prompt === 'D2') {
+        return buildPromptD2({
+          dateIso: todayIso,
+          eixo: d2Eixo,
+          slug: p.slug,
+          rodizio: rodizio?.nome || 'Internato',
+          casoAnonimizado: d2Relato,
+        });
+      }
+      if (p.prompt === 'B') {
+        return buildPromptB({
+          dateIso: todayIso,
+          slug: p.slug,
+          servico: p.ambiente as AmbienteE3,
+        });
+      }
+      return buildPromptC({
         dateIso: todayIso,
-        tipo,
         slug: p.slug,
-        servico: ambienteE1Sel,
-        casoFixo: maskCasoFixo
-          ? casoFixoMasked
-            ? '[CONTEÚDO SIGILOSO MASCARADO]'
-            : '[COLAR CASO SELADO SEM LER]'
-          : casoFixoMasked,
+        servico: ambienteE4Sel,
       });
+    },
+    [
+      todayIso,
+      ambienteE1Sel,
+      ambienteE4Sel,
+      casoFixoMasked,
+      treino.logs,
+      d2Eixo,
+      d2Relato,
+      rodizio?.nome,
+    ]
+  );
+
+  const focusImportForm = useCallback(() => {
+    if (section !== 'esteira') {
+      setInternalSection('esteira');
+      setInternalMobileDetail(false);
+      onChangeRoute?.('esteira', null, false);
     }
-    if (p.prompt === 'D1') {
-      return buildPromptD1({
-        dateIso: todayIso,
-        slug: p.slug,
-        servico: ambienteE1Sel,
-        mecanismosUsados: p.mecanismosUsados || mecanismosUsadosDe(p.slug, treino.logs),
-      });
-    }
-    if (p.prompt === 'D2') {
-      return buildPromptD2({
-        dateIso: todayIso,
-        eixo: d2Eixo,
-        slug: p.slug,
-        rodizio: rodizio?.nome || 'Internato',
-        casoAnonimizado: d2Relato,
-      });
-    }
-    if (p.prompt === 'B') {
-      return buildPromptB({
-        dateIso: todayIso,
-        slug: p.slug,
-        servico: p.ambiente as AmbienteE3,
-      });
-    }
-    return buildPromptC({
-      dateIso: todayIso,
-      slug: p.slug,
-      servico: ambienteE4Sel,
-    });
-  };
+    window.setTimeout(() => {
+      importCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      importTextareaRef.current?.focus();
+    }, 60);
+  }, [section, onChangeRoute]);
+
+  const handleCopyPassoPrompt = useCallback(
+    async (p: Extract<Passo, { kind: 'sessao' }>) => {
+      const missingCase = Boolean(p.baseline) && !casoFixoMasked.trim();
+      if (missingCase) {
+        onNotify('Cole o caso selado no campo acima antes de copiar o Prompt A de BASELINE.');
+        return;
+      }
+      const ok = await copyToClipboard(buildPromptForPasso(p, false));
+      if (ok) {
+        pendingReturnToImportRef.current = true;
+        if (p.baseline) setCasoFixoMasked('');
+        onNotify(`Prompt ${p.prompt} (${formatTargetLabel(p.slug)}) copiado!`);
+      } else {
+        onNotify('Não foi possível copiar para a área de transferência.');
+      }
+    },
+    [casoFixoMasked, buildPromptForPasso, onNotify]
+  );
+
+  // Ao voltar do ChatGPT/Gemini após copiar prompt, rola e foca o campo de registro
+  useEffect(() => {
+    const handleReturn = () => {
+      if (document.hidden || !pendingReturnToImportRef.current) return;
+      pendingReturnToImportRef.current = false;
+      if (section !== 'esteira' || geminiLineRaw.trim()) return;
+      importCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.setTimeout(() => importTextareaRef.current?.focus(), 60);
+    };
+    window.addEventListener('focus', handleReturn);
+    document.addEventListener('visibilitychange', handleReturn);
+    return () => {
+      window.removeEventListener('focus', handleReturn);
+      document.removeEventListener('visibilitychange', handleReturn);
+    };
+  }, [section, geminiLineRaw]);
+
+  // Atalho Alt+C na aba Hoje para copiar o próximo prompt do dia
+  useEffect(() => {
+    if (!shortcutsEnabled || section !== 'esteira') return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.key.toLowerCase() !== 'c') return;
+      const sel = window.getSelection()?.toString();
+      if (sel) return;
+      const firstSess = passosHoje.find(
+        (p): p is Extract<Passo, { kind: 'sessao' }> => p.kind === 'sessao'
+      );
+      if (!firstSess) return;
+      e.preventDefault();
+      void handleCopyPassoPrompt(firstSess);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [shortcutsEnabled, section, passosHoje, handleCopyPassoPrompt]);
+
+  // Fecha popover de simulação de data ao clicar fora ou pressionar Esc
+  useEffect(() => {
+    if (!showDatePopover) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (datePopoverRef.current && !datePopoverRef.current.contains(e.target as Node)) {
+        setShowDatePopover(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowDatePopover(false);
+    };
+    window.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [showDatePopover]);
 
   const handleAddNpp = (slug: string) => {
     const lines = nppNovoTexto
@@ -905,17 +1039,17 @@ export function TreinoClinicoView({
     <div
       role="tablist"
       aria-label="Seções do Treino Clínico"
-      className={`grid grid-cols-5 gap-1 border-b border-zinc-200/80 p-2 dark:border-white/[0.07] ${
-        mobile ? 'bg-[#FAFAFA] lg:hidden dark:bg-[#0F1115]' : 'hidden lg:grid'
+      className={`flex flex-wrap gap-1.5 border-b border-zinc-200/80 p-2 dark:border-white/[0.07] ${
+        mobile ? 'bg-[#FAFAFA] lg:hidden dark:bg-[#0F1115]' : 'hidden lg:flex'
       }`}
     >
       {(
         [
-          { id: 'esteira', label: 'Hoje' },
-          { id: 'e1', label: 'E1 (20)' },
-          { id: 'e3', label: 'E3 (8)' },
-          { id: 'e4', label: 'E4 (7)' },
-          { id: 'log', label: 'LOG' },
+          { id: 'esteira', label: 'Hoje', title: 'Esteira diária de treino' },
+          { id: 'e1', label: 'Porta (20)', title: 'E1 — Queixas de Porta (20)' },
+          { id: 'e3', label: 'Prescrição (8)', title: 'E3 — Prescrição (8 arquétipos)' },
+          { id: 'e4', label: 'Grave (7)', title: 'E4 — Paciente Grave (7 cenários)' },
+          { id: 'log', label: 'Histórico', title: 'LOG completo e pendências [CHECAR]' },
         ] as const
       ).map((tab) => {
         const active = section === tab.id;
@@ -924,10 +1058,11 @@ export function TreinoClinicoView({
             key={tab.id}
             type="button"
             role="tab"
+            title={tab.title}
             aria-selected={active}
             aria-current={active ? 'page' : undefined}
             onClick={() => selectSection(tab.id)}
-            className={`rounded-md px-1.5 py-1.5 text-[11px] font-semibold transition-colors ${
+            className={`min-h-[36px] flex-auto whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-semibold transition-colors lg:min-h-[30px] lg:py-1 ${
               active
                 ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
                 : 'bg-white text-zinc-600 hover:text-zinc-900 dark:bg-[#15181F] dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
@@ -1001,82 +1136,99 @@ export function TreinoClinicoView({
         </div>
       </div>
 
-      {/* Piloto & Termômetro 10/Jan: expandidos nos blocos 0 e 1, recolhidos no Internato */}
-      {bloco === 'BLOCO2_INTERNATO' ? (
+      {/* Termômetro 10/Jan sempre em destaque; Piloto recolhido automaticamente a partir de 30/11 ou no Internato */}
+      <div className="rounded-xl border border-zinc-200/80 bg-white p-3 dark:border-white/[0.07] dark:bg-[#15181F]">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-[#9CA3AF]">
+          Termômetro 10/jan (Meta Hipóteses ≥ 80%)
+        </p>
+        {contingencia.den === 0 ? (
+          <p className="mt-1 font-mono text-xs text-zinc-500 dark:text-[#9CA3AF]">
+            Aguardando 1ª tentativa avaliável
+          </p>
+        ) : (
+          <p className="mt-1 font-mono text-xs text-zinc-800 dark:text-[#E5E7EB]">
+            {contingencia.num}/{contingencia.den} (
+            {Math.round((contingencia.num / contingencia.den) * 100)}%)
+            {' · '}
+            <span
+              className={
+                contingencia.disparou
+                  ? 'text-amber-600 dark:text-amber-400'
+                  : 'text-emerald-600 dark:text-emerald-400'
+              }
+            >
+              {contingencia.disparou ? 'Abaixo da meta' : 'Na meta'}
+            </span>
+          </p>
+        )}
+      </div>
+
+      {todayIso >= '2026-11-30' || bloco === 'BLOCO2_INTERNATO' ? (
         <details className="rounded-xl border border-zinc-200/80 bg-white p-3 text-xs dark:border-white/[0.07] dark:bg-[#15181F]">
           <summary className="cursor-pointer font-semibold text-zinc-600 dark:text-[#9CA3AF]">
-            Histórico Piloto & Termômetro 10/jan
+            Piloto (encerrado pós-P2)
           </summary>
-          <div className="mt-2.5 space-y-2.5 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.06]">
-            <ul className="space-y-1">
-              {pilotoStatuses.map((ps) => (
-                <li key={ps.id} className="flex items-center justify-between gap-2">
-                  <span className="truncate text-zinc-700 dark:text-[#D1D5DB]">
-                    {ps.concluido ? '✓ ' : '○ '}
-                    {ps.id} ({formatDateDDMM(ps.dataNominal)})
-                  </span>
-                  <span className="font-mono text-[10px] text-zinc-500">
-                    {ps.concluido ? (ps.ok ? 'OK' : 'Auditar') : 'Pendente'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="font-mono text-[11px] text-zinc-700 dark:text-[#D1D5DB]">
-              10/jan: {contingencia.num}/{contingencia.den} (
-              {contingencia.den > 0 ? Math.round((contingencia.num / contingencia.den) * 100) : 0}%) ·{' '}
-              {contingencia.disparou ? 'Abaixo da meta' : 'Na meta'}
-            </p>
-          </div>
+          <ul className="mt-2.5 space-y-1.5 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.06]">
+            {pilotoStatuses.map((ps) => (
+              <li key={ps.id} className="flex items-center justify-between gap-2">
+                <span className="truncate text-zinc-700 dark:text-[#D1D5DB]">
+                  {ps.concluido ? '✓ ' : ps.dispensado ? '— ' : '○ '}
+                  {ps.id} ({formatDateDDMM(ps.dataNominal)})
+                </span>
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                    ps.concluido
+                      ? ps.ok
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                        : 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
+                      : 'bg-zinc-100 text-zinc-500 dark:bg-white/[0.05] dark:text-[#9CA3AF]'
+                  }`}
+                >
+                  {ps.concluido
+                    ? ps.ok
+                      ? 'OK'
+                      : 'Auditar'
+                    : ps.dispensado
+                      ? 'Encerrado (v3.2)'
+                      : 'Pendente'}
+                </span>
+              </li>
+            ))}
+          </ul>
         </details>
       ) : (
-        <>
-          <div className="rounded-xl border border-zinc-200/80 bg-white p-3 dark:border-white/[0.07] dark:bg-[#15181F]">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-[#9CA3AF]">
-              Bloco 0 · Piloto (21–29/nov)
-            </p>
-            <ul className="mt-2 space-y-1.5 text-xs">
-              {pilotoStatuses.map((ps) => (
-                <li key={ps.id} className="flex items-center justify-between gap-2">
-                  <span className="truncate text-zinc-700 dark:text-[#D1D5DB]">
-                    {ps.concluido ? '✓ ' : '○ '}
-                    {ps.id} ({formatDateDDMM(ps.dataNominal)})
-                  </span>
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                      ps.concluido
-                        ? ps.ok
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-                          : 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
-                        : 'bg-zinc-100 text-zinc-500 dark:bg-white/[0.05] dark:text-[#9CA3AF]'
-                    }`}
-                  >
-                    {ps.concluido ? (ps.ok ? 'OK' : 'Auditar') : 'Pendente'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-xl border border-zinc-200/80 bg-white p-3 dark:border-white/[0.07] dark:bg-[#15181F]">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-[#9CA3AF]">
-              Termômetro 10/jan (Meta 3H ≥ 80%)
-            </p>
-            <p className="mt-1 font-mono text-xs text-zinc-800 dark:text-[#E5E7EB]">
-              {contingencia.num}/{contingencia.den} (
-              {contingencia.den > 0 ? Math.round((contingencia.num / contingencia.den) * 100) : 0}%)
-              {' · '}
-              <span
-                className={
-                  contingencia.disparou
-                    ? 'text-amber-600 dark:text-amber-400'
-                    : 'text-emerald-600 dark:text-emerald-400'
-                }
-              >
-                {contingencia.disparou ? 'Abaixo da meta' : 'Na meta'}
-              </span>
-            </p>
-          </div>
-        </>
+        <div className="rounded-xl border border-zinc-200/80 bg-white p-3 dark:border-white/[0.07] dark:bg-[#15181F]">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-[#9CA3AF]">
+            Piloto (encerrado pós-P2)
+          </p>
+          <ul className="mt-2 space-y-1.5 text-xs">
+            {pilotoStatuses.map((ps) => (
+              <li key={ps.id} className="flex items-center justify-between gap-2">
+                <span className="truncate text-zinc-700 dark:text-[#D1D5DB]">
+                  {ps.concluido ? '✓ ' : ps.dispensado ? '— ' : '○ '}
+                  {ps.id} ({formatDateDDMM(ps.dataNominal)})
+                </span>
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                    ps.concluido
+                      ? ps.ok
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                        : 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
+                      : 'bg-zinc-100 text-zinc-500 dark:bg-white/[0.05] dark:text-[#9CA3AF]'
+                  }`}
+                >
+                  {ps.concluido
+                    ? ps.ok
+                      ? 'OK'
+                      : 'Auditar'
+                    : ps.dispensado
+                      ? 'Encerrado (v3.2)'
+                      : 'Pendente'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
@@ -1106,24 +1258,32 @@ export function TreinoClinicoView({
       </button>
       <div className="rounded-xl border border-zinc-200/80 bg-white p-3 text-xs dark:border-white/[0.07] dark:bg-[#15181F]">
         <p className="font-semibold text-zinc-800 dark:text-[#E5E7EB]">
-          Comparativo Baseline (29/nov × 24/jan)
+          Comparativo Baseline ({relatorioBaseline.baseA ? formatDateDDMM(relatorioBaseline.baseA.dateIso) : '30/nov'} × 24/jan)
         </p>
         {relatorioBaseline.inconclusivo ? (
           <p className="mt-1 text-amber-700 dark:text-amber-300">
             Inconclusivo: {relatorioBaseline.motivoInconclusivo}
           </p>
         ) : (
-          <div className="mt-1.5 space-y-1 text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
+        <div className="mt-1.5 space-y-1 text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
             <p>
               Caso A:{' '}
               {relatorioBaseline.baseA
-                ? `3H=${relatorioBaseline.baseA.h3Bloco} · ${relatorioBaseline.baseA.veredito}`
+                ? `Hipóteses=${relatorioBaseline.baseA.h3Bloco} · ${relatorioBaseline.baseA.veredito}${
+                    relatorioBaseline.baseA.score.kind === 'rubrica'
+                      ? ` · Com. ${relatorioBaseline.baseA.score.valor}/4`
+                      : ''
+                  }`
                 : 'Pendente'}
             </p>
             <p>
               Caso B:{' '}
               {relatorioBaseline.baseB
-                ? `3H=${relatorioBaseline.baseB.h3Bloco} · ${relatorioBaseline.baseB.veredito}`
+                ? `Hipóteses=${relatorioBaseline.baseB.h3Bloco} · ${relatorioBaseline.baseB.veredito}${
+                    relatorioBaseline.baseB.score.kind === 'rubrica'
+                      ? ` · Com. ${relatorioBaseline.baseB.score.valor}/4`
+                      : ''
+                  }`
                 : 'Pendente'}
             </p>
           </div>
@@ -1177,20 +1337,23 @@ export function TreinoClinicoView({
               {l.min !== null ? `${l.min}m` : '__m'}
             </span>
             <span className="text-zinc-300 dark:text-zinc-700">·</span>
-            <span className="text-zinc-700 dark:text-[#D1D5DB]">3H: {l.h3Bloco}</span>
+            <span title="3H_bloco antes da entrevista" className="text-zinc-700 dark:text-[#D1D5DB]">
+              Hipóteses: {l.h3Bloco}
+            </span>
             <span className="text-zinc-300 dark:text-zinc-700">·</span>
-            <span className="text-zinc-700 dark:text-[#D1D5DB]">Score: {scoreText}</span>
+            <span className="text-zinc-700 dark:text-[#D1D5DB]">Nota: {scoreText}</span>
             {l.iaPista !== null && (
               <>
                 <span className="text-zinc-300 dark:text-zinc-700">·</span>
                 <span
+                  title="IA_Pista?: se o simulador vazou pista ou termo diagnóstico"
                   className={
                     l.iaPista
                       ? 'font-semibold text-rose-600 dark:text-rose-400'
                       : 'text-zinc-500 dark:text-[#9CA3AF]'
                   }
                 >
-                  IA_Pista: {l.iaPista ? 'S' : 'N'}
+                  Pista IA: {l.iaPista ? 'S' : 'N'}
                 </span>
               </>
             )}
@@ -1231,8 +1394,8 @@ export function TreinoClinicoView({
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#FAFAFA] dark:bg-[#0F1115]">
       {/* Barra de Métricas Contínuas */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/80 bg-white px-4 py-2 text-xs dark:border-white/[0.07] dark:bg-[#15181F]">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/80 bg-white px-4 py-1.5 text-xs md:py-2 dark:border-white/[0.07] dark:bg-[#15181F]">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <span className="rounded-md bg-[#0F766E]/10 px-2 py-0.5 font-semibold text-[#0F766E] dark:bg-[#2DD4BF]/15 dark:text-[#2DD4BF]">
             {BLOCO_LABEL[bloco]}
           </span>
@@ -1241,21 +1404,52 @@ export function TreinoClinicoView({
               Rodízio: {rodizio.nome}
             </span>
           )}
-          <span className="font-mono text-zinc-600 tabular-nums dark:text-[#9CA3AF]">
-            3H:{' '}
+          <span
+            title="3H_bloco: hipóteses formuladas antes da entrevista nas sessões E1 avaliáveis"
+            className="hidden font-mono text-zinc-600 tabular-nums md:inline dark:text-[#9CA3AF]"
+          >
+            Hipóteses:{' '}
             <strong className="text-zinc-900 dark:text-[#F3F4F6]">
               {metrics.h3Num}/{metrics.h3Den}
             </strong>
             {metrics.h3Pct !== null ? ` (${metrics.h3Pct}%)` : ''}
           </span>
-          <span className="font-mono text-zinc-600 tabular-nums dark:text-[#9CA3AF]">
-            PEMC:{' '}
+          <span
+            title="PEMC: sessões E1 avaliáveis sem omissão crítica"
+            className="hidden font-mono text-zinc-600 tabular-nums md:inline dark:text-[#9CA3AF]"
+          >
+            Sem omissão:{' '}
             <strong className="text-zinc-900 dark:text-[#F3F4F6]">
               {metrics.pemcNum}/{metrics.pemcDen}
             </strong>
           </span>
-          <span className="font-mono text-zinc-600 tabular-nums dark:text-[#9CA3AF]">
-            Domínio E1:{' '}
+          <span
+            title={
+              metrics.e2Den > 0
+                ? `Comunicação E2 (separada do veredito de raciocínio E1): ${metrics.e2Gte3Num}/${metrics.e2Den} sessões com nota ≥ 3/4`
+                : 'Comunicação E2: média das notas 0–4 nas sessões E1 avaliáveis (separada do domínio)'
+            }
+            className="hidden font-mono text-zinc-600 tabular-nums md:inline dark:text-[#9CA3AF]"
+          >
+            Comunicação:{' '}
+            <strong
+              className={
+                metrics.e2Avg !== null && metrics.e2Avg < 3
+                  ? 'text-amber-700 dark:text-amber-400'
+                  : 'text-zinc-900 dark:text-[#F3F4F6]'
+              }
+            >
+              {metrics.e2Avg !== null
+                ? `${metrics.e2Avg.toFixed(1).replace('.', ',')}/4`
+                : '—'}
+            </strong>
+            {metrics.e2Den > 0 ? ` (${metrics.e2Gte3Num}/${metrics.e2Den} ≥3)` : ''}
+          </span>
+          <span
+            title="Domínio E1: queixas com 2 sessões Limpo em dias distintos (ao menos 1 Variante)"
+            className="font-mono text-zinc-600 tabular-nums dark:text-[#9CA3AF]"
+          >
+            Dominadas:{' '}
             <strong className="text-zinc-900 dark:text-[#F3F4F6]">
               {metrics.dominadasE1}/{metrics.totalAlvoE1}
             </strong>
@@ -1271,35 +1465,99 @@ export function TreinoClinicoView({
             </button>
           )}
           {metrics.gatilhoClaudeIaPista && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+            <span
+              title="Alerta IA_Pista: ≥2 de 5 sessões recentes tiveram vazamento de pista"
+              className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
+            >
               <ShieldAlert className="h-3 w-3" />
-              Alerta IA_Pista: ≥2/5
+              Pista IA ≥2/5
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div ref={datePopoverRef} className="relative flex flex-wrap items-center gap-1.5">
           {isSimulatingDate && (
             <span className="inline-flex items-center gap-1 rounded-md border border-amber-300/80 bg-amber-50 px-2 py-0.5 font-mono text-[11px] font-semibold text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-200">
               Simulando {formatDateDDMM(todayIso)}
               <button
                 type="button"
-                onClick={() => setTodayIso(todayIsoLocal())}
+                onClick={() => {
+                  setTodayIso(todayIsoLocal());
+                  setShowDatePopover(false);
+                }}
                 className="ml-1 rounded bg-amber-200/80 px-1.5 py-0.5 text-[10px] font-bold text-amber-950 hover:bg-amber-300 dark:bg-amber-400/25 dark:text-amber-100"
               >
                 Hoje
               </button>
             </span>
           )}
-          <label className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-            <span>Data:</span>
-            <input
-              type="date"
-              value={todayIso}
-              onChange={(e) => e.target.value && setTodayIso(e.target.value)}
-              className="rounded border border-zinc-200 bg-[#FAFAFA] px-1.5 py-0.5 font-mono text-[11px] text-zinc-900 outline-none focus:border-[#0F766E] dark:border-white/[0.10] dark:bg-[#0F1115] dark:text-[#F3F4F6] dark:focus:border-[#2DD4BF]"
-            />
-          </label>
+          <button
+            type="button"
+            onClick={() => setShowDatePopover((prev) => !prev)}
+            aria-expanded={showDatePopover}
+            aria-label="Simular data de treino"
+            title="Simular outra data no calendário do curso"
+            className={`inline-flex min-h-[30px] items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors ${
+              showDatePopover || isSimulatingDate
+                ? 'border-[#0F766E]/40 bg-teal-50/70 text-[#0F766E] dark:border-[#2DD4BF]/40 dark:bg-teal-500/15 dark:text-[#2DD4BF]'
+                : 'border-zinc-200/90 bg-[#FAFAFA] text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-white/[0.08] dark:bg-[#0F1115] dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]'
+            }`}
+          >
+            <Calendar className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{formatDateDDMM(todayIso)}</span>
+          </button>
+
+          {showDatePopover && (
+            <div className="absolute top-full right-0 z-40 mt-1.5 w-60 space-y-2.5 rounded-xl border border-zinc-200 bg-white p-3 shadow-xl dark:border-white/[0.1] dark:bg-[#15181F]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-zinc-700 dark:text-[#D1D5DB]">
+                  Simular data
+                </span>
+                {isSimulatingDate && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTodayIso(todayIsoLocal());
+                      setShowDatePopover(false);
+                    }}
+                    className="text-[11px] font-semibold text-[#0F766E] hover:underline dark:text-[#2DD4BF]"
+                  >
+                    Voltar para hoje
+                  </button>
+                )}
+              </div>
+              <input
+                type="date"
+                aria-label="Data simulada"
+                value={todayIso}
+                onChange={(e) => e.target.value && setTodayIso(e.target.value)}
+                className={`w-full px-2.5 py-1.5 font-mono ${INPUT_BASE_CLS}`}
+              />
+              <div className="flex flex-wrap gap-1">
+                {(
+                  [
+                    ['2026-11-30', '30/nov (Base A)'],
+                    ['2026-12-03', '03/dez (1º C)'],
+                    ['2026-12-04', '04/dez (1º B)'],
+                    ['2027-01-10', '10/jan'],
+                    ['2027-01-24', '24/jan'],
+                  ] as const
+                ).map(([iso, lbl]) => (
+                  <button
+                    key={iso}
+                    type="button"
+                    onClick={() => {
+                      setTodayIso(iso);
+                      setShowDatePopover(false);
+                    }}
+                    className="rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 font-mono text-[10px] text-zinc-700 hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.08] dark:bg-[#0F1115] dark:text-[#D1D5DB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
+                  >
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1590,10 +1848,33 @@ export function TreinoClinicoView({
               <>
                 {/* Resumo recolhível exclusivo do mobile (< lg) */}
                 <details className="rounded-xl border border-zinc-200/80 bg-white p-3 text-xs lg:hidden dark:border-white/[0.07] dark:bg-[#15181F]">
-                  <summary className="cursor-pointer font-semibold text-zinc-700 dark:text-[#D1D5DB]">
-                    Resumo da 1ª Passada ({metrics.primeiraPassadaE1}/19 E1 · {metrics.primeiraPassadaE3Porta}/7 E3 · {metrics.primeiraPassadaE4}/7 E4)
+                  <summary className="min-h-[32px] cursor-pointer py-1 font-semibold text-zinc-700 dark:text-[#D1D5DB]">
+                    Progresso, métricas & Termômetro ({metrics.primeiraPassadaE1}/19 E1 · {metrics.primeiraPassadaE3Porta}/7 E3 · {metrics.primeiraPassadaE4}/7 E4)
                   </summary>
-                  <div className="mt-3">{renderEsteiraSummaryCards()}</div>
+                  <div className="mt-3 space-y-3">
+                    <div className="grid grid-cols-3 gap-2 rounded-lg border border-zinc-200/70 bg-zinc-50 p-2.5 font-mono text-[11px] dark:border-white/[0.06] dark:bg-[#0F1115]">
+                      <div>
+                        <span className="block text-[10px] text-zinc-500 dark:text-[#9CA3AF]">Hipóteses</span>
+                        <strong className="text-zinc-900 dark:text-[#F3F4F6]">
+                          {metrics.h3Num}/{metrics.h3Den}
+                          {metrics.h3Pct !== null ? ` (${metrics.h3Pct}%)` : ''}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-zinc-500 dark:text-[#9CA3AF]">Sem omissão</span>
+                        <strong className="text-zinc-900 dark:text-[#F3F4F6]">
+                          {metrics.pemcNum}/{metrics.pemcDen}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-zinc-500 dark:text-[#9CA3AF]">Comunicação</span>
+                        <strong className="text-zinc-900 dark:text-[#F3F4F6]">
+                          {metrics.e2Avg !== null ? `${metrics.e2Avg.toFixed(1).replace('.', ',')}/4` : '—'}
+                        </strong>
+                      </div>
+                    </div>
+                    {renderEsteiraSummaryCards()}
+                  </div>
                 </details>
 
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1602,7 +1883,7 @@ export function TreinoClinicoView({
                       Esteira Contínua — {formatDateDDMMYYYY(todayIso)}
                     </h2>
                     <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
-                      Siga os passos na ordem abaixo. Simulação por voz no Gemini (sem modo Live) → cole a linha final do LOG aqui.
+                      Copie o prompt, simule no ChatGPT ou Gemini e registre a linha final abaixo.
                     </p>
                   </div>
                   {bloco === 'BLOCO2_INTERNATO' && (
@@ -1654,68 +1935,7 @@ export function TreinoClinicoView({
                   )}
                 </div>
 
-                {/* Guia da semana + Recomendações por gargalo */}
-                {(guiaSemana || guiasGargalo.length > 0) && (
-                  <div className="space-y-2.5 rounded-2xl border border-zinc-200/80 bg-white p-4 dark:border-white/[0.07] dark:bg-[#15181F]">
-                    {guiaSemana &&
-                      (() => {
-                        const mod = FORMACAO_TEORICA_MODULOS.find((m) => m.id === guiaSemana.modId);
-                        const st = central6Ano.teoriaStatusById?.[guiaSemana.modId] || 'nao_iniciado';
-                        return (
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div>
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F766E] dark:text-[#2DD4BF]">
-                                Guia Teórico da Semana (~20 min + 3 Micro-Drills)
-                              </span>
-                              <p className="text-xs font-semibold text-zinc-900 dark:text-[#F3F4F6]">
-                                {mod ? mod.title : guiaSemana.motivo}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => onOpenGuiaTeorico?.(guiaSemana.modId)}
-                              className="inline-flex items-center gap-1 rounded-lg border border-[#0F766E] px-2.5 py-1.5 text-xs font-semibold text-[#0F766E] hover:bg-[#0F766E]/10 dark:border-[#2DD4BF] dark:text-[#2DD4BF]"
-                            >
-                              <span>
-                                {st === 'dominado'
-                                  ? '✓ Dominado · Revisar Drills'
-                                  : 'Abrir Guia & 3 Micro-Drills'}
-                              </span>
-                              <ArrowUpRight className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        );
-                      })()}
-
-                    {guiasGargalo.length > 0 && (
-                      <div className="space-y-1.5 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.06]">
-                        <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
-                          Recomendado pelos seus gargalos recentes no LOG:
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {guiasGargalo.map((g) => {
-                            const mod = FORMACAO_TEORICA_MODULOS.find((m) => m.id === g.modId);
-                            return (
-                              <button
-                                key={g.modId}
-                                type="button"
-                                onClick={() => onOpenGuiaTeorico?.(g.modId)}
-                                className="inline-flex items-center gap-1 rounded-lg border border-amber-300/80 bg-amber-50/70 px-2.5 py-1 text-left text-[11px] font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
-                              >
-                                <span>
-                                  <strong>{mod ? `Mód. ${mod.num}` : g.modId}:</strong> {g.motivo}
-                                </span>
-                                <ArrowUpRight className="h-3 w-3 shrink-0" />
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Lista de Passos do Dia */}
+                {/* Lista de Passos do Dia (primeiro na hierarquia operacional) */}
                 <div className="space-y-4">
                   {passosHoje.map((passo, idx) => {
                     if (passo.kind === 'descanso') {
@@ -1725,7 +1945,10 @@ export function TreinoClinicoView({
                         viagem: 'Semana de viagem (11–17/jan) — pausa total (0 sessões).',
                         pos_plantao: 'Pós-plantão noturno — ZERO micro-dose e ZERO treino hoje.',
                         meta_semana_cumprida: 'Meta de hoje/semana concluída. Sem dívida acumulada.',
-                        aguardando_data: `Próximo passo do piloto agendado para ${passo.proximaDataIso ? formatDateDDMMYYYY(passo.proximaDataIso) : 'breve'}.`,
+                        aguardando_data:
+                          passo.proximaDataIso === '2026-11-30'
+                            ? 'Descanso pós-prova de GO (27–29/11) — retomada em 30/11/2026 com BASELINE-A a frio.'
+                            : `Próximo passo agendado para ${passo.proximaDataIso ? formatDateDDMMYYYY(passo.proximaDataIso) : 'breve'}.`,
                       };
                       return (
                         <div
@@ -1755,7 +1978,7 @@ export function TreinoClinicoView({
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
                               <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="inline-flex items-center gap-1 rounded-md bg-[#0F766E] px-2 py-0.5 text-[11px] font-bold text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]">
+                                <span className="inline-flex items-center gap-1 rounded-md border border-[#0F766E]/25 bg-teal-50/90 px-2 py-0.5 text-[11px] font-bold text-[#0F766E] dark:border-[#2DD4BF]/30 dark:bg-teal-500/15 dark:text-[#2DD4BF]">
                                   <Play className="h-3 w-3" />
                                   Passo {idx + 1} · Prompt {passo.prompt}
                                 </span>
@@ -1765,6 +1988,11 @@ export function TreinoClinicoView({
                                 <span className="font-mono text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                                   Teto ≤ {passo.tetoMin} min
                                 </span>
+                                {passo.primeiraExecucaoSemPiloto && (
+                                  <span className="rounded-md border border-amber-300/80 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:border-amber-500/35 dark:bg-amber-500/15 dark:text-amber-300">
+                                    1ª execução · teto flexível (sem piloto)
+                                  </span>
+                                )}
                                 {passo.visual && (
                                   <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
                                     + Bloco Visual {passo.visual} (10 min)
@@ -1801,6 +2029,12 @@ export function TreinoClinicoView({
                               </select>
                             )}
                           </div>
+
+                          {passo.primeiraExecucaoSemPiloto && (
+                            <p className="rounded-lg border border-amber-200/80 bg-amber-50/70 px-3 py-1.5 text-[11px] text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+                              Primeiro caso de Prompt {passo.prompt} fora do piloto: se ultrapassar o teto nominal, o tempo extra não consome vaga de reserva.
+                            </p>
+                          )}
 
                           {passo.pausaSilenciosa10s && (
                             <div className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
@@ -1887,28 +2121,26 @@ export function TreinoClinicoView({
                             </div>
                           )}
 
-                          {/* CTA principal posicionado acima dos chips Pré-Porta (P1) */}
+                          {/* CTAs do passo: Copiar prompt + Registrar tentativa (evita apagar clipboard na volta) */}
                           <div className="flex flex-wrap items-center gap-2 pt-0.5">
                             <button
                               type="button"
-                              onClick={async () => {
-                                if (baselineMissingCase) {
-                                  onNotify('Cole o caso selado no campo acima antes de copiar o Prompt A de BASELINE.');
-                                  return;
-                                }
-                                const ok = await handleCopy(
-                                  buildPromptForPasso(passo, false),
-                                  `Prompt ${passo.prompt} (${formatTargetLabel(passo.slug)}) copiado para o Gemini!`
-                                );
-                                if (ok && isBaseline) {
-                                  setCasoFixoMasked('');
-                                }
-                              }}
+                              onClick={() => void handleCopyPassoPrompt(passo)}
                               disabled={baselineMissingCase}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3.5 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-[#2DD4BF] dark:text-[#0F1115]"
+                              title="Copiar prompt do caso (Alt+C)"
+                              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#0F766E] px-3.5 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-0 dark:bg-[#2DD4BF] dark:text-[#0F1115]"
                             >
                               <ClipboardCopy className="h-3.5 w-3.5" />
-                              Copiar Prompt {passo.prompt} para o Gemini
+                              Copiar Prompt {passo.prompt}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={focusImportForm}
+                              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:border-[#0F766E]/50 hover:text-[#0F766E] sm:min-h-0 dark:border-white/[0.12] dark:bg-[#0F1115] dark:text-[#E5E7EB] dark:hover:border-[#2DD4BF]/50 dark:hover:text-[#2DD4BF]"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              Registrar tentativa
                             </button>
 
                             {passo.visual && !treino.visual[passo.slug]?.feitoEm && (
@@ -1920,7 +2152,7 @@ export function TreinoClinicoView({
                                     `Bloco visual ${passo.visual} (${formatTargetLabel(passo.slug)}) marcado como concluído.`
                                   );
                                 }}
-                                className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300"
+                                className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 sm:min-h-0 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300"
                               >
                                 <Check className="h-3.5 w-3.5" />
                                 Marcar Visual {passo.visual} feito
@@ -2180,29 +2412,79 @@ export function TreinoClinicoView({
                   </div>
                 </details>
 
-                {/* Card Universal de Importação da Linha do Gemini */}
-                <div className="space-y-3 rounded-2xl border border-zinc-200/80 bg-white p-4 dark:border-white/[0.07] dark:bg-[#15181F]">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-zinc-700 dark:text-[#D1D5DB]">
-                    <Sparkles className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
-                    Registrar 1ª Tentativa (colar linha final ditada pelo Gemini)
+                {/* Card Universal de Registro da 1ª Tentativa (ChatGPT ou Gemini) */}
+                <div
+                  ref={importCardRef}
+                  className="space-y-3 rounded-2xl border border-zinc-200/80 bg-white p-4 dark:border-white/[0.07] dark:bg-[#15181F]"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-zinc-700 dark:text-[#D1D5DB]">
+                      <Sparkles className="h-3.5 w-3.5 text-[#0F766E] dark:text-[#2DD4BF]" />
+                      Registrar 1ª Tentativa (ChatGPT ou Gemini)
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowLogExample((prev) => !prev)}
+                      aria-expanded={showLogExample}
+                      className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-[11px] font-medium text-zinc-600 hover:border-[#0F766E]/40 hover:text-[#0F766E] dark:border-white/[0.08] dark:bg-[#0F1115] dark:text-[#9CA3AF] dark:hover:text-[#2DD4BF]"
+                    >
+                      <HelpCircle className="h-3 w-3" />
+                      {showLogExample ? 'Ocultar exemplo' : 'Ver exemplo'}
+                    </button>
                   </div>
-                  <textarea
-                    rows={2}
-                    value={geminiLineRaw}
-                    onChange={(e) => {
-                      setGeminiLineRaw(e.target.value);
-                      setImportError(null);
-                    }}
-                    placeholder="Ex.: 21/11 | Nova | dor-toracica:iamcsst | __m | S | nenhuma | 3/4 (teach-back) | [N/S] | Limpo"
-                    className={`w-full p-2.5 font-mono ${INPUT_BASE_CLS}`}
-                  />
+
+                  {showLogExample && (
+                    <div className="space-y-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50 p-3 text-[11px] text-zinc-700 dark:border-white/[0.08] dark:bg-[#0F1115] dark:text-[#D1D5DB]">
+                      <p className="font-semibold text-zinc-800 dark:text-[#F3F4F6]">
+                        Formato de 9 campos separados por <code>|</code>:
+                      </p>
+                      <p className="overflow-x-auto font-mono text-[10px] text-[#0F766E] dark:text-[#2DD4BF]">
+                        21/11 | Nova | dor-toracica:iamcsst | __m | S | nenhuma | 3/4 (teach-back) | [N/S] | Limpo
+                      </p>
+                      <p className="text-[10px] text-zinc-500 dark:text-[#9CA3AF]">
+                        1. Data (DD/MM) · 2. Tipo (Nova/Var/E3/E4/BASELINE) · 3. Alvo · 4. Minutos · 5. Hipóteses (S/N) · 6. Omissão/PEMC · 7. Nota · 8. IA deu pista? · 9. Veredito
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label
+                        htmlFor="treino-log-import-textarea"
+                        className="text-xs font-medium text-zinc-700 dark:text-[#D1D5DB]"
+                      >
+                        Linha final da simulação
+                      </label>
+                      <span className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                        Cole a resposta inteira ou a última linha (no BASELINE-A, apenas a linha única)
+                      </span>
+                    </div>
+                    <textarea
+                      id="treino-log-import-textarea"
+                      ref={importTextareaRef}
+                      rows={2}
+                      value={geminiLineRaw}
+                      onChange={(e) => {
+                        setGeminiLineRaw(e.target.value);
+                        setImportError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && canSaveImport) {
+                          e.preventDefault();
+                          handleImportGeminiLine();
+                        }
+                      }}
+                      placeholder="Cole aqui a linha final gerada pelo simulador (Ctrl+V)..."
+                      className={`w-full p-2.5 font-mono ${INPUT_BASE_CLS}`}
+                    />
+                  </div>
 
                   <PiiInlineAlert
                     text={geminiLineRaw}
                     onAnonymize={() => setGeminiLineRaw((p) => sanitizePiiText(p).sanitized)}
                   />
 
-                  {/* P2: Preview instantâneo da linha do LOG antes de salvar */}
+                  {/* Preview instantâneo transparente antes de salvar */}
                   {parsedGeminiPreview && (
                     <div
                       className={`rounded-lg border px-3 py-2 text-[11px] ${
@@ -2219,133 +2501,222 @@ export function TreinoClinicoView({
                           <span>{formatDateDDMM(parsedGeminiPreview.draft.dateIso)}</span>
                           <span>·</span>
                           <span className="font-semibold">{parsedGeminiPreview.draft.tipo}</span>
+                          {parsedGeminiPreview.draft.baselineFase && (
+                            <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-bold text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
+                              BASELINE-{parsedGeminiPreview.draft.baselineFase}
+                            </span>
+                          )}
                           <span>·</span>
                           <span>{formatTargetLabel(parsedGeminiPreview.draft.slug)}</span>
+                          {parsedGeminiPreview.draft.mecanismo && (
+                            <>
+                              <span>·</span>
+                              <span>{parsedGeminiPreview.draft.mecanismo}</span>
+                            </>
+                          )}
                           <span>·</span>
                           <span
                             className={
-                              parsedGeminiPreview.draft.minPendente
+                              parsedGeminiPreview.draft.minPendente && !quickMinValid
                                 ? 'font-semibold text-amber-700 dark:text-amber-300'
                                 : ''
                             }
                           >
                             {parsedGeminiPreview.draft.minPendente
-                              ? `Min pendente (usará ${quickMin}m)`
+                              ? quickMinValid
+                                ? `${quickMinTrim}m (manual)`
+                                : 'Minutos pendentes'
                               : `${parsedGeminiPreview.draft.min}m`}
                           </span>
                           <span>·</span>
-                          <span>3H={parsedGeminiPreview.draft.h3Bloco}</span>
+                          <span>Hipóteses={parsedGeminiPreview.draft.h3Bloco}</span>
                           <span>·</span>
                           <span>
-                            PEMC=
+                            Omissão=
                             {parsedGeminiPreview.draft.pemc.kind === 'omissao'
                               ? parsedGeminiPreview.draft.pemc.texto
                               : parsedGeminiPreview.draft.pemc.kind === 'baselineSN'
                                 ? parsedGeminiPreview.draft.pemc.valor
                                 : parsedGeminiPreview.draft.pemc.kind}
                           </span>
-                          <span>·</span>
-                          <span>Veredito IA: {parsedGeminiPreview.draft.vereditoIA}</span>
+                          {parsedGeminiPreview.draft.iaPistaPendente && (
+                            <>
+                              <span>·</span>
+                              <span
+                                className={
+                                  quickIaPistaValid
+                                    ? ''
+                                    : 'font-semibold text-amber-700 dark:text-amber-300'
+                                }
+                              >
+                                {quickIaPistaValid
+                                  ? `Pista IA=${quickIaPista}`
+                                  : 'Pista IA pendente'}
+                              </span>
+                            </>
+                          )}
                         </div>
                       ) : (
-                        <span>Formato ainda inválido: {parsedGeminiPreview.error}</span>
+                        <span>
+                          {parsedGeminiPreview.error}{' '}
+                          <button
+                            type="button"
+                            onClick={() => setShowLogExample(true)}
+                            className="font-semibold underline underline-offset-2"
+                          >
+                            Ver exemplo
+                          </button>
+                        </span>
                       )}
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <label className="flex items-center gap-1.5">
-                      <span className="text-zinc-600 dark:text-[#9CA3AF]">Min reais:</span>
-                      <input
-                        type="number"
-                        min={1}
-                        max={180}
-                        value={quickMin}
-                        onChange={(e) => {
-                          setQuickMin(e.target.value);
-                          setUserEditedMin(true);
-                        }}
-                        className={`w-16 px-2 py-1 font-mono ${INPUT_BASE_CLS}`}
-                      />
-                    </label>
-                    <label className="flex items-center gap-1.5">
-                      <span className="text-zinc-600 dark:text-[#9CA3AF]">IA_Pista?:</span>
-                      <select
-                        value={quickIaPista}
-                        onChange={(e) => setQuickIaPista(e.target.value as 'N' | 'S')}
-                        className={`px-2 py-1 ${INPUT_BASE_CLS}`}
-                      >
-                        <option value="N">N (limpo)</option>
-                        <option value="S">S (IA vazou pista)</option>
-                      </select>
-                    </label>
-                    <label className="flex items-center gap-1.5">
-                      <span className="text-zinc-600 dark:text-[#9CA3AF]">Baseline:</span>
-                      <select
-                        value={quickBaselineHint}
-                        onChange={(e) => setQuickBaselineHint(e.target.value as '' | 'A' | 'B')}
-                        className={`px-2 py-1 ${INPUT_BASE_CLS}`}
-                      >
-                        <option value="">Auto</option>
-                        <option value="A">BASELINE-A</option>
-                        <option value="B">BASELINE-B</option>
-                      </select>
-                    </label>
-                    <label
-                      className={`inline-flex items-center gap-1 ${
-                        erroCriticoApplies
-                          ? 'text-zinc-700 dark:text-[#D1D5DB]'
-                          : 'text-zinc-400 opacity-50 dark:text-[#6B7280]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        disabled={!erroCriticoApplies}
-                        checked={erroCriticoApplies && quickErroCritico}
-                        onChange={(e) => setQuickErroCritico(e.target.checked)}
-                      />
-                      Erro crítico (E3/E4)
-                    </label>
-                    <label
-                      className={`inline-flex items-center gap-1 ${
-                        refacaoApplies
-                          ? 'text-zinc-700 dark:text-[#D1D5DB]'
-                          : 'text-zinc-400 opacity-50 dark:text-[#6B7280]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        disabled={!refacaoApplies}
-                        checked={refacaoApplies && quickRefacaoPendente}
-                        onChange={(e) => setQuickRefacaoPendente(e.target.checked)}
-                      />
-                      Refação pendente (Nova)
-                    </label>
-                    {bloco === 'BLOCO0_PILOTO' && (
-                      <label className="inline-flex items-center gap-1 text-zinc-700 dark:text-[#D1D5DB]">
-                        <input
-                          type="checkbox"
-                          checked={quickLinha2min}
-                          onChange={(e) => setQuickLinha2min(e.target.checked)}
-                        />
-                        LOG saiu ≤2m
-                      </label>
+                  {/* Controles contextuais: aparecem somente quando necessários para a linha colada */}
+                  {parsedGeminiPreview?.ok &&
+                    (needsMinInput ||
+                      needsIaPistaInput ||
+                      erroCriticoApplies ||
+                      refacaoApplies ||
+                      bloco === 'BLOCO0_PILOTO' ||
+                      detectedTipo === 'BASELINE') && (
+                      <div className="space-y-2.5 rounded-xl border border-zinc-200/70 bg-zinc-50/70 p-3 text-xs dark:border-white/[0.06] dark:bg-[#0F1115]">
+                        <div className="flex flex-wrap items-center gap-3">
+                          {needsMinInput && (
+                            <label className="flex items-center gap-1.5">
+                              <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                                Min reais (obrigatório):
+                              </span>
+                              <input
+                                type="number"
+                                min={1}
+                                max={180}
+                                value={quickMin}
+                                onChange={(e) => setQuickMin(e.target.value)}
+                                placeholder="ex: 25"
+                                className={`w-20 px-2 py-1 font-mono ${WHITE_INPUT_CLS} ${
+                                  !quickMinValid ? 'border-amber-400 dark:border-amber-500/60' : ''
+                                }`}
+                              />
+                            </label>
+                          )}
+
+                          {needsIaPistaInput && (
+                            <div
+                              role="group"
+                              aria-label="A IA deu pista?"
+                              className="flex flex-wrap items-center gap-1.5"
+                            >
+                              <span className="font-medium text-zinc-700 dark:text-[#D1D5DB]">
+                                A IA deu pista? (obrigatório):
+                              </span>
+                              <button
+                                type="button"
+                                aria-pressed={quickIaPista === 'N'}
+                                onClick={() => setQuickIaPista('N')}
+                                className={`rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                                  quickIaPista === 'N'
+                                    ? 'border-[#0F766E] bg-[#0F766E] text-white dark:border-[#2DD4BF] dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                                    : 'border-zinc-300 bg-white text-zinc-700 hover:border-[#0F766E]/50 dark:border-white/[0.12] dark:bg-[#15181F] dark:text-[#D1D5DB]'
+                                }`}
+                              >
+                                Não (limpo)
+                              </button>
+                              <button
+                                type="button"
+                                aria-pressed={quickIaPista === 'S'}
+                                onClick={() => setQuickIaPista('S')}
+                                className={`rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                                  quickIaPista === 'S'
+                                    ? 'border-rose-600 bg-rose-600 text-white dark:border-rose-400 dark:bg-rose-500 dark:text-white'
+                                    : 'border-zinc-300 bg-white text-zinc-700 hover:border-rose-400 dark:border-white/[0.12] dark:bg-[#15181F] dark:text-[#D1D5DB]'
+                                }`}
+                              >
+                                Sim (IA vazou pista)
+                              </button>
+                            </div>
+                          )}
+
+                          {erroCriticoApplies && (
+                            <label className="inline-flex items-center gap-1.5 text-zinc-700 dark:text-[#D1D5DB]">
+                              <input
+                                type="checkbox"
+                                checked={quickErroCritico}
+                                onChange={(e) => setQuickErroCritico(e.target.checked)}
+                              />
+                              Erro ou atraso crítico ({detectedTipo})
+                            </label>
+                          )}
+
+                          {refacaoApplies && (
+                            <label className="inline-flex items-center gap-1.5 text-zinc-700 dark:text-[#D1D5DB]">
+                              <input
+                                type="checkbox"
+                                checked={quickRefacaoPendente}
+                                onChange={(e) => setQuickRefacaoPendente(e.target.checked)}
+                              />
+                              Refação integral pendente
+                            </label>
+                          )}
+
+                          {bloco === 'BLOCO0_PILOTO' && (
+                            <label className="inline-flex items-center gap-1.5 text-zinc-700 dark:text-[#D1D5DB]">
+                              <input
+                                type="checkbox"
+                                checked={quickLinha2min}
+                                onChange={(e) => setQuickLinha2min(e.target.checked)}
+                              />
+                              Linha do LOG saiu em ≤2 min
+                            </label>
+                          )}
+                        </div>
+
+                        {detectedTipo === 'BASELINE' && (
+                          <div className="flex items-center gap-2 border-t border-zinc-200/70 pt-2 text-[11px] dark:border-white/[0.06]">
+                            <span className="text-zinc-500 dark:text-[#9CA3AF]">Fase do Baseline:</span>
+                            <select
+                              aria-label="Fase do Baseline"
+                              value={quickBaselineHint}
+                              onChange={(e) => setQuickBaselineHint(e.target.value as '' | 'A' | 'B')}
+                              className={`px-2 py-0.5 text-[11px] ${WHITE_INPUT_CLS}`}
+                            >
+                              <option value="">
+                                Auto ({passoBaselineHoje?.baseline ? `Passo atual: ${passoBaselineHoje.baseline}` : 'inferir pelo formato'})
+                              </option>
+                              <option value="A">BASELINE-A</option>
+                              <option value="B">BASELINE-B</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
                     )}
-                  </div>
+
                   {importError && (
                     <p className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
                       {importError}
                     </p>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => handleImportGeminiLine()}
-                    disabled={!geminiLineRaw.trim()}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-40 dark:bg-white dark:text-zinc-900"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                    Importar e Salvar no LOG
-                  </button>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleImportGeminiLine()}
+                      disabled={!canSaveImport}
+                      title="Salvar tentativa no histórico (Ctrl+Enter)"
+                      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-0 dark:bg-white dark:text-zinc-900"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      Salvar tentativa no histórico
+                    </button>
+                    {parsedGeminiPreview?.ok && !canSaveImport && (
+                      <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
+                        {!quickMinValid && !quickIaPistaValid
+                          ? 'Preencha minutos reais e escolha se a IA deu pista para salvar.'
+                          : !quickMinValid
+                            ? 'Informe os minutos reais (1–180) para salvar.'
+                            : 'Informe se a IA deu pista para salvar.'}
+                      </span>
+                    )}
+                  </div>
 
                   {/* P2: Atalho de 1 clique para enviar PEMC recém-importada ao NPP */}
                   {recentPemcShortcut && (
@@ -2374,6 +2745,67 @@ export function TreinoClinicoView({
                     </div>
                   )}
                 </div>
+
+                {/* Guia da semana + Recomendações por gargalo (abaixo da esteira diária) */}
+                {(guiaSemana || guiasGargalo.length > 0) && (
+                  <div className="space-y-2.5 rounded-2xl border border-zinc-200/80 bg-white p-4 dark:border-white/[0.07] dark:bg-[#15181F]">
+                    {guiaSemana &&
+                      (() => {
+                        const mod = FORMACAO_TEORICA_MODULOS.find((m) => m.id === guiaSemana.modId);
+                        const st = central6Ano.teoriaStatusById?.[guiaSemana.modId] || 'nao_iniciado';
+                        return (
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F766E] dark:text-[#2DD4BF]">
+                                Guia Teórico da Semana (~30–40 min + 3 Micro-Drills)
+                              </span>
+                              <p className="text-xs font-semibold text-zinc-900 dark:text-[#F3F4F6]">
+                                {mod ? mod.title : guiaSemana.motivo}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => onOpenGuiaTeorico?.(guiaSemana.modId)}
+                              className="inline-flex min-h-[36px] shrink-0 items-center gap-1 rounded-lg border border-[#0F766E] px-2.5 py-1.5 text-xs font-semibold text-[#0F766E] hover:bg-[#0F766E]/10 sm:min-h-0 dark:border-[#2DD4BF] dark:text-[#2DD4BF]"
+                            >
+                              <span>
+                                {st === 'dominado'
+                                  ? '✓ Guia concluído · Revisar Drills'
+                                  : 'Abrir Guia & 3 Micro-Drills'}
+                              </span>
+                              <ArrowUpRight className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })()}
+
+                    {guiasGargalo.length > 0 && (
+                      <div className="space-y-1.5 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.06]">
+                        <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                          Recomendado pelos seus gargalos recentes no LOG:
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {guiasGargalo.map((g) => {
+                            const mod = FORMACAO_TEORICA_MODULOS.find((m) => m.id === g.modId);
+                            return (
+                              <button
+                                key={g.modId}
+                                type="button"
+                                onClick={() => onOpenGuiaTeorico?.(g.modId)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-amber-300/80 bg-amber-50/70 px-2.5 py-1 text-left text-[11px] font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                              >
+                                <span>
+                                  <strong>{mod ? `Mód. ${mod.num}` : g.modId}:</strong> {g.motivo}
+                                </span>
+                                <ArrowUpRight className="h-3 w-3 shrink-0" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
 
@@ -2397,6 +2829,11 @@ export function TreinoClinicoView({
                   mecanismosUsados: mecs,
                 });
                 const isBaselineQueixa = activeE1.reservedBaseline;
+                const lastSeqEntry = dom.seq.length > 0 ? dom.seq[dom.seq.length - 1] : null;
+                const lastE2Val =
+                  lastSeqEntry && lastSeqEntry.score.kind === 'rubrica'
+                    ? lastSeqEntry.score.valor
+                    : null;
 
                 return (
                   <div className="space-y-4">
@@ -2410,11 +2847,28 @@ export function TreinoClinicoView({
                             {activeE1.nome}
                           </h2>
                         </div>
-                        <span
-                          className={`rounded-md px-2 py-0.5 text-xs font-semibold ${STATUS_BADGE[dom.status].cls}`}
-                        >
-                          {locked ? 'Reservada BASELINE até 24/jan' : STATUS_BADGE[dom.status].label}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span
+                            title="Critério de domínio E1: hipóteses iniciais (3H) + zero omissão crítica em 2 sessões de dias distintos (≥1 variante); comunicação é avaliada em separado"
+                            className={`rounded-md px-2 py-0.5 text-xs font-semibold ${STATUS_BADGE[dom.status].cls}`}
+                          >
+                            {locked
+                              ? 'Reservada BASELINE até 24/jan'
+                              : `Raciocínio: ${STATUS_BADGE[dom.status].label}`}
+                          </span>
+                          {!locked && lastE2Val !== null && (
+                            <span
+                              title="Nota de comunicação E2 da última sessão válida (0–4)"
+                              className={`rounded-md px-2 py-0.5 font-mono text-xs font-semibold ${
+                                lastE2Val >= 3
+                                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                                  : 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
+                              }`}
+                            >
+                              Comunicação E2: {lastE2Val}/4
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* P1: Status de BASELINE-A e BASELINE-B na queixa #20 */}
@@ -2427,7 +2881,7 @@ export function TreinoClinicoView({
                                 : 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
                             }`}
                           >
-                            BASELINE-A (29/nov):{' '}
+                            BASELINE-A ({relatorioBaseline.baseA ? formatDateDDMM(relatorioBaseline.baseA.dateIso) : '30/nov'}):{' '}
                             {relatorioBaseline.baseA
                               ? `Concluído (${relatorioBaseline.baseA.veredito})`
                               : 'Pendente'}
@@ -2466,7 +2920,8 @@ export function TreinoClinicoView({
                             onClick={() =>
                               handleCopy(
                                 promptAPreview,
-                                `Prompt A (${formatTargetLabel(activeE1.slug)}) copiado!`
+                                `Prompt A (${formatTargetLabel(activeE1.slug)}) copiado!`,
+                                true
                               )
                             }
                             className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3 py-1.5 text-xs font-semibold text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]"
@@ -2479,13 +2934,22 @@ export function TreinoClinicoView({
                             onClick={() =>
                               handleCopy(
                                 promptD1Preview,
-                                `Prompt D1 (${formatTargetLabel(activeE1.slug)}) copiado!`
+                                `Prompt D1 (${formatTargetLabel(activeE1.slug)}) copiado!`,
+                                true
                               )
                             }
                             className="inline-flex items-center gap-1.5 rounded-lg border border-[#0F766E] px-3 py-1.5 text-xs font-semibold text-[#0F766E] dark:border-[#2DD4BF] dark:text-[#2DD4BF]"
                           >
                             <ClipboardCopy className="h-3.5 w-3.5" />
                             Copiar Prompt D1 (Variante)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={focusImportForm}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.12] dark:bg-[#0F1115] dark:text-[#E5E7EB] dark:hover:text-[#2DD4BF]"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            Registrar tentativa
                           </button>
                         </div>
                       )}
@@ -2802,7 +3266,8 @@ export function TreinoClinicoView({
                                     slug: activeE3.slug,
                                     servico: amb,
                                   }),
-                                  `Prompt B (${activeE3.nome} · ${amb}) copiado!`
+                                  `Prompt B (${activeE3.nome} · ${amb}) copiado!`,
+                                  true
                                 )
                               }
                               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold ${
@@ -2815,6 +3280,14 @@ export function TreinoClinicoView({
                               Copiar Prompt B ({amb})
                             </button>
                           ))}
+                          <button
+                            type="button"
+                            onClick={focusImportForm}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.12] dark:bg-[#0F1115] dark:text-[#E5E7EB] dark:hover:text-[#2DD4BF]"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            Registrar tentativa
+                          </button>
                         </div>
                       )}
 
@@ -2895,7 +3368,8 @@ export function TreinoClinicoView({
                                     slug: activeE4.slug,
                                     servico: amb,
                                   }),
-                                  `Prompt C (${activeE4.nome} · ${amb}) copiado!`
+                                  `Prompt C (${activeE4.nome} · ${amb}) copiado!`,
+                                  true
                                 );
                               }}
                               className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3 py-2 text-xs font-semibold text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]"
@@ -2905,6 +3379,14 @@ export function TreinoClinicoView({
                             </button>
                           )
                         )}
+                        <button
+                          type="button"
+                          onClick={focusImportForm}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-[#0F766E]/50 hover:text-[#0F766E] dark:border-white/[0.12] dark:bg-[#0F1115] dark:text-[#E5E7EB] dark:hover:text-[#2DD4BF]"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          Registrar tentativa
+                        </button>
                       </div>
 
                       {renderHabChips(habIdsDe(activeE4), `e4-${activeE4.slug}`)}
@@ -2952,92 +3434,114 @@ export function TreinoClinicoView({
                 <div className="space-y-3 rounded-2xl border border-zinc-200/80 bg-white p-4 dark:border-white/[0.07] dark:bg-[#15181F]">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-base font-bold text-zinc-900 dark:text-[#F3F4F6]">
-                      LOG de Sessões ({filteredLogs.length})
+                      Histórico de Sessões ({treino.logs.length === 0 ? 0 : filteredLogs.length})
                     </h2>
-                    <div
-                      role="group"
-                      aria-label="Filtrar LOG por tipo"
-                      className="flex flex-wrap gap-1"
-                    >
-                      {(
-                        [
-                          'todos',
-                          'Nova',
-                          'Var',
-                          'E3',
-                          'E4',
-                          'Micro',
-                          'SERVIÇO',
-                          'GRAVAÇÃO',
-                          'BASELINE',
-                        ] as const
-                      ).map((f) => {
-                        const active = logFilter === f;
-                        return (
-                          <button
-                            key={f}
-                            type="button"
-                            aria-pressed={active}
-                            onClick={() => setLogFilter(f)}
-                            className={`rounded px-2 py-0.5 text-[11px] font-medium ${
-                              active
-                                ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
-                                : 'bg-zinc-100 text-zinc-600 dark:bg-white/[0.06] dark:text-[#9CA3AF]'
-                            }`}
-                          >
-                            {f}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* P2: Busca leve sem acento no LOG */}
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
-                    <input
-                      type="text"
-                      value={logSearchQuery}
-                      onChange={(e) => setLogSearchQuery(e.target.value)}
-                      placeholder="Buscar no LOG por queixa, mecanismo, PEMC ou veredito..."
-                      aria-label="Buscar no LOG de sessões"
-                      className={`w-full py-1.5 pr-8 pl-8 ${INPUT_BASE_CLS}`}
-                    />
-                    {logSearchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setLogSearchQuery('')}
-                        aria-label="Limpar busca do LOG"
-                        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-1 text-zinc-400 hover:text-zinc-700 dark:text-[#9CA3AF]"
+                    {treino.logs.length > 0 && (
+                      <div
+                        role="group"
+                        aria-label="Filtrar histórico por tipo"
+                        className="flex flex-wrap gap-1"
                       >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                        {(
+                          [
+                            'todos',
+                            'Nova',
+                            'Var',
+                            'E3',
+                            'E4',
+                            'Micro',
+                            'SERVIÇO',
+                            'GRAVAÇÃO',
+                            'BASELINE',
+                          ] as const
+                        ).map((f) => {
+                          const active = logFilter === f;
+                          return (
+                            <button
+                              key={f}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => setLogFilter(f)}
+                              className={`rounded px-2 py-0.5 text-[11px] font-medium ${
+                                active
+                                  ? 'bg-[#0F766E] text-white dark:bg-[#2DD4BF] dark:text-[#0F1115]'
+                                  : 'bg-zinc-100 text-zinc-600 dark:bg-white/[0.06] dark:text-[#9CA3AF]'
+                              }`}
+                            >
+                              {f}
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
 
-                  {filteredLogs.length === 0 ? (
-                    <div className="space-y-2 py-4 text-center">
-                      <p className="text-xs text-zinc-500">
-                        Nenhuma linha registrada neste filtro.
+                  {treino.logs.length === 0 ? (
+                    <div className="space-y-2.5 py-6 text-center">
+                      <p className="text-sm font-semibold text-zinc-800 dark:text-[#F3F4F6]">
+                        Seu primeiro treino aparecerá aqui
                       </p>
-                      {(logFilter !== 'todos' || logSearchQuery.trim()) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLogFilter('todos');
-                            setLogSearchQuery('');
-                          }}
-                          className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 hover:text-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#D1D5DB]"
-                        >
-                          <RotateCcw className="h-3 w-3" />
-                          Limpar filtros
-                        </button>
-                      )}
+                      <p className="mx-auto max-w-md text-xs text-zinc-500 dark:text-[#9CA3AF]">
+                        Cada sessão salva na esteira Hoje alimenta o histórico, calcula seu termômetro e libera a exportação em LOG.md.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => selectSection('esteira')}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F766E] px-3.5 py-2 text-xs font-semibold text-white hover:opacity-95 dark:bg-[#2DD4BF] dark:text-[#0F1115]"
+                      >
+                        Ir para o treino de hoje
+                      </button>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      {filteredLogs.map((l) => renderStructuredLogRow(l, true))}
-                    </div>
+                    <>
+                      {/* P2: Busca leve sem acento no LOG */}
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                        <input
+                          type="text"
+                          value={logSearchQuery}
+                          onChange={(e) => setLogSearchQuery(e.target.value)}
+                          placeholder="Buscar no histórico por queixa, mecanismo, omissão ou veredito..."
+                          aria-label="Buscar no histórico de sessões"
+                          className={`w-full py-1.5 pr-8 pl-8 ${INPUT_BASE_CLS}`}
+                        />
+                        {logSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setLogSearchQuery('')}
+                            aria-label="Limpar busca do histórico"
+                            className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-1 text-zinc-400 hover:text-zinc-700 dark:text-[#9CA3AF]"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {filteredLogs.length === 0 ? (
+                        <div className="space-y-2 py-4 text-center">
+                          <p className="text-xs text-zinc-500">
+                            Nenhuma linha encontrada para os filtros atuais.
+                          </p>
+                          {(logFilter !== 'todos' || logSearchQuery.trim()) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLogFilter('todos');
+                                setLogSearchQuery('');
+                              }}
+                              className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 hover:text-[#0F766E] dark:border-white/[0.1] dark:bg-[#0F1115] dark:text-[#D1D5DB]"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              Limpar filtros
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {filteredLogs.map((l) => renderStructuredLogRow(l, true))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 

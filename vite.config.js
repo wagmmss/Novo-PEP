@@ -1,10 +1,46 @@
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+function readBuildMetadata() {
+  let version = '1.0.0';
+  try {
+    const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+    if (pkg?.version) version = String(pkg.version);
+  } catch {
+    // Fallback padrão se package.json não puder ser lido
+  }
+  let gitSha = 'local';
+  try {
+    gitSha = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim() || 'local';
+  } catch {
+    // Build fora de worktree git
+  }
+  const buildTime = new Date().toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return { version, gitSha, buildTime };
+}
+
+const BUILD_META = readBuildMetadata();
+
 export default defineConfig({
   base: './',
+  define: {
+    __APP_VERSION__: JSON.stringify(BUILD_META.version),
+    __APP_BUILD_TIME__: JSON.stringify(BUILD_META.buildTime),
+    __APP_GIT_SHA__: JSON.stringify(BUILD_META.gitSha),
+  },
   build: {
     rollupOptions: {
       output: {

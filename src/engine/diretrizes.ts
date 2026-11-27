@@ -13,6 +13,7 @@ import {
 export interface RenderTeoriaMarkdownOptions {
   linkTreinoSlugs?: boolean;
   includeHeadingIds?: boolean;
+  includeDrillDoneButtons?: boolean;
 }
 
 export function escapeHtml(str: unknown): string {
@@ -484,6 +485,8 @@ export function renderTeoriaMarkdownToHtml(
   let tableRows: string[][] = [];
   let quoteBuffer: string[] = [];
   const usedHeadingIds = new Map<string, number>();
+  let drillIndex = 0;
+  let activeDrillIndex: number | null = null;
 
   const nextHeadingIdAttr = (normalizedHeadingText: string): string => {
     if (!options?.includeHeadingIds) return '';
@@ -588,8 +591,10 @@ export function renderTeoriaMarkdownToHtml(
       flushQuote();
       closeLists();
       flushTable();
+      drillIndex += 1;
+      activeDrillIndex = drillIndex;
       out.push(
-        `<details class="guia-drill-details my-3 rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-white/[0.08] dark:bg-[#15181F]"><summary class="cursor-pointer select-none text-xs font-semibold text-[#0F766E] dark:text-[#2DD4BF]">${formatInlineTeoriaMd(detailsOpenMatch[1].trim(), options)}</summary><div class="mt-2.5 space-y-2 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">`
+        `<details class="guia-drill-details my-3 rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-white/[0.08] dark:bg-[#15181F]" data-drill-index="${drillIndex}"><summary class="cursor-pointer select-none text-xs font-semibold text-[#0F766E] dark:text-[#2DD4BF]">${formatInlineTeoriaMd(detailsOpenMatch[1].trim(), options)}</summary><div class="mt-2.5 space-y-2 border-t border-zinc-200/70 pt-2.5 dark:border-white/[0.07]">`
       );
       continue;
     }
@@ -597,6 +602,12 @@ export function renderTeoriaMarkdownToHtml(
       flushQuote();
       closeLists();
       flushTable();
+      if (options?.includeDrillDoneButtons && activeDrillIndex !== null) {
+        out.push(
+          `<div class="teoria-drill-inline-bar no-print"><button type="button" class="teoria-drill-inline-btn" data-drill-index="${activeDrillIndex}" aria-pressed="false">○ Marcar Drill ${activeDrillIndex} como praticado</button></div>`
+        );
+      }
+      activeDrillIndex = null;
       out.push('</div></details>');
       continue;
     }

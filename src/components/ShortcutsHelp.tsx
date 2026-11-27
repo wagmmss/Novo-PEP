@@ -18,6 +18,13 @@ const GROUPS: Array<{ title: string; items: Array<{ keys: string[]; label: strin
     ],
   },
   {
+    title: 'Treino Clínico (6º Ano)',
+    items: [
+      { keys: ['Alt', 'C'], label: 'Na aba Hoje: copiar prompt do próximo passo do dia' },
+      { keys: ['Ctrl', 'Enter'], label: 'No campo de registro: salvar tentativa no histórico' },
+    ],
+  },
+  {
     title: 'Guias Teóricos (fora de campos de texto)',
     items: [
       { keys: ['['], label: 'Recolher ou expandir lista de módulos' },

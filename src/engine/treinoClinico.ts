@@ -641,6 +641,9 @@ export interface TreinoMetrics {
   pemcNum: number;
   pemcDen: number;
   pemcPct: number | null;
+  e2Avg: number | null;
+  e2Gte3Num: number;
+  e2Den: number;
   dominadasE1: number;
   totalAlvoE1: number;
   primeiraPassadaE1: number;
@@ -663,6 +666,18 @@ export function computeTreinoMetrics(state: TreinoClinicoState, todayIso: string
   const h3Den = e1Avaliaveis.length;
   const pemcNum = e1Avaliaveis.filter((l) => l.pemc.kind === 'omissao').length;
   const pemcDen = e1Avaliaveis.length;
+
+  let e2Sum = 0;
+  let e2Den = 0;
+  let e2Gte3Num = 0;
+  for (const l of e1Avaliaveis) {
+    if (l.score.kind === 'rubrica') {
+      e2Den += 1;
+      e2Sum += l.score.valor;
+      if (l.score.valor >= 3) e2Gte3Num += 1;
+    }
+  }
+  const e2Avg = e2Den > 0 ? Math.round((e2Sum / e2Den) * 10) / 10 : null;
 
   const totalAlvoE1 = todayIso <= '2027-01-24' ? 19 : 20;
   const queixasContadas = QUEIXAS_E1.filter((q) => !q.unlockAfter || todayIso > q.unlockAfter);
@@ -694,6 +709,9 @@ export function computeTreinoMetrics(state: TreinoClinicoState, todayIso: string
     pemcNum,
     pemcDen,
     pemcPct: pemcDen > 0 ? Math.round((pemcNum / pemcDen) * 100) : null,
+    e2Avg,
+    e2Gte3Num,
+    e2Den,
     dominadasE1,
     totalAlvoE1,
     primeiraPassadaE1,
@@ -962,7 +980,10 @@ export interface PilotoPassoStatus {
   ok: boolean | null;
   somaMin: number;
   naoRealizado: boolean;
+  dispensado: boolean;
 }
+
+const PILOTO_ENCERRADO_IDS = new Set<PilotoPassoStatus['id']>(['P3', 'P4', 'P5']);
 
 export function computePilotoStatus(state: TreinoClinicoState, todayIso: string): PilotoPassoStatus[] {
   const logs = state.logs;
@@ -978,14 +999,19 @@ export function computePilotoStatus(state: TreinoClinicoState, todayIso: string)
       ? somaMin <= def.tetoMin &&
         matchedLogs.every((l) => l.iaPista === false && l.linhaEm2min === true)
       : null;
+    // Congelamento v3.2 em 26/11: piloto encerrado após P2 (descanso pós-prova GO 27–29/11)
+    const dispensado = !concluido && PILOTO_ENCERRADO_IDS.has(def.id);
     const naoRealizado =
-      !concluido && (posPiloto && def.id !== 'P5' || state.piloto.naoRealizados.includes(def.id));
+      !concluido &&
+      !dispensado &&
+      ((posPiloto && def.id !== 'P5') || state.piloto.naoRealizados.includes(def.id));
     return {
       ...def,
       concluido,
       ok,
       somaMin,
       naoRealizado,
+      dispensado,
     };
   };
 
@@ -1180,12 +1206,15 @@ export function proximosPassos(
   const bloco = getBlocoMacro(todayIso);
   const pendentesChecar = state.naoPodePassar.filter((n) => !n.checado).length;
 
-  // ── BLOCO 0 — PILOTO (21–29/nov) ─────────────────────────────────────────
+  // ── BLOCO 0 — PILOTO (21–29/nov; encerrado pós-P2 em v3.2 com descanso 27–29/nov) ──
   if (bloco === 'BLOCO0_PILOTO') {
+    if (todayIso >= '2026-11-27') {
+      return [{ kind: 'descanso', motivo: 'aguardando_data', proximaDataIso: '2026-11-30' }];
+    }
     const statuses = computePilotoStatus(state, todayIso);
-    const next = statuses.find((s) => !s.concluido);
+    const next = statuses.find((s) => !s.concluido && !s.dispensado);
     if (!next) {
-      return [{ kind: 'descanso', motivo: 'meta_semana_cumprida' }];
+      return [{ kind: 'descanso', motivo: 'aguardando_data', proximaDataIso: '2026-11-30' }];
     }
     if (todayIso < next.dataNominal) {
       return [{ kind: 'descanso', motivo: 'aguardando_data', proximaDataIso: next.dataNominal }];
@@ -1332,6 +1361,26 @@ export function proximosPassos(
         (l) => (l.tipo === 'Nova' || (l.tipo === 'BASELINE' && l.baselineFase === 'A')) && l.dateIso === todayIso
       );
 
+      // BASELINE-A atrasado (ex.: 30/nov após encerramento do piloto em P2) roda A FRIO,
+      // sem D1 prévio no mesmo dia, preservando comparabilidade limpa com BASELINE-B (24/jan).
+      if (baselineAAtrasado) {
+        return [
+          {
+            kind: 'sessao',
+            prompt: 'A',
+            tipoLog: 'BASELINE',
+            slug: 'sensorio-focal-glicemia',
+            ambiente: 'UPA com retaguarda',
+            baseline: 'A',
+            origem: 'baseline',
+            tetoMin: 30,
+          },
+        ];
+      }
+      if (state.logs.some((l) => l.tipo === 'BASELINE' && l.baselineFase === 'A' && l.dateIso === todayIso)) {
+        return [{ kind: 'descanso', motivo: 'meta_semana_cumprida' }];
+      }
+
       if (emContingenciaS7 && !saiuAntesS7) {
         // 2x D1 + pausa silenciosa 10s
         const usadosHoje = varsHoje.map((v) => v.slug);
@@ -1443,6 +1492,7 @@ export function proximosPassos(
       if (!temCHoje) {
         const vagaC = escolherVagaCFerias(state.logs);
         if (vagaC) {
+          const primeiraExecE4 = !state.logs.some((l) => l.tipo === 'E4');
           passos.push({
             kind: 'sessao',
             prompt: 'C',
@@ -1451,6 +1501,7 @@ export function proximosPassos(
             ambiente: 'UPA com sala vermelha',
             origem: vagaC.origem,
             tetoMin: 30,
+            primeiraExecucaoSemPiloto: primeiraExecE4,
           });
         }
       }
@@ -1473,6 +1524,7 @@ export function proximosPassos(
     if (!temBHoje) {
       const vagaB = escolherVagaBFerias(todayIso, state.logs);
       if (vagaB) {
+        const primeiraExecE3 = !state.logs.some((l) => l.tipo === 'E3');
         passos.push({
           kind: 'sessao',
           prompt: 'B',
@@ -1481,6 +1533,7 @@ export function proximosPassos(
           ambiente: sugerirAmbienteE3(vagaB.slug, state.logs),
           origem: vagaB.origem,
           tetoMin: 40,
+          primeiraExecucaoSemPiloto: primeiraExecE3,
         });
       }
     }
@@ -1946,7 +1999,7 @@ export interface ParsedLogDraft {
   baselineFase: 'A' | 'B' | null;
 }
 
-function cleanGeminiCandidateLine(rawLine: string): string {
+function stripMarkdownDecorators(rawLine: string): string {
   let s = String(rawLine || '').trim();
   // Remove marcadores de lista / citação no início (ex.: "- ", "* ", "• ", "> ")
   s = s.replace(/^(?:[-*•>]\s+)+/, '').trim();
@@ -1971,6 +2024,145 @@ function cleanGeminiCandidateLine(rawLine: string): string {
   return s;
 }
 
+function cleanGeminiCandidateLine(rawLine: string): string {
+  const s = stripMarkdownDecorators(rawLine);
+  if (!s.includes('|')) return s;
+
+  const parts = s.split(/\s*\|\s*/).map((p) => p.trim());
+  if (parts.length !== 9) {
+    return parts.join(' | ');
+  }
+
+  // Campo 2 (Tipo) -> normaliza espaços
+  const tipo = parts[1];
+
+  // Campo 3 (Alvo) -> normaliza acento/espaço no mecanismo de Nova/Var antes do regex
+  if ((tipo === 'Nova' || tipo === 'Var') && parts[2].includes(':')) {
+    const colonIdx = parts[2].indexOf(':');
+    const slugRaw = parts[2].slice(0, colonIdx).trim().toLowerCase();
+    const mecNorm = normalizeMecanismo(parts[2].slice(colonIdx + 1));
+    if (slugRaw && mecNorm) {
+      parts[2] = `${slugRaw}:${mecNorm}`;
+    }
+  } else if ((tipo === 'E3' || tipo === 'E4') && parts[2].includes('(') && parts[2].endsWith(')')) {
+    const openIdx = parts[2].indexOf('(');
+    const slugRaw = parts[2].slice(0, openIdx).trim().toLowerCase();
+    const ambRaw = parts[2].slice(openIdx + 1, -1).trim();
+    if (slugRaw && ambRaw) {
+      parts[2] = `${slugRaw} (${ambRaw})`;
+    }
+  }
+
+  // Campo 4 (Min) -> tolera "38 min", "38min", "38 minutos" e "__ min"
+  const minNumMatch = /^([1-9][0-9]*)\s*(?:m|min|mins|minutos?)$/i.exec(parts[3]);
+  if (minNumMatch) {
+    parts[3] = `${minNumMatch[1]}m`;
+  } else if (/^\[\s*__+\s*(?:m|min|minutos?)?\s*\]$/i.test(parts[3])) {
+    parts[3] = '[__m]';
+  } else if (/^__+\s*(?:m|min|minutos?)?$/i.test(parts[3])) {
+    parts[3] = '__m';
+  }
+
+  // Campo 5 (3H) -> uppercase S/N/NA
+  if (/^(?:s|n|na)$/i.test(parts[4])) {
+    parts[4] = parts[4].toUpperCase();
+  }
+
+  // Campo 7 (Score) -> garante espaço antes dos parênteses e "NA" maiúsculo
+  if (/^na$/i.test(parts[6])) {
+    parts[6] = 'NA';
+  } else {
+    const scoreNoSpace = /^([0-4]\/4)\s*\((.+)\)$/.exec(parts[6]);
+    if (scoreNoSpace) {
+      parts[6] = `${scoreNoSpace[1]} (${scoreNoSpace[2].trim()})`;
+    } else {
+      const mulMatch = /^muletas:\s*([0-9]+)\s*\((.+)\)$/i.exec(parts[6]);
+      if (mulMatch) {
+        parts[6] = `muletas: ${mulMatch[1]} (${mulMatch[2].trim()})`;
+      }
+    }
+  }
+
+  // Campo 8 (IA_Pista?) -> normaliza [n/s], n, s, na
+  if (/^\[n\/s\]$/i.test(parts[7])) {
+    parts[7] = '[N/S]';
+  } else if (/^(?:n|s|na)$/i.test(parts[7])) {
+    parts[7] = parts[7].toUpperCase();
+  }
+
+  // Campo 9 (Veredito) -> normaliza Limpo, Repetir, NA
+  if (/^limpo$/i.test(parts[8])) parts[8] = 'Limpo';
+  else if (/^repetir$/i.test(parts[8])) parts[8] = 'Repetir';
+  else if (/^na$/i.test(parts[8])) parts[8] = 'NA';
+
+  return parts.join(' | ');
+}
+
+const DATA_FIELD_RE = new RegExp(`^${DATA_PAT}$`, 'u');
+const TIPO_FIELD_RE = /^(?:Nova|Var|E3|E4|Micro|BASELINE|SERVIÇO|GRAVAÇÃO)$/;
+const ALVO_FIELD_RE = new RegExp(
+  String.raw`^${SLUG_PAT}(?::${SLUG_PAT}|\/[a-z0-9_]+| \(${AMBIENTE_PAT}\))?$`,
+  'u'
+);
+const MIN_FIELD_RE = /^(?:__m|\[__m\]|[1-9][0-9]*m)$/;
+const TRESH_FIELD_RE = /^(?:S|N|NA)$/;
+const CAMPO_FIELD_RE = new RegExp(`^${CAMPO_PAT}$`, 'u');
+const SCORE_FIELD_RE = new RegExp(
+  String.raw`^(?:NA|[0-4]\/4 \(${CAMPO_PAT}\)|muletas: [0-9]+ \(${CAMPO_PAT}\))$`,
+  'u'
+);
+const PISTA_FIELD_RE = /^(?:\[N\/S\]|N|S|NA)$/;
+const VEREDITO_FIELD_RE = /^(?:Limpo|Repetir|NA)$/;
+
+function diagnoseLogCandidateError(lines: string[], baselineHint?: 'A' | 'B'): string {
+  const candidates = baselineHint === 'A' ? [lines[0]] : [...lines].reverse();
+  const pipeLines = candidates.map(cleanGeminiCandidateLine).filter((l) => l.includes('|'));
+  if (pipeLines.length === 0) {
+    return 'Nenhuma linha com separador "|" foi encontrada. Cole os 9 campos separados por " | ".';
+  }
+
+  const best =
+    pipeLines.find((l) => l.split(/\s*\|\s*/).length === 9) ?? pipeLines[0];
+  const parts = best.split(/\s*\|\s*/).map((p) => p.trim());
+  if (parts.length !== 9) {
+    return `Esperados 9 campos separados por "|", encontrados ${parts.length}.`;
+  }
+
+  if (!DATA_FIELD_RE.test(parts[0])) {
+    return `Campo 1 (Data): esperado DD/MM válido (ex.: 21/11). Recebido: "${parts[0]}".`;
+  }
+  if (!TIPO_FIELD_RE.test(parts[1])) {
+    return `Campo 2 (Tipo): esperado Nova, Var, E3, E4, Micro, BASELINE, SERVIÇO ou GRAVAÇÃO. Recebido: "${parts[1]}".`;
+  }
+  if (!ALVO_FIELD_RE.test(parts[2])) {
+    return `Campo 3 (Alvo): esperado slug em minúsculas com hífens${
+      parts[1] === 'Nova' || parts[1] === 'Var' ? ' no formato "slug:mecanismo" (ex.: dor-toracica:iamcsst)' : ''
+    }. Recebido: "${parts[2]}".`;
+  }
+  if ((parts[1] === 'Nova' || parts[1] === 'Var') && !parts[2].includes(':')) {
+    return `Campo 3 (Alvo): para ${parts[1]}, informe "slug:mecanismo" (ex.: dor-toracica:iamcsst). Recebido: "${parts[2]}".`;
+  }
+  if (!MIN_FIELD_RE.test(parts[3])) {
+    return `Campo 4 (Min): esperado "__m" ou minutos com "m" (ex.: 25m). Recebido: "${parts[3]}".`;
+  }
+  if (!TRESH_FIELD_RE.test(parts[4])) {
+    return `Campo 5 (3H): esperado S, N ou NA. Recebido: "${parts[4]}".`;
+  }
+  if (!CAMPO_FIELD_RE.test(parts[5])) {
+    return 'Campo 6 (Omissão/PEMC): campo obrigatório (use "nenhuma", "S/N" no BASELINE-A ou descreva a omissão).';
+  }
+  if (!SCORE_FIELD_RE.test(parts[6])) {
+    return `Campo 7 (Score): esperado "NA", "0–4/4 (motivo)" ou "muletas: N (ajuste)". Recebido: "${parts[6]}".`;
+  }
+  if (!PISTA_FIELD_RE.test(parts[7])) {
+    return `Campo 8 (IA deu pista?): esperado "[N/S]", "N", "S" ou "NA". Recebido: "${parts[7]}".`;
+  }
+  if (!VEREDITO_FIELD_RE.test(parts[8])) {
+    return `Campo 9 (Veredito): esperado "Limpo", "Repetir" ou "NA". Recebido: "${parts[8]}".`;
+  }
+  return 'Formato inválido na linha informada.';
+}
+
 export function parseLogLineFromGemini(
   rawText: string,
   refTodayIso: string,
@@ -1987,13 +2179,25 @@ export function parseLogLineFromGemini(
   if (baselineHint === 'A' && lines.length > 1) {
     return { ok: false, error: 'BASELINE-A contém texto além da linha do LOG.' };
   }
-  const rawCandidate = baselineHint === 'A' ? lines[0] : lines[lines.length - 1];
-  const candidate = cleanGeminiCandidateLine(rawCandidate);
-  const m = LOG_RE.exec(candidate);
+
+  // Para sessões normais, busca de baixo para cima a última linha válida do LOG_RE
+  // (resiliente se o ChatGPT/Gemini acrescentar frase educada após a linha final).
+  let m: RegExpExecArray | null = null;
+  if (baselineHint === 'A') {
+    m = LOG_RE.exec(cleanGeminiCandidateLine(lines[0]));
+  } else {
+    for (let i = lines.length - 1; i >= 0; i -= 1) {
+      const match = LOG_RE.exec(cleanGeminiCandidateLine(lines[i]));
+      if (match && match.groups) {
+        m = match;
+        break;
+      }
+    }
+  }
   if (!m || !m.groups) {
     return {
       ok: false,
-      error: 'Linha não bate no formato de 9 campos separados por " | ".',
+      error: diagnoseLogCandidateError(lines, baselineHint),
     };
   }
 
@@ -2019,6 +2223,13 @@ export function parseLogLineFromGemini(
     const [s, r] = g.alvo.split('/');
     slug = s;
     rodizioId = r;
+  }
+
+  if ((tipo === 'Nova' || tipo === 'Var') && !mecanismo) {
+    return {
+      ok: false,
+      error: `Campo 3 (Alvo): para ${tipo}, informe "slug:mecanismo" (ex.: ${slug}:iamcsst).`,
+    };
   }
 
   // Min
@@ -2282,17 +2493,28 @@ export interface GuiaRecomendado {
 }
 
 const GUIA_POR_FERIAS_WEEK: Record<string, { modId: string; label: string }> = {
-  S1: { modId: 'mod-03', label: 'Semana 1 (30/nov–04/dez) · Raciocínio Clínico, Illness Scripts & Bayes' },
-  S2: { modId: 'mod-02', label: 'Semana 2 (07–11/dez) · Exame Físico HDPE, Stanford 25 & LR+/LR-' },
+  S1: { modId: 'mod-06', label: 'Semana 1 (30/nov–04/dez) · Farmacologia, 7 Travas A-R-G-I-V-P-O, ATB & Pediatria Ponderal' },
+  S2: { modId: 'mod-08', label: 'Semana 2 (07–11/dez) · Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves' },
   S3: { modId: 'mod-05', label: 'Semana 3 (14–18/dez) · Exames: ECG, Gasometria, RX, TC & Lab Diário' },
-  S4: { modId: 'mod-04', label: 'Semana 4 (21–23/dez) · Oratória ≤90s, Explicação Leiga & SBAR/I-PASS' },
-  S5: { modId: 'mod-06', label: 'Semana 5 (28–30/dez) · Farmacologia, 7 Travas, ATB & Pediatria Ponderal' },
-  S6: { modId: 'mod-08', label: 'Semana 6 (04–08/jan) · Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves' },
-  S7: { modId: 'mod-09', label: 'Semana 7 (18–22/jan) · Disposição, Limites s/ Lab (CROSS), UBS & Legais' },
-  MARCO: { modId: 'mod-09', label: 'Fechamento Férias · Disposição, Regulação & Revisão Geral' },
+  S4: { modId: 'mod-03', label: 'Semana 4 (21–23/dez) · Raciocínio Clínico, Illness Scripts, Vieses & Bayes' },
+  S5: { modId: 'mod-04', label: 'Semana 5 (28–30/dez) · Oratória ≤90s, Explicação Leiga & SBAR/I-PASS' },
+  S6: { modId: 'mod-09', label: 'Semana 6 (04–08/jan) · Disposição, Limites s/ Lab (CROSS), UBS & Legais' },
+  S7: { modId: 'mod-02', label: 'Semana 7 (18–22/jan) · Exame Físico HDPE, Stanford 25 & LR+/LR-' },
+  MARCO: { modId: 'mod-07', label: 'Virada Pré-Internato (24/jan) · Procedimentos de Porta, Via Aérea (BVM/SRI) & Trauma Leve' },
 };
 
-export function guiaTeoricoDaSemana(todayIso: string): GuiaRecomendado | null {
+const GUIA_POR_RODIZIO_INTERNATO: Record<string, { modId: string; label: string }> = {
+  cirurgia: { modId: 'mod-07', label: 'Cirurgia Geral · Procedimentos de Porta, Feridas & Trauma Leve' },
+  anestesio_cti: { modId: 'mod-07', label: 'Anestesio / CTI · Via Aérea (BVM/SRI/Vortex) & Procedimentos' },
+  go: { modId: 'mod-08', label: 'GO · Gestante/Puérpera Grave, Deterioração & Sala Vermelha' },
+  oftalmo_orl_ccp: { modId: 'mod-02', label: 'Oftalmo / ORL / CCP · Exame Físico HDPE, HINTS & LR+/LR-' },
+  mfc: { modId: 'mod-09', label: 'MFC (APS) · Seguimento Longitudinal na UBS, MedRec & Disposição' },
+  cm: { modId: 'mod-05', label: 'Clínica Médica · ECG, Gasometria, RX, TC & Laboratório Diário' },
+  ped: { modId: 'mod-06', label: 'Pediatria · Prescrição Pediátrica Ponderal, ATB & 7 Travas' },
+  emergencia_trauma: { modId: 'mod-08', label: 'Emergência & Trauma · Multi-Paciente A→B→C→D, NEWS2 & Chegadas Graves' },
+};
+
+export function guiaTeoricoDaSemana(todayIso: string, rodizioId?: string | null): GuiaRecomendado | null {
   const bloco = getBlocoMacro(todayIso);
   if (bloco === 'BLOCO0_PILOTO') {
     return {
@@ -2306,6 +2528,14 @@ export function guiaTeoricoDaSemana(todayIso: string): GuiaRecomendado | null {
     if (!dia || dia.weekId === 'LIVRE') return null;
     const g = GUIA_POR_FERIAS_WEEK[dia.weekId];
     return g ? { modId: g.modId, motivo: g.label, tipo: 'semana' } : null;
+  }
+  const byRod = rodizioId ? GUIA_POR_RODIZIO_INTERNATO[rodizioId] : undefined;
+  if (byRod) {
+    return {
+      modId: byRod.modId,
+      motivo: byRod.label,
+      tipo: 'semana',
+    };
   }
   return {
     modId: 'mod-07',
