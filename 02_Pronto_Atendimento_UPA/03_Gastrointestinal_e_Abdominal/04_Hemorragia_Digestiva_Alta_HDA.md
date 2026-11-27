@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # QP:
 - Vômito com sangue vivo / Fezes pretas e tontura há [ ] horas.
 

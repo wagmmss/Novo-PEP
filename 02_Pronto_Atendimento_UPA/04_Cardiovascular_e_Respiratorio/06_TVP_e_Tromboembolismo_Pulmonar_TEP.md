@@ -12,15 +12,15 @@
 ATENDIMENTO DE EMERGÊNCIA — TROMBOSE VENOSA PROFUNDA (TVP) & TROMBOEMBOLISMO PULMONAR (TEP)
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 APRESENTAÇÃO CLÍNICA PRINCIPAL:
 - Quadro Dominante: [Suspeita de TVP de Membro Inferior (edema unilateral assimétrico, dor em panturrilha e empastamento) / Suspeita de TEP Agudo (dispneia súbita inexplicada, dor torácica ventilatório-dependente, taquicardia ou síncope)].
 - Fatores de Risco Tromboembólicos (Tríade de Virchow): [Cirurgia ou trauma recente (< 4 semanas) / Imobilização prolongada (> 3 dias) ou viagem longa / Neoplasia ativa / Uso de anticoncepcional oral combinado ou TRH / Gestação ou puerpério / TEV prévio / Trombofilia].
 
 EXAME FÍSICO DIRIGIDO:
-- Sinais Vitais: PA: [120x80] mmHg | FC: [108] bpm | FR: [24] irpm | SpO2: [91]% em ar ambiente.
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% em ar ambiente.
 - Avaliação Cardiorrespiratória: Ausculta pulmonar [limpa — dissociação clínico-auscultatória clássica do TEP! / estertores localizados]. Turgência jugular: [*Ausente / Presente com hiperfonese de B2 em foco pulmonar — sobrecarga aguda de VD].
 - Exame de Membros Inferiores: [Assimetria de panturrilha > 3 cm (medida 10 cm abaixo da tuberosidade tibial) no membro [Direito / Esquerdo], edema depressível (cacifo+) unilateral, calor local e dor à palpação do trajeto venoso profundo / Membros inferiores simétricos sem sinais de TVP clínica]. Pulsos distais (pedioso e tibial posterior) [presentes e simétricos — descartada flegmasia cerulea dolens].
 

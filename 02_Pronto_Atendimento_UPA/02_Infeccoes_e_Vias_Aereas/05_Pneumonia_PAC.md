@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Nega / DPOC / Asma / HAS / DM2 / Insuficiência Cardíaca / Neoplasia / Imunossupressão / [ ]].
-Alergias: [*Nega / Alérgico a Penicilinas / Alérgico a Macrolídeos / [ ]].
+Comorbidades: [+ Nega / DPOC / Asma / HAS / DM2 / Insuficiência Cardíaca / Neoplasia / Imunossupressão / [ ]].
+Alergias: [Nega / Alérgico a Penicilinas / Alérgico a Macrolídeos / [ ]].
 # QP:
 - Tosse com catarro, febre e dor no peito para respirar há [ ] dias.
 

@@ -2,7 +2,10 @@
 // REMUME (Ribeirão Preto) — Lista Padronizada de Medicamentos (252 itens)
 // Mapeamento REMUME -> Guia HSL: 190/252 (75.4%) vinculados.
 // Gerado por scripts/build_hsl_remume.py — manter compatibilidade com RemumeItem.
+// Tetos adultos e pediátricos integrados diretamente à fonte única farmacos.ts.
 // ============================================================================
+
+import { getUnifiedDrugSpecByKey } from './farmacos.ts';
 
 export type TherapeuticClass =
   | 'aine'
@@ -1489,6 +1492,27 @@ function normalizeDrugLookupText(value: string): string {
     .trim();
 }
 
+const IBU = getUnifiedDrugSpecByKey('ibuprofeno');
+const DIP = getUnifiedDrugSpecByKey('dipirona');
+const PCM = getUnifiedDrugSpecByKey('paracetamol');
+const AMOX_CLAV = getUnifiedDrugSpecByKey('amoxicilina_clavulanato');
+const AMOX = getUnifiedDrugSpecByKey('amoxicilina');
+const AMP = getUnifiedDrugSpecByKey('ampicilina');
+const OXA = getUnifiedDrugSpecByKey('oxacilina');
+const CFX = getUnifiedDrugSpecByKey('cefalexina');
+const CTX = getUnifiedDrugSpecByKey('ceftriaxona');
+const CEFU = getUnifiedDrugSpecByKey('cefuroxima');
+const AZI = getUnifiedDrugSpecByKey('azitromicina');
+const CLA = getUnifiedDrugSpecByKey('claritromicina');
+const GENTA = getUnifiedDrugSpecByKey('gentamicina');
+const SULFA = getUnifiedDrugSpecByKey('sulfametoxazol_trimetoprima');
+const METRO = getUnifiedDrugSpecByKey('metronidazol');
+const CLINDA = getUnifiedDrugSpecByKey('clindamicina');
+const PRED = getUnifiedDrugSpecByKey('prednisolona');
+const DEXA = getUnifiedDrugSpecByKey('dexametasona');
+const ONDA = getUnifiedDrugSpecByKey('ondansetrona');
+const ACIC = getUnifiedDrugSpecByKey('aciclovir');
+
 export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
   // ---- AINEs ----
   {
@@ -1502,9 +1526,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'EVITAR_3TRI',
       pregnancyNote: 'Contraindicado após 20-30 semanas (oligoâmnio e fechamento precoce do ducto arterioso).',
       allergyCrossGroups: ['aine', 'ibuprofeno', 'aas', 'anti-inflamatorio', 'antiinflamatorio'],
-      maxDailyDoseMg: 2400,
-      maxDailyDoseMgPerKg: 40,
-      maxSingleDoseMg: 800,
+      maxDailyDoseMg: IBU.maxAdultDayMg,
+      maxDailyDoseMgPerKg: IBU.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: IBU.maxAdultDoseMg,
     },
   },
   {
@@ -1624,9 +1648,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'C',
       pregnancyNote: 'Preferir Paracetamol como 1ª linha na gestação; evitar uso prolongado no 3º trimestre.',
       allergyCrossGroups: ['dipirona', 'metamizol', 'pirazolona'],
-      maxDailyDoseMg: 4000,
-      maxDailyDoseMgPerKg: 80,
-      maxSingleDoseMg: 1000,
+      maxDailyDoseMg: DIP.maxAdultDayMg,
+      maxDailyDoseMgPerKg: DIP.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: DIP.maxAdultDoseMg,
     },
   },
   {
@@ -1640,9 +1664,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'B',
       pregnancyNote: 'Analgésico de 1ª linha na gestação.',
       allergyCrossGroups: ['paracetamol', 'acetaminofen'],
-      maxDailyDoseMg: 4000,
-      maxDailyDoseMgPerKg: 75,
-      maxSingleDoseMg: 1000,
+      maxDailyDoseMg: PCM.maxAdultDayMg,
+      maxDailyDoseMgPerKg: PCM.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: PCM.maxAdultDoseMg,
     },
   },
   // ---- Beta-lactâmicos (Penicilinas) ----
@@ -1656,9 +1680,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       renalAdjustment: { required: true, gfrCutoffMlMin: 30, note: 'Ajustar para 12/12h se TFG 10-30 mL/min; evitar comprimido 875 mg se TFG < 30.' },
       pregnancyRisk: 'B',
       allergyCrossGroups: ['penicilina', 'amoxicilina', 'beta-lactamico', 'betalactamico', 'clavulanato'],
-      maxDailyDoseMg: 3000,
-      maxDailyDoseMgPerKg: 90,
-      maxSingleDoseMg: 1000,
+      maxDailyDoseMg: AMOX_CLAV.maxAdultDayMg,
+      maxDailyDoseMgPerKg: AMOX_CLAV.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: AMOX_CLAV.maxAdultDoseMg,
     },
   },
   {
@@ -1671,9 +1695,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       renalAdjustment: { required: true, gfrCutoffMlMin: 30, note: 'Ajustar intervalo para 12/12h se TFG 10-30 mL/min e 24/24h se < 10.' },
       pregnancyRisk: 'B',
       allergyCrossGroups: ['penicilina', 'amoxicilina', 'beta-lactamico', 'betalactamico'],
-      maxDailyDoseMg: 3000,
-      maxDailyDoseMgPerKg: 90,
-      maxSingleDoseMg: 1000,
+      maxDailyDoseMg: AMOX.maxAdultDayMg,
+      maxDailyDoseMgPerKg: AMOX.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: AMOX.maxAdultDoseMg,
     },
   },
   {
@@ -1691,7 +1715,7 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
     },
   },
   {
-    matchPatterns: [/\bampicilina\b|\bsulbactam\b|\boxacilina\b/],
+    matchPatterns: [/\bampicilina\b|\bsulbactam\b/],
     meta: {
       canonicalKey: 'ampicilina',
       therapeuticClass: 'beta_lactamico_penicilina',
@@ -1700,8 +1724,24 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       renalAdjustment: { required: true, gfrCutoffMlMin: 50, note: 'Ajustar intervalo se TFG < 50 mL/min.' },
       pregnancyRisk: 'B',
       allergyCrossGroups: ['penicilina', 'ampicilina', 'beta-lactamico', 'betalactamico'],
-      maxDailyDoseMg: 12000,
-      maxDailyDoseMgPerKg: 200,
+      maxDailyDoseMg: AMP.maxAdultDayMg,
+      maxDailyDoseMgPerKg: AMP.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: AMP.maxAdultDoseMg,
+    },
+  },
+  {
+    matchPatterns: [/\boxacilina\b/],
+    meta: {
+      canonicalKey: 'oxacilina',
+      therapeuticClass: 'beta_lactamico_penicilina',
+      classLabel: 'Beta-lactâmico (Penicilina Antiestafilocócica)',
+      duplicityGroup: 'beta_lactamico',
+      renalAdjustment: { required: false, note: 'Eliminação predominantemente hepática/renal; sem ajuste usual em DRC leve/moderada.' },
+      pregnancyRisk: 'B',
+      allergyCrossGroups: ['penicilina', 'oxacilina', 'beta-lactamico', 'betalactamico'],
+      maxDailyDoseMg: OXA.maxAdultDayMg,
+      maxDailyDoseMgPerKg: OXA.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: OXA.maxAdultDoseMg,
     },
   },
   {
@@ -1728,9 +1768,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'B',
       allergyCrossGroups: ['cefalosporina', 'cefalexina'],
       allergyWarnGroups: ['penicilina', 'amoxicilina', 'beta-lactamico', 'betalactamico'],
-      maxDailyDoseMg: 4000,
-      maxDailyDoseMgPerKg: 100,
-      maxSingleDoseMg: 1000,
+      maxDailyDoseMg: CFX.maxAdultDayMg,
+      maxDailyDoseMgPerKg: CFX.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: CFX.maxAdultDoseMg,
     },
   },
   {
@@ -1744,13 +1784,29 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'B',
       allergyCrossGroups: ['cefalosporina', 'ceftriaxona'],
       allergyWarnGroups: ['penicilina', 'amoxicilina', 'beta-lactamico', 'betalactamico'],
-      maxDailyDoseMg: 4000,
-      maxDailyDoseMgPerKg: 100,
-      maxSingleDoseMg: 2000,
+      maxDailyDoseMg: CTX.maxAdultDayMg,
+      maxDailyDoseMgPerKg: CTX.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: CTX.maxAdultDoseMg,
     },
   },
   {
-    matchPatterns: [/\bcefuroxima\b|\bcefazolina\b|\bcefalotina\b|\bcefepima\b|\bceftazidima\b/],
+    matchPatterns: [/\bcefuroxima\b/],
+    meta: {
+      canonicalKey: 'cefuroxima',
+      therapeuticClass: 'beta_lactamico_cefalosporina',
+      classLabel: 'Beta-lactâmico (Cefalosporina 2ªG)',
+      duplicityGroup: 'beta_lactamico',
+      renalAdjustment: { required: true, gfrCutoffMlMin: 30, note: 'Ajustar intervalo para 24/24h se TFG < 30 mL/min.' },
+      pregnancyRisk: 'B',
+      allergyCrossGroups: ['cefalosporina', 'cefuroxima'],
+      allergyWarnGroups: ['penicilina', 'amoxicilina', 'beta-lactamico', 'betalactamico'],
+      maxDailyDoseMg: CEFU.maxAdultDayMg,
+      maxDailyDoseMgPerKg: CEFU.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: CEFU.maxAdultDoseMg,
+    },
+  },
+  {
+    matchPatterns: [/\bcefazolina\b|\bcefalotina\b|\bcefepima\b|\bceftazidima\b|\bcefotaxima\b/],
     meta: {
       canonicalKey: 'cefalosporina',
       therapeuticClass: 'beta_lactamico_cefalosporina',
@@ -1765,17 +1821,33 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
   },
   // ---- Macrolídeos ----
   {
-    matchPatterns: [/\bazitromicina\b|\bclaritromicina\b|\beritromicina\b|\bespiramicina\b/],
+    matchPatterns: [/\bazitromicina\b/],
     meta: {
-      canonicalKey: 'macrolideo',
+      canonicalKey: 'azitromicina',
+      therapeuticClass: 'macrolideo',
+      classLabel: 'Macrolídeo (Azitromicina)',
+      duplicityGroup: 'macrolideo',
+      renalAdjustment: { required: false, note: 'Excreção predominantemente biliar; sem ajuste usual na DRC.' },
+      pregnancyRisk: 'B',
+      allergyCrossGroups: ['macrolideo', 'azitromicina'],
+      maxDailyDoseMg: AZI.maxAdultDayMg,
+      maxDailyDoseMgPerKg: AZI.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: AZI.maxAdultDoseMg,
+    },
+  },
+  {
+    matchPatterns: [/\bclaritromicina\b|\beritromicina\b|\bespiramicina\b/],
+    meta: {
+      canonicalKey: 'claritromicina',
       therapeuticClass: 'macrolideo',
       classLabel: 'Macrolídeo',
       duplicityGroup: 'macrolideo',
-      renalAdjustment: { required: false, gfrCutoffMlMin: 30, note: 'Claritromicina requer redução de 50% se TFG < 30 mL/min; Azitromicina sem ajuste.' },
+      renalAdjustment: { required: true, gfrCutoffMlMin: 30, note: 'Claritromicina requer redução de 50% se TFG < 30 mL/min.' },
       pregnancyRisk: 'B',
-      allergyCrossGroups: ['macrolideo', 'azitromicina', 'claritromicina', 'eritromicina'],
-      maxDailyDoseMg: 1000,
-      maxDailyDoseMgPerKg: 20,
+      allergyCrossGroups: ['macrolideo', 'claritromicina', 'eritromicina'],
+      maxDailyDoseMg: CLA.maxAdultDayMg,
+      maxDailyDoseMgPerKg: CLA.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: CLA.maxAdultDoseMg,
     },
   },
   // ---- Fluoroquinolonas ----
@@ -1822,6 +1894,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'D',
       pregnancyNote: 'Risco de ototoxicidade fetal; reservar para infecções graves sem alternativa.',
       allergyCrossGroups: ['aminoglicosideo', 'gentamicina', 'amicacina'],
+      maxDailyDoseMg: GENTA.maxAdultDayMg,
+      maxDailyDoseMgPerKg: GENTA.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: GENTA.maxAdultDoseMg,
     },
   },
   // ---- Sulfonamidas ----
@@ -1836,7 +1911,8 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       pregnancyRisk: 'D',
       pregnancyNote: 'Evitar no 1º trimestre (antagonismo de folato) e 3º trimestre (risco de kernicterus).',
       allergyCrossGroups: ['sulfa', 'sulfonamida', 'sulfametoxazol', 'bactrim'],
-      maxDailyDoseMg: 3200,
+      maxDailyDoseMg: SULFA.maxAdultDayMg,
+      maxDailyDoseMgPerKg: SULFA.maxDailyDoseMgPerKg,
     },
   },
   // ---- Nitrofurantoína ----
@@ -1866,7 +1942,9 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       renalAdjustment: { required: false, gfrCutoffMlMin: 10, note: 'Ajustar se TFG < 10 mL/min.' },
       pregnancyRisk: 'B',
       allergyCrossGroups: ['metronidazol', 'nitroimidazol'],
-      maxDailyDoseMg: 2000,
+      maxDailyDoseMg: METRO.maxAdultDayMg,
+      maxSingleDoseMg: METRO.maxAdultDoseMg,
+      maxDailyDoseMgPerKg: METRO.maxDailyDoseMgPerKg,
     },
   },
   // ---- Lincosamidas ----
@@ -1880,13 +1958,29 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       renalAdjustment: { required: false },
       pregnancyRisk: 'B',
       allergyCrossGroups: ['clindamicina', 'lincosamida'],
-      maxDailyDoseMg: 2700,
-      maxDailyDoseMgPerKg: 40,
+      maxDailyDoseMg: CLINDA.maxAdultDayMg,
+      maxDailyDoseMgPerKg: CLINDA.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: CLINDA.maxAdultDoseMg,
     },
   },
   // ---- Corticoides sistêmicos ----
   {
-    matchPatterns: [/\bprednisona\b|\bprednisolona\b|\bdexametasona\b|\bhidrocortisona\b|\bbetametasona\b|\bmetilprednisolona\b/],
+    matchPatterns: [/\bdexametasona\b/],
+    meta: {
+      canonicalKey: 'dexametasona',
+      therapeuticClass: 'corticoide',
+      classLabel: 'Corticosteroide sistêmico (Dexametasona)',
+      duplicityGroup: 'corticoide',
+      renalAdjustment: { required: false },
+      pregnancyRisk: 'C',
+      allergyCrossGroups: ['corticoide', 'dexametasona'],
+      maxDailyDoseMg: DEXA.maxAdultDayMg,
+      maxDailyDoseMgPerKg: DEXA.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: DEXA.maxAdultDoseMg,
+    },
+  },
+  {
+    matchPatterns: [/\bprednisona\b|\bprednisolona\b|\bhidrocortisona\b|\bbetametasona\b|\bmetilprednisolona\b/],
     meta: {
       canonicalKey: 'corticoide',
       therapeuticClass: 'corticoide',
@@ -1894,8 +1988,10 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       duplicityGroup: 'corticoide',
       renalAdjustment: { required: false },
       pregnancyRisk: 'C',
-      allergyCrossGroups: ['corticoide', 'prednisona', 'dexametasona'],
-      maxDailyDoseMgPerKg: 2,
+      allergyCrossGroups: ['corticoide', 'prednisona', 'prednisolona'],
+      maxDailyDoseMg: PRED.maxAdultDayMg,
+      maxDailyDoseMgPerKg: PRED.maxDailyDoseMgPerKg,
+      maxSingleDoseMg: PRED.maxAdultDoseMg,
     },
   },
   // ---- IBP ----
@@ -2157,7 +2253,21 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
   },
   // ---- Antieméticos ----
   {
-    matchPatterns: [/\bondansetrona\b|\bmetoclopramida\b|\bbromoprida\b|\bdomperidona\b/],
+    matchPatterns: [/\bondansetrona\b/],
+    meta: {
+      canonicalKey: 'ondansetrona',
+      therapeuticClass: 'antiemetico',
+      classLabel: 'Antiemético (Ondansetrona)',
+      duplicityGroup: 'antiemetico',
+      renalAdjustment: { required: false, note: 'Sem ajuste usual em DRC.' },
+      pregnancyRisk: 'B',
+      allergyCrossGroups: ['ondansetrona'],
+      maxDailyDoseMg: ONDA.maxAdultDayMg,
+      maxSingleDoseMg: ONDA.maxAdultDoseMg,
+    },
+  },
+  {
+    matchPatterns: [/\bmetoclopramida\b|\bbromoprida\b|\bdomperidona\b/],
     meta: {
       canonicalKey: 'antiemetico',
       therapeuticClass: 'antiemetico',
@@ -2165,7 +2275,7 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       duplicityGroup: 'antiemetico',
       renalAdjustment: { required: false, gfrCutoffMlMin: 40, note: 'Metoclopramida: reduzir 50% se ClCr < 40 mL/min.' },
       pregnancyRisk: 'B',
-      allergyCrossGroups: ['metoclopramida', 'ondansetrona', 'bromoprida'],
+      allergyCrossGroups: ['metoclopramida', 'bromoprida'],
       maxDailyDoseMg: 30,
     },
   },
@@ -2206,7 +2316,8 @@ export const DRUG_CLINICAL_CATALOG: DrugClinicalCatalogRule[] = [
       renalAdjustment: { required: true, gfrCutoffMlMin: 50, note: 'Ajustar intervalo se TFG < 50 mL/min (risco de nefropatia cristalina e neurotoxicidade).' },
       pregnancyRisk: 'B',
       allergyCrossGroups: ['aciclovir'],
-      maxDailyDoseMg: 4000,
+      maxDailyDoseMg: ACIC.maxAdultDayMg,
+      maxSingleDoseMg: ACIC.maxAdultDoseMg,
     },
   },
   {

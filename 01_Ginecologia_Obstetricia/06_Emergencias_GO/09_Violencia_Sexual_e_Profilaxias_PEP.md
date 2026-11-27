@@ -13,8 +13,8 @@
 ID: [Nome], [Idade] anos, Peso: [ ] kg, G[ ] P[ ] (PN [ ] / PC [ ]) A[ ].
 DUM: [DD/MM/AAAA] | MAC: [Nenhum / Método hormonal / DIU].
 TEMPO DA EXPOSIÇÃO: [ ] horas ([≤ 72h: elegível para PEP HIV e profilaxias completas / entre 72h e 5 dias: elegível para contracepção de emergência até 5 dias e profilaxia de ISTs não virais]).
-Comorbidades: [+ *Hígida / Hepatite B vacinação: [Completa 3 doses / Incompleta ou desconhecida] / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / Hepatite B vacinação: [Completa 3 doses / Incompleta ou desconhecida] / [ ]].
+Alergias: [Nega / [ ]].
 # AP:
 MED: [*Nega uso contínuo / Em uso de: [ ]]
 HAB: [Nega tabagismo ou etilismo]
@@ -32,7 +32,7 @@ CHECO EXAMES E TESTES RÁPIDOS DE TEMPO ZERO (T0):
 
 # EXAME CLÍNICO
 Bom estado geral [ou emocionalmente abalada, porém lúcida e orientada], corada, hidratada, acianótica, anictérica, afebril (exame realizado com consentimento e acompanhante).
-- Sinais Vitais: PA: [115x75] mmHg | FC: [84] bpm | FR: [16] irpm | SpO2: [99]% AA.
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% AA.
 - Exame Corporal Externo: [Ausência de lesões traumáticas graves / Presença de escoriações ou equimoses descritas topograficamente].
 - Exame Ginecológico / Perineal: [Sem lacerações ativas ou sangramento / Presença de hiperemia ou fissura mucosa superficial sem sangramento ativo].
 

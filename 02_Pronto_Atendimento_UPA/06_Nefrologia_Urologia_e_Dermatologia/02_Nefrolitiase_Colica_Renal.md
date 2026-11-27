@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgico a Dipirona / Alérgico a AINEs / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgico a Dipirona / Alérgico a AINEs / [ ]].
 # QP:
 - Dor lombar insuportável em cólica de início súbito há [ ] horas.
 

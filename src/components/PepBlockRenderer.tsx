@@ -314,10 +314,9 @@ export function PepBlockRenderer({
       : undefined;
 
     const handleTriggerClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (isSimpleBinary) {
-        // Sem seleção ainda: o rótulo mostra a 1ª opção, então o 1º toque escolhe a 1ª
+      if (isSimpleBinary && selectedIndices.length > 0) {
         const current = selectedIndices[0];
-        const next = current === undefined ? 0 : current === 0 ? 1 : 0;
+        const next = current === 0 ? 1 : 0;
         onChoiceSelect(group, [next]);
         return;
       }
@@ -386,8 +385,8 @@ export function PepBlockRenderer({
             type="button"
             onClick={handleTriggerClick}
             data-pep-unselected="true"
-            aria-expanded={!isSimpleBinary ? isOpen : undefined}
-            aria-haspopup={!isSimpleBinary ? 'listbox' : undefined}
+            aria-expanded={isOpen}
+            aria-haspopup="listbox"
             title="Clique para selecionar opção clínica"
             className={triggerClass}
           >
@@ -479,8 +478,8 @@ export function PepBlockRenderer({
           </button>
         )}
 
-        {/* Mini-popover neutro (3+ opções ou multi-escolha) com alinhamento anti-clipping e navegação por teclado */}
-        {isOpen && !isSimpleBinary && (
+        {/* Mini-popover neutro (3+ opções, multi-escolha ou binário ainda não selecionado) com alinhamento anti-clipping */}
+        {isOpen && (!isSimpleBinary || selectedOptions.length === 0) && (
           <div
             role="listbox"
             aria-multiselectable={isMulti || undefined}

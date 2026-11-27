@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]], G[ ] P[ ] A[ ] | IG: [ ]s[ ]d (ou [ ]º dia de puerpério).
-Comorbidades: [+ *Hígida / HAS crônica / Pré-eclâmpsia prévia / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / HAS crônica / Pré-eclâmpsia prévia / [ ]].
+Alergias: [Nega / [ ]].
 - Apresentação Clínica: [Pré-Eclâmpsia com sinais de gravidade / Iminência de Eclâmpsia (Tríade de cefaleia + escotomas + epigastralgia) / Eclâmpsia (Crise convulsiva TCG às HH:MM) / Síndrome HELLP].
 
 # QP:
@@ -22,9 +22,9 @@ Alergias: [*Nega / [ ]].
 Gestante admitida com quadro de [cefaleia fronto-occipital intensa refratária a analgésicos / escotomas cintilantes, diplopia ou visão turva / epigastralgia ou dor em barra no HCD (Sinal de Chaussier) / náuseas e vômitos / hipertensão grave (PA >= 160x110 mmHg), assintomática]. No momento, [nega dispneia ou ortopneia / refere dispneia com estertores (suspeita de EAP)] e [nega sangramento vaginal ou hipertonia uterina / refere dor abdominal contínua e sangramento vaginal].
 
 # EXAME FÍSICO:
-- Sinais Vitais & Neurológico: PA: [170x115] mmHg (confirmada em 15 min) | FC: [88] bpm | FR: [18] irpm | SpO2: [98]% AA. Consciente, ECG [15], pupilas isocóricas. Reflexos patelares: [Exaltados 3+/4+ ou 4+/4+ com clônus aquileu / Normoativos 2+/4+].
+- Sinais Vitais & Neurológico: PA: [ ] mmHg (confirmada em 15 min) | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% AA. Consciente, ECG [ ], pupilas isocóricas. Reflexos patelares: [Exaltados 3+/4+ ou 4+/4+ com clônus aquileu / Normoativos 2+/4+].
 - Cardiopulmonar & Extremidades: RCR 2T BNF, MV+ bilateral [sem ruídos adventícios / com crepitações basais]. Edema de MMII/face [++/4+]. Diurese em SVD: [> 25] mL/h, clara.
-- Exame Obstétrico: AU: [ ] cm | Tônus uterino: [Normal (sem hipertonia de DPP)] | DU: [*Ausente / [ ] contrações/10 min] | BCF: [140] bpm, rítmico | CTG: [Categoria I / Categoria II / Categoria III].
+- Exame Obstétrico: AU: [ ] cm | Tônus uterino: [Normal (sem hipertonia de DPP)] | DU: [*Ausente / [ ] contrações/10 min] | BCF: [ ] bpm, rítmico | CTG: [Categoria I / Categoria II / Categoria III].
 
 # HIPÓTESES DIAGNÓSTICAS:
 1. [Pré-Eclâmpsia Grave (CID-10: O14.1) / Iminência de Eclâmpsia (O14.1) / Eclâmpsia (O15.0) / Síndrome HELLP (O14.2)] em gestação de [ ]s[ ]d.

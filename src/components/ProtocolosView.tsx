@@ -49,6 +49,7 @@ import { searchClinicalProtocols } from '../engine/search.ts';
 import type { PrescriptionAuditReport } from '../engine/prescriptionGuard.ts';
 import {
   classifyGuiaSectionTheme,
+  formatCompactProtocolTitle,
   formatPrePortaTitle,
   renderGuiaSectionBodyHtml,
 } from '../engine/diretrizes.ts';
@@ -63,22 +64,22 @@ type AreaFilter = 'todos' | 'go' | 'upa' | 'enf' | 'ped';
 type CopyKey = 'all' | PepSectionId;
 
 /**
- * Atalhos de cópia (mesmo mapa das "Power Actions" do PEP antigo), ativos fora de campos de texto:
- * 1 = Tudo · 2 = Conduta · 3 = Prescrição · 4 = Evolução · 5 = Orientações. Alt+C = Copiar tudo.
+ * Atalhos de cópia alinhados à ordem visual do índice e às Power Actions:
+ * 1 = Tudo · 2 = Evolução · 3 = Conduta · 4 = Prescrição · 5 = Orientações. Alt+C = Copiar tudo.
  */
 const COPY_SHORTCUTS: Record<string, CopyKey> = {
   '1': 'all',
-  '2': 'conduta',
-  '3': 'receita',
-  '4': 'evolucao',
+  '2': 'evolucao',
+  '3': 'conduta',
+  '4': 'receita',
   '5': 'orientacoes',
 };
 
 const COPY_SHORTCUT_BY_KEY: Partial<Record<CopyKey, string>> = {
   all: '1',
-  conduta: '2',
-  receita: '3',
-  evolucao: '4',
+  evolucao: '2',
+  conduta: '3',
+  receita: '4',
   orientacoes: '5',
 };
 
@@ -141,7 +142,7 @@ function GuardAlertList({
       })}
       {!blocking && (
         <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-          Itens da Conduta costumam ser condicionais: estes alertas não travam a cópia.
+          Alertas informativos de conduta: revise os blocos condicionais antes de copiar.
         </p>
       )}
     </div>
@@ -735,11 +736,17 @@ export function ProtocolosView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProtocol, compiled, astState, editedTexts, sectionNotes]);
 
-  /** Alertas "block" da Prescrição que seguram a cópia (Prescrição ou Copiar tudo). */
-  const getGuardBlockingAlerts = (key: CopyKey) =>
-    key === 'all' || key === 'receita'
-      ? (prescriptionAudit.receita?.alerts ?? []).filter((a) => a.severity === 'block')
-      : [];
+  /** Alertas "block" da Prescrição e Conduta que seguram a cópia. */
+  const getGuardBlockingAlerts = (key: CopyKey) => {
+    const out = [];
+    if (key === 'all' || key === 'receita') {
+      out.push(...(prescriptionAudit.receita?.alerts ?? []).filter((a) => a.severity === 'block'));
+    }
+    if (key === 'all' || key === 'conduta') {
+      out.push(...(prescriptionAudit.conduta?.alerts ?? []).filter((a) => a.severity === 'block'));
+    }
+    return out;
+  };
 
   const handleCopyBlock = async (key: string, text: string): Promise<boolean> => {
     const ok = await copyToClipboard(text);
@@ -771,7 +778,7 @@ export function ProtocolosView({
 
   /**
    * Trava de cópia: audita a Prescrição (lacunas clínicas, escolhas vazias, peso ausente)
-   * e a Conduta (apenas peso ausente com dose por kg). Evolução/Orientações não travam.
+   * e a Conduta (peso ausente com dose/kg e campos clínicos abertos em itens ativos).
    */
   const getCopyGapReport = (key: CopyKey): { report: SectionGapReport; focusSectionId: PepSectionId | null } => {
     let report: SectionGapReport = { ...EMPTY_GAP_REPORT };
@@ -785,8 +792,9 @@ export function ProtocolosView({
         ? secReport
         : {
             ...EMPTY_GAP_REPORT,
+            openFields: secReport.openFields,
             missingWeightForDoses: secReport.missingWeightForDoses,
-            total: secReport.missingWeightForDoses ? 1 : 0,
+            total: secReport.openFields + (secReport.missingWeightForDoses ? 1 : 0),
           };
       if (counted.total > 0 && focusSectionId === null) focusSectionId = sec.id;
       report = addGapReports(report, counted);
@@ -937,8 +945,12 @@ export function ProtocolosView({
 
     if (e.key === '/') {
       e.preventDefault();
-      searchInputRef.current?.focus();
-      searchInputRef.current?.select();
+      if (sidebarCollapsed) setSidebarCollapsed(false);
+      if (mobileShowDetail) onBackToList();
+      window.requestAnimationFrame(() => {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      });
       return;
     }
     const copyKey = COPY_SHORTCUTS[e.key];
@@ -1020,7 +1032,7 @@ export function ProtocolosView({
           mobileShowDetail
             ? 'hidden'
             : 'flex'
-        } ${sidebarCollapsed ? 'lg:hidden' : 'lg:flex'} h-full w-full shrink-0 flex-col border-r border-zinc-200/80 bg-[#FAFAFA] lg:w-[320px] dark:border-white/[0.07] dark:bg-[#0F1115]`}
+        } ${sidebarCollapsed ? 'lg:hidden' : 'lg:flex'} h-full w-full shrink-0 flex-col border-r border-zinc-200/80 bg-[#FAFAFA] lg:w-[272px] xl:w-[292px] dark:border-white/[0.07] dark:bg-[#0F1115]`}
       >
         <div className="space-y-2.5 border-b border-zinc-200/80 p-3 dark:border-white/[0.07]">
           {/* Busca + botão discreto de estrela (Favoritos) + recolher barra lateral */}
@@ -1280,6 +1292,7 @@ export function ProtocolosView({
                               type="button"
                               data-protocol-id={item.id}
                               aria-current={isSelected ? 'true' : undefined}
+                              title={item.title}
                               onClick={() => onSelectProtocol(item.id)}
                               className={`group flex w-full items-start justify-between gap-2.5 border-b border-l-2 border-b-zinc-200/40 px-3 py-2.5 text-left transition-colors last:border-b-0 dark:border-b-white/[0.05] ${
                                 isSelected
@@ -1294,7 +1307,7 @@ export function ProtocolosView({
                                     : 'font-medium'
                                 }`}
                               >
-                                {item.title}
+                                {formatCompactProtocolTitle(item.title)}
                               </span>
 
                               <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
@@ -1411,7 +1424,7 @@ export function ProtocolosView({
           </div>
         )}
 
-        <div className="mx-auto flex max-w-[1260px] items-start gap-8 px-4 py-5 sm:px-8 sm:py-7">
+        <div className="mx-auto flex max-w-[1260px] items-start gap-6 px-4 py-5 sm:px-6 sm:py-7">
         <div className="mx-auto min-w-0 max-w-4xl flex-1 xl:mx-0">
           {/* Botão Voltar em meia tela / tablet (< 1024px) */}
           <div className="mb-3 lg:hidden">
@@ -2108,7 +2121,7 @@ export function ProtocolosView({
                     <GuardAlertList report={prescriptionAudit.receita} anchorId="pep-guard-receita" blocking />
                   )}
                   {section.id === 'conduta' && (
-                    <GuardAlertList report={prescriptionAudit.conduta} anchorId="pep-guard-conduta" blocking={false} />
+                    <GuardAlertList report={prescriptionAudit.conduta} anchorId="pep-guard-conduta" blocking />
                   )}
                   {isEditing ? (
                     <div className="p-4">
@@ -2288,7 +2301,7 @@ export function ProtocolosView({
           {/* COLUNA FIXA À DIREITA (≥ 1280px): índice + copiar + alertas + doses, acompanha a rolagem */}
           <aside
             aria-label="Índice e ações do protocolo"
-            className="sticky top-6 hidden w-60 shrink-0 xl:block"
+            className="sticky top-6 hidden max-h-[calc(100vh-5rem)] w-56 shrink-0 overflow-y-auto xl:block 2xl:w-60"
           >
             <div className="space-y-4 rounded-lg border border-zinc-200/80 bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-white/[0.07] dark:bg-[#15181F]">
               <div>
@@ -2313,14 +2326,20 @@ export function ProtocolosView({
                     const shortcut = COPY_SHORTCUT_BY_KEY[sec.id];
                     const isSectionActive =
                       activeSectionId === sec.id || (activeSectionId === null && secIdx === 0);
-                    const gapCount = sec.id === 'receita' ? getCopyGapReport('receita').report.total : 0;
+                    const gapCount =
+                      sec.id === 'receita'
+                        ? getCopyGapReport('receita').report.total
+                        : sec.id === 'conduta'
+                          ? getCopyGapReport('conduta').report.total
+                          : 0;
                     const guardCount =
                       sec.id === 'receita'
                         ? prescriptionAudit.receita?.blockCount ?? 0
                         : sec.id === 'conduta'
                           ? (prescriptionAudit.conduta?.blockCount ?? 0) + (prescriptionAudit.conduta?.warnCount ?? 0)
                           : 0;
-                    const isBlockingGuard = sec.id === 'receita';
+                    const isBlockingGuard =
+                      sec.id === 'receita' || (sec.id === 'conduta' && (prescriptionAudit.conduta?.blockCount ?? 0) > 0);
                     return (
                       <li key={sec.id} className="flex items-center gap-1">
                         <button
@@ -2394,37 +2413,58 @@ export function ProtocolosView({
                 </ul>
               </div>
 
-              {compiled.clinicalContext.weightDoses && (
-                <div>
-                  <div className="mb-1.5 text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
-                    Doses ·{' '}
-                    <span className="font-mono normal-case">
-                      {String(compiled.clinicalContext.weightDoses.weightKg).replace('.', ',')} kg
-                    </span>
+              {compiled.clinicalContext.weightDoses && (() => {
+                const bodyLow = (activeProtocol.pep_body || '').toLowerCase();
+                const allItems = compiled.clinicalContext.weightDoses.items;
+                const isRelevant = (drugLabel: string) => {
+                  const key = drugLabel.split('(')[0].split(' ')[0].trim().toLowerCase();
+                  return key.length >= 4 && bodyLow.includes(key);
+                };
+                const orderedItems = [...allItems].sort((a, b) => {
+                  const ra = isRelevant(a.drug) ? 0 : 1;
+                  const rb = isRelevant(b.drug) ? 0 : 1;
+                  return ra - rb;
+                });
+                return (
+                  <div>
+                    <div className="mb-1.5 text-[11px] font-semibold tracking-[0.04em] text-zinc-500 uppercase dark:text-[#9CA3AF]">
+                      Doses ·{' '}
+                      <span className="font-mono normal-case">
+                        {String(compiled.clinicalContext.weightDoses.weightKg).replace('.', ',')} kg
+                      </span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px]">
+                      {orderedItems.map((d) => {
+                        const relevant = isRelevant(d.drug);
+                        return (
+                          <li key={d.drug} className="leading-tight">
+                            <div className="flex items-center justify-between gap-1 text-zinc-600 dark:text-[#9CA3AF]">
+                              <span className="truncate">{d.drug.split('(')[0].trim()}</span>
+                              {relevant && (
+                                <span className="shrink-0 rounded bg-teal-500/10 px-1 text-[9px] font-medium text-[#0F766E] dark:text-[#2DD4BF]">
+                                  no PEP
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              className={`font-mono text-[11px] font-medium ${
+                                !d.allowed
+                                  ? 'text-red-700 dark:text-red-400'
+                                  : d.ceilingHit
+                                    ? 'text-amber-700 dark:text-amber-400'
+                                    : 'text-zinc-900 dark:text-[#F3F4F6]'
+                              }`}
+                            >
+                              {d.formattedDose.split('|')[0].trim()}
+                              {d.ceilingHit && d.allowed ? ' · Teto' : ''}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
-                  <ul className="space-y-1.5 text-[11px]">
-                    {compiled.clinicalContext.weightDoses.items.slice(0, 6).map((d) => (
-                      <li key={d.drug} className="leading-tight">
-                        <div className="text-zinc-600 dark:text-[#9CA3AF]">
-                          {d.drug.split('(')[0].trim()}
-                        </div>
-                        <div
-                          className={`font-mono text-[11px] font-medium ${
-                            !d.allowed
-                              ? 'text-red-700 dark:text-red-400'
-                              : d.ceilingHit
-                                ? 'text-amber-700 dark:text-amber-400'
-                                : 'text-zinc-900 dark:text-[#F3F4F6]'
-                          }`}
-                        >
-                          {d.formattedDose.split('|')[0].trim()}
-                          {d.ceilingHit && d.allowed ? ' · Teto' : ''}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                );
+              })()}
 
               <p className="border-t border-zinc-200/70 pt-2 text-[11px] leading-relaxed text-zinc-400 dark:border-white/[0.07] dark:text-[#6B7280]">
                 <kbd className="font-mono">Alt+N</kbd> próximo campo vazio · <kbd className="font-mono">?</kbd> atalhos

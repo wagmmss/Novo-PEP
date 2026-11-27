@@ -12,8 +12,8 @@
 ATENDIMENTO DE PRONTO ATENDIMENTO — CONSTIPAÇÃO AGUDA, FECALOMA VS. ABDOME AGUDO OBSTRUTIVO
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 HISTÓRIA CLÍNICA DIRIGIDA:
 - Hábito Intestinal Atual: Ausência de evacuação há [ ] dias, associada a [desconforto abdominal baixo, esforço evacuatório e sensação de bloqueio anorretal / eliminação paradoxal de fezes líquidas em pequena quantidade — "diarreia paradoxal" por transbordamento ao redor do fecaloma!].
@@ -22,7 +22,7 @@ HISTÓRIA CLÍNICA DIRIGIDA:
 - Fatores Precipitantes: [Idoso acamado ou institucionalizado / Uso recente de Opioides (Tramadol, Codeína, Morfina), Anticolinérgicos, Bloqueadores de Canal de Cálcio ou Carbonato de Cálcio / Baixa ingesta hídrica].
 
 EXAME FÍSICO & TOQUE RETAL OBRIGATÓRIO:
-- Sinais Vitais: PA: [125x80] mmHg | FC: [78] bpm | Tax: [36,5]°C | Abdome: [Globoso, RHA presentes, massa fecal moldável palpável em topografia de sigmoide (FIE), sem peritonismo / Distendido, timpânico, RHA metálicos de luta, dor difusa].
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | Tax: [ ]°C | Abdome: [Globoso, RHA presentes, massa fecal moldável palpável em topografia de sigmoide (FIE), sem peritonismo / Distendido, timpânico, RHA metálicos de luta, dor difusa].
 - Inspeção Anal e Toque Retal: Esfíncter normotônico, sem fissuras agudas ou trombose hemorroidária; ampola retal [preenchida por grande massa fecal endurecida e pétrea — FECALOMA CONFIRMADO / ampola retal vazia e sem sangue em dedo de luva — suspeitar de impactação alta ou obstrução mecânica proximal!].
 
 EXAMES DE IMAGEM (SE SUSPEITA DE OBSTRUÇÃO MECÂNICA OU MEGACÓLON):

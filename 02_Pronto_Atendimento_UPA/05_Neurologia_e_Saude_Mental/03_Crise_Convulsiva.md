@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso estimado: [ ] kg.
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # HISTÓRICO CONVULSIVO: [Epilepsia conhecida sob tratamento prévio / Primeiro episódio convulsivo da vida / Histórico de etilismo crônico].
 
 # QP:

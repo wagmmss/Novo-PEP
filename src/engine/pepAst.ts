@@ -8,6 +8,13 @@
 // ============================================================================
 
 import {
+  getUnifiedDrugSpecByKey,
+  matchUnifiedDrugInClause,
+  resolveDrugCeilingForContext,
+  type PediatricAgeCeiling,
+  type UnifiedDrugDoseSpec,
+} from '../data/farmacos.ts';
+import {
   formatMultiChoices,
   inferVitalSignRole,
   isConditionalDefaultOffBracket,
@@ -48,17 +55,34 @@ export interface InlineInputNode {
   afterText: string;
 }
 
+export type DoseFormulaUnit =
+  | 'mg/kg/dia'
+  | 'mg/kg/dose'
+  | 'mg/kg/min'
+  | 'mL/kg'
+  | 'mL/kg/h'
+  | 'mL/kg/dia'
+  | 'gotas/kg'
+  | 'mcg/kg'
+  | 'mcg/kg/min'
+  | 'UI/kg/h'
+  | 'UI/kg/dia'
+  | 'g/kg';
+
 export interface DoseFormulaNode {
   kind: 'dose-formula';
   id: string;
   raw: string;
+  canonicalKey?: string;
   drugHint: string;
   dosePerKgMin: number;
   dosePerKgMax?: number;
-  unit: 'mg/kg/dia' | 'mg/kg/dose' | 'mL/kg' | 'gotas/kg';
+  unit: DoseFormulaUnit;
   /** Teto adulto inferido pelo fármaco ou texto adjacente */
   maxAdultValue?: number;
   maxAdultUnit?: 'mg/dia' | 'mg/dose' | 'mL' | 'gotas';
+  /** Tetos condicionais por idade (ex.: Prednisolona <2a 20 mg, 2-5a 30 mg, >5a 40 mg) */
+  ageCeilings?: PediatricAgeCeiling[];
   /** Número de tomadas diárias se o contexto mencionar (ex: 8/8h -> 3) */
   dosesPerDay?: number;
 }
@@ -168,6 +192,9 @@ export interface EvaluatedDoseFormula {
   unitLabel: string;
   ceilingHit: boolean;
   perDoseText?: string;
+  /** false quando há contraindicação ponderal/etária (ex.: Dipirona < 5 kg ou Ibuprofeno < 7 kg) */
+  allowed?: boolean;
+  contraindicationReason?: string;
 }
 
 export interface AstSelectionState {
@@ -208,9 +235,15 @@ export interface SerializeAstOptions {
  * Na trava de cópia é tratado como preenchido.
  */
 export function isSuggestedValueInput(node: InlineInputNode): boolean {
+  if (isIdentificationInput(node)) return false;
+  if (node.vitalRole) return false;
   const ph = (node.placeholder || '').trim();
   // Rótulos em CAIXA ALTA entre colchetes ("[MEDICAÇÃO SINTOMÁTICA E SUPORTE]") são cabeçalhos, não lacunas
   if (ph.length >= 6 && /[A-ZÀ-Ý]/.test(ph) && !/[a-zà-ÿ]/.test(ph)) return true;
+  // Nunca isentar dose fixa solta logo após "Dar/Administrar/Aplicar [N]" antes de gotas/mL/mg
+  if (/^\s*(?:dar|administrar|aplicar)\s*$/i.test(node.beforeText) && /^\d+(?:[.,]\d+)?$/i.test(ph)) {
+    return false;
+  }
   return /^\d[\d.,]*(?:\s*(?:a|-|–|ou)\s*\d[\d.,]*)?(?:\s*(?:mg|mcg|g|ml|gotas?|cp|comprimidos?|ui|h|dias?))?$/i.test(ph);
 }
 
@@ -221,7 +254,7 @@ export function isSuggestedValueInput(node: InlineInputNode): boolean {
 export function isIdentificationInput(node: InlineInputNode): boolean {
   if (node.mirrorRole === 'nome' || node.mirrorRole === 'idade') return true;
   if (node.maskType === 'date-full' || node.maskType === 'date-short' || node.maskType === 'time') return true;
-  return /^(?:nome|leito|registro|prontu[aá]rio|dd\/mm)/i.test((node.placeholder || '').trim());
+  return /^(?:nome|leito|registro|prontu[aá]rio|dd\/mm|mm\/aaaa|hh:mm)/i.test((node.placeholder || '').trim());
 }
 
 // ----------------------------------------------------------------------------
@@ -363,12 +396,13 @@ function inferInputMetadata(
     }
   }
 
+  const hasWeightFormulaNoise = /[x*\/+=]|\d/i.test(cleanInner);
   let anthroRole: InlineInputNode['anthroRole'];
-  if (/peso[^:]*:\s*$/i.test(beforeText) || /^peso\b/i.test(cleanInner)) {
+  if (!hasWeightFormulaNoise && (/peso[^:]*:\s*$/i.test(beforeText) || /^peso(?:\s+(?:atual|kg|em\s+kg))?$/i.test(cleanInner))) {
     anthroRole = 'peso';
-  } else if (/altura:\s*$/i.test(beforeText) || /^altura\b/i.test(cleanInner)) {
+  } else if (/altura:\s*$/i.test(beforeText) || /^altura$/i.test(cleanInner)) {
     anthroRole = 'altura';
-  } else if (/imc:\s*$/i.test(beforeText) || /^imc\b/i.test(cleanInner)) {
+  } else if (/imc:\s*$/i.test(beforeText) || /^imc$/i.test(cleanInner)) {
     anthroRole = 'imc';
   }
 
@@ -409,45 +443,194 @@ interface AdultCeilingHint {
   maxAdultGotas?: number;
 }
 
-const DOSE_CEILING_HINTS: AdultCeilingHint[] = [
-  { pattern: /\bamoxicilin/i, drugHint: 'Amoxicilina', maxAdultDayMg: 3000, maxAdultDoseMg: 1000 },
-  { pattern: /\bazitromicin/i, drugHint: 'Azitromicina', maxAdultDayMg: 500, maxAdultDoseMg: 500 },
-  { pattern: /\bcefalexin/i, drugHint: 'Cefalexina', maxAdultDayMg: 4000, maxAdultDoseMg: 1000 },
-  { pattern: /\bceftriaxon/i, drugHint: 'Ceftriaxona', maxAdultDayMg: 4000, maxAdultDoseMg: 2000 },
-  { pattern: /\bdipiron/i, drugHint: 'Dipirona', maxAdultDayMg: 4000, maxAdultDoseMg: 1000, maxAdultGotas: 40 },
-  { pattern: /\bparacetamol/i, drugHint: 'Paracetamol', maxAdultDayMg: 4000, maxAdultDoseMg: 1000, maxAdultGotas: 50 },
-  { pattern: /\bibuprofen/i, drugHint: 'Ibuprofeno', maxAdultDayMg: 2400, maxAdultDoseMg: 600, maxAdultGotas: 40 },
-  { pattern: /\bprednisolon|\bprednison/i, drugHint: 'Prednisolona', maxAdultDayMg: 60, maxAdultDoseMg: 60 },
-  { pattern: /\bdexametason/i, drugHint: 'Dexametasona', maxAdultDayMg: 16, maxAdultDoseMg: 10 },
-  { pattern: /\bondansetron/i, drugHint: 'Ondansetrona', maxAdultDayMg: 24, maxAdultDoseMg: 8 },
-  { pattern: /\bmidazolam/i, drugHint: 'Midazolam', maxAdultDoseMg: 10 },
-  { pattern: /\bdiazepam/i, drugHint: 'Diazepam', maxAdultDoseMg: 10 },
-  { pattern: /\bclindamicin/i, drugHint: 'Clindamicina', maxAdultDayMg: 2700, maxAdultDoseMg: 900 },
-  { pattern: /\bmetronidazol/i, drugHint: 'Metronidazol', maxAdultDayMg: 2000, maxAdultDoseMg: 500 },
-  { pattern: /\bsoro|\bsf\s*0[,.]9|\bringer|\bexpans[aã]o|\bbolus|\bhidrata/i, drugHint: 'Expansão volêmica', maxAdultMl: 1000 },
-];
+const DOSE_NUMBER_TOKEN = '(?:\\d{1,3}(?:\\.\\d{3})+(?:,\\d+)?|\\d+(?:[.,]\\d+)?)';
 
-const DOSE_FORMULA_REGEX =
-  /(\d+(?:[.,]\d+)?(?:\s*(?:[-–a]|até)\s*\d+(?:[.,]\d+)?)?)\s*(mg\/kg\/dia|mg\/kg\/dose|mg\/kg|mL\/kg|ml\/kg|gotas?\/kg)/gi;
+const DOSE_FORMULA_REGEX = new RegExp(
+  `(${DOSE_NUMBER_TOKEN}(?:\\s*(?:[-–a]|até)\\s*${DOSE_NUMBER_TOKEN})?)\\s*` +
+    `(mg\\/kg\\/(?:dia|dose|min)|mg\\/kg|mL\\/kg\\/(?:h|hora|dia)|ml\\/kg\\/(?:h|hora|dia)|mL\\/kg|ml\\/kg|gotas?\\/kg|mcg\\/kg\\/(?:min|h|hora)|mcg\\/kg|UI\\/kg\\/(?:dia|h|hora)|g\\/kg)(?![\\/\\wÀ-ÿ])`,
+  'gi'
+);
 
-function inferDosesPerDayFromLine(lineText: string): number | undefined {
-  const m = lineText.match(/\b(\d{1,2})\s*\/\s*(\d{1,2})\s*h\b/i);
+function parsePtBrDoseNumber(raw: string): number {
+  const s = String(raw || '').trim();
+  if (!s) return Number.NaN;
+  if (/^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(s)) {
+    return Number.parseFloat(s.replace(/\./g, '').replace(',', '.'));
+  }
+  return Number.parseFloat(s.replace(',', '.'));
+}
+
+function inferDosesPerDayFromClause(clauseText: string): number | undefined {
+  const m = clauseText.match(/\b(\d{1,2})\s*\/\s*(\d{1,2})\s*h\b/i);
   if (m) {
     const h = Number.parseInt(m[1], 10);
     if (h > 0 && h <= 24) return Math.round(24 / h);
   }
-  const mx = lineText.match(/\b(\d)\s*x\s*(?:\/|\s*ao\s*)?dia\b/i);
+  const mem = clauseText.match(/\bde\s+(\d{1,2})\s+em\s+\d{1,2}\s*horas?\b/i);
+  if (mem) {
+    const h = Number.parseInt(mem[1], 10);
+    if (h > 0 && h <= 24) return Math.round(24 / h);
+  }
+  const mx = clauseText.match(/\b(\d)\s*x\s*(?:\/|\s*ao\s*)?dia\b/i);
   if (mx) {
     const n = Number.parseInt(mx[1], 10);
     if (n >= 1 && n <= 6) return n;
   }
+  if (/\bdose\s+[úu]nica\s+di[aá]ria\b/i.test(clauseText)) return 1;
   return undefined;
+}
+
+const COMBO_JOINERS_PROTECTED_RE =
+  /\b(?:amoxicilina|sulfametoxazol|ampicilina|piperacilina|trimetoprima|clavulanat|tazobactam|sulbactam)\b/i;
+
+function isDrugSplitBoundary(buf: string, idx: number): 'back-sep' | 'fwd-sep' | null {
+  const ch = buf[idx];
+  if (ch === ';' || ch === '|') return 'back-sep';
+  if (ch === '+') {
+    const around = buf.slice(Math.max(0, idx - 22), Math.min(buf.length, idx + 22));
+    if (!COMBO_JOINERS_PROTECTED_RE.test(around)) {
+      return 'back-sep';
+    }
+  }
+  return null;
+}
+
+function isolateClauseAroundFormula(
+  text: string,
+  matchStart: number,
+  matchEnd: number,
+  lineContext: string
+): { before: string; after: string; hadExplicitClauseBreakBefore: boolean } {
+  // Retrocede até um delimitador real de cláusula/fármaco
+  let cStart = 0;
+  let hadExplicitBreak = false;
+  for (let i = matchStart - 1; i >= 0; i--) {
+    if (isDrugSplitBoundary(text, i)) {
+      cStart = i + 1;
+      hadExplicitBreak = true;
+      break;
+    }
+    // Quebra em " OU " / " ou "
+    if (
+      (text[i] === ' ' || text[i] === '(') &&
+      /^(?:ou)\b/i.test(text.slice(i + 1, Math.min(text.length, i + 4))) &&
+      (i + 3 >= text.length || /[\s:;,)]/.test(text[i + 3]))
+    ) {
+      cStart = i + 3;
+      hadExplicitBreak = true;
+      break;
+    }
+    // Parêntese de abertura com "+ " ou "ou " logo dentro: "(+ Oxacilina..." / "(ou Claritromicina..."
+    if (text[i] === '(' && /^\s*(?:\+|ou\b)/i.test(text.slice(i + 1, matchStart))) {
+      cStart = i + 1;
+      hadExplicitBreak = true;
+      break;
+    }
+    // Fim de frase ". " ou "! " (não abreviatura tipo "EV." ou "máx." ou decimal)
+    if (text[i] === '!' || (text[i] === '.' && text[i + 1] === ' ' && !/\b(?:m[aá]x|obs|aprox|min|seg|sol)\s*$/i.test(text.slice(Math.max(0, i - 6), i)))) {
+      cStart = i + 1;
+      hadExplicitBreak = true;
+      break;
+    }
+  }
+
+  // Se o texto antes dentro da cláusula começa após aviso negativo ("EVITAR ..."), descartar o aviso
+  let rawBefore = text.slice(cStart, matchStart);
+  const negAlertMatch = rawBefore.match(/.*?\b(?:EVITAR|PROIBIR|NUNCA(?:\s+USAR)?|CONTRAINDICAD[OA])\b[^.;!]*?(?:[!.;]|\be\b)\s*/i);
+  if (negAlertMatch) {
+    rawBefore = rawBefore.slice(negAlertMatch[0].length);
+    hadExplicitBreak = true;
+  }
+
+  // Avança até o fim da cláusula do fármaco atual
+  let cEnd = text.length;
+  let parenDepth = 0;
+  for (let i = matchEnd; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '(') {
+      const lookahead = text.slice(i + 1, Math.min(text.length, i + 48));
+      // Parêntese que abre outro fármaco ou alerta de contraindicação interrompe a cláusula
+      if (/^\s*(?:\+|ou\b|aten[çc][aã]o\s*:|evitar\b|nunca\b|proibir\b)/i.test(lookahead)) {
+        cEnd = i;
+        break;
+      }
+      parenDepth++;
+    } else if (ch === ')') {
+      if (parenDepth === 0) {
+        cEnd = i;
+        break;
+      }
+      parenDepth--;
+    } else if (parenDepth === 0) {
+      const boundary = isDrugSplitBoundary(text, i);
+      if (boundary) {
+        const afterSep = text.slice(i + 1, Math.min(text.length, i + 45));
+        const isSameFormulaQualifier =
+          text[i] === ';' &&
+          /^\s*(?:dose\s+)?(?:m[aá]x(?:imo|\.)?|teto\b|dividid|fracionad|em\s+\d+\s*(?:doses?|tomadas?)|at[eé]\s+\d|\d+\s*\/\s*\d+\s*h\b|de\s+\d+\s+em\s+\d+)/i.test(
+            afterSep
+          );
+        if (!isSameFormulaQualifier) {
+          cEnd = i;
+          break;
+        }
+      }
+      if (
+        (ch === ' ' || ch === ';') &&
+        /^ou\b/i.test(text.slice(i + 1, Math.min(text.length, i + 4))) &&
+        (i + 3 >= text.length || /[\s:;,()]/.test(text[i + 3]))
+      ) {
+        cEnd = i;
+        break;
+      }
+      if (ch === '.' && (i + 1 >= text.length || /\s/.test(text[i + 1]))) {
+        const beforeDot = text.slice(Math.max(matchEnd, i - 5), i);
+        if (!/\bm[aá]x$/i.test(beforeDot)) {
+          cEnd = i;
+          break;
+        }
+      }
+    }
+  }
+
+  // Caso o token começou após um colchete/input e não teve separador, buscar prefixo imediato no lineContext
+  if (!hadExplicitBreak && cStart === 0 && !matchUnifiedDrugInClause(rawBefore, '') && lineContext && lineContext !== text) {
+    const tokPos = lineContext.indexOf(text);
+    if (tokPos > 0) {
+      const prefix = lineContext.slice(Math.max(0, tokPos - 120), tokPos);
+      const splitPrefix = prefix.split(/[;|!]|\s+\+\s+|\s+ou\s+/i).pop() || '';
+      rawBefore = `${splitPrefix}${rawBefore}`;
+    }
+  }
+
+  return {
+    before: rawBefore,
+    after: text.slice(matchEnd, cEnd),
+    hadExplicitClauseBreakBefore: hadExplicitBreak,
+  };
+}
+
+function normalizeFormulaUnit(unitRaw: string): DoseFormulaUnit {
+  const u = unitRaw.toLowerCase().replace('/hora', '/h');
+  if (u === 'mg/kg/dia') return 'mg/kg/dia';
+  if (u === 'mg/kg/dose' || u === 'mg/kg') return 'mg/kg/dose';
+  if (u === 'mg/kg/min') return 'mg/kg/min';
+  if (u === 'ml/kg') return 'mL/kg';
+  if (u === 'ml/kg/h') return 'mL/kg/h';
+  if (u === 'ml/kg/dia') return 'mL/kg/dia';
+  if (u === 'mcg/kg/min') return 'mcg/kg/min';
+  if (u === 'mcg/kg' || u === 'mcg/kg/h') return 'mcg/kg';
+  if (u === 'ui/kg/h') return 'UI/kg/h';
+  if (u === 'ui/kg/dia') return 'UI/kg/dia';
+  if (u === 'g/kg') return 'g/kg';
+  return 'gotas/kg';
 }
 
 function splitTextWithDoseFormulas(
   text: string,
   lineContext: string,
-  nextId: (prefix: string) => string
+  nextId: (prefix: string) => string,
+  inheritedDrugSpec?: UnifiedDrugDoseSpec | null
 ): Array<TextNode | DoseFormulaNode> {
   if (!text) return [];
   DOSE_FORMULA_REGEX.lastIndex = 0;
@@ -460,66 +643,151 @@ function splitTextWithDoseFormulas(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  const ceilingHint = DOSE_CEILING_HINTS.find((h) => h.pattern.test(lineContext));
-  const dosesPerDay = inferDosesPerDayFromLine(lineContext);
+  const isPediatricContextLine =
+    /\b(?:pedi[aá]tr|crian[çc]a|lactente|gotas\/kg|gotas|1\s*gota\/kg)\b/i.test(lineContext) ||
+    Boolean(inheritedDrugSpec);
 
   while ((match = DOSE_FORMULA_REGEX.exec(text)) !== null) {
     const start = match.index;
     const rawMatch = match[0];
+    const end = start + rawMatch.length;
     if (start > lastIndex) {
       out.push({ kind: 'text', id: nextId('txt'), value: text.slice(lastIndex, start) });
     }
 
     const numPart = match[1];
-    const unitRaw = match[2].toLowerCase();
+    const unit = normalizeFormulaUnit(match[2]);
     const nums = numPart
       .split(/\s*(?:[-–a]|até)\s*/i)
-      .map((s) => Number.parseFloat(s.replace(',', '.')))
+      .map(parsePtBrDoseNumber)
       .filter((n) => Number.isFinite(n) && n > 0);
 
-    let unit: DoseFormulaNode['unit'] = 'mg/kg/dose';
-    if (unitRaw === 'mg/kg/dia') unit = 'mg/kg/dia';
-    else if (unitRaw === 'mg/kg/dose' || unitRaw === 'mg/kg') unit = 'mg/kg/dose';
-    else if (unitRaw === 'ml/kg') unit = 'mL/kg';
-    else unit = 'gotas/kg';
+    const { before: clauseBefore, after: clauseAfter } = isolateClauseAroundFormula(
+      text,
+      start,
+      end,
+      lineContext
+    );
+
+    const clauseSpec =
+      matchUnifiedDrugInClause(clauseBefore, clauseAfter) || inheritedDrugSpec || null;
+
+    const dosesPerDay =
+      unit === 'mg/kg/dia' || unit === 'mL/kg/dia' || unit === 'UI/kg/dia'
+        ? inferDosesPerDayFromClause(`${clauseBefore} ${clauseAfter}`)
+        : undefined;
 
     let maxAdultValue: number | undefined;
     let maxAdultUnit: DoseFormulaNode['maxAdultUnit'];
+    let ageCeilings: PediatricAgeCeiling[] | undefined;
 
-    // Tenta detectar teto explícito logo após no texto (ex.: "máx 500 mg" ou "teto 1000 mg")
-    const afterSlice = text.slice(start + rawMatch.length, start + rawMatch.length + 45);
-    const explicitMax = afterSlice.match(/(?:m[aá]x\.?|teto)\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*(mg|g|ml|gotas?)/i);
-    if (explicitMax) {
-      const parsedMax = Number.parseFloat(explicitMax[1].replace(',', '.'));
-      const mUnit = explicitMax[2].toLowerCase();
-      if (Number.isFinite(parsedMax) && parsedMax > 0) {
-        if (mUnit === 'g') {
-          maxAdultValue = parsedMax * 1000;
-          maxAdultUnit = unit === 'mg/kg/dia' ? 'mg/dia' : 'mg/dose';
-        } else if (mUnit === 'mg') {
-          maxAdultValue = parsedMax;
-          maxAdultUnit = unit === 'mg/kg/dia' ? 'mg/dia' : 'mg/dose';
-        } else if (mUnit === 'ml') {
-          maxAdultValue = parsedMax;
-          maxAdultUnit = 'mL';
-        } else {
-          maxAdultValue = parsedMax;
-          maxAdultUnit = 'gotas';
+    // 1) Teto explícito na cláusula imediata após a fórmula (ordem: gotas? antes de g, com fronteira \b)
+    // Ignorar teto condicional por idade quando há múltiplas faixas ("em < 2 anos... em > 5 anos")
+    const afterWindow = clauseAfter.slice(0, 95);
+    const hasAgeQualifiedMax = /(?:m[aá]x\.?(?:imo)?|teto)\s*(?:de|:)?\s*[^;\n)]*\b(?:em\s*(?:<|<=|>=|>|\d)|anos?|mes(?:es)?)\b/i.test(
+      afterWindow
+    );
+
+    if (hasAgeQualifiedMax) {
+      // Extrai múltiplas faixas etárias explícitas, se existirem (ex.: Pediatria Asma / Convulsão Febril)
+      const bandMatches = Array.from(
+        afterWindow.matchAll(
+          new RegExp(
+            `(?:m[aá]x(?:imo|\\.)?|teto)?\\s*(${DOSE_NUMBER_TOKEN})\\s*(gotas?|mg|ml|g)\\b\\s*(?:em|para)?\\s*(?:(<|<=|>=|>)?\\s*(\\d+)(?:\\s*[-–a]\\s*(\\d+))?\\s*anos?)`,
+            'gi'
+          )
+        )
+      );
+      if (bandMatches.length >= 2) {
+        const parsedBands: PediatricAgeCeiling[] = [];
+        for (const bm of bandMatches) {
+          const valRaw = parsePtBrDoseNumber(bm[1]);
+          const uRaw = bm[2].toLowerCase();
+          const mgVal = uRaw === 'g' ? valRaw * 1000 : valRaw;
+          const op = (bm[3] || '').trim();
+          const a1 = Number.parseInt(bm[4], 10);
+          const a2 = bm[5] ? Number.parseInt(bm[5], 10) : undefined;
+          const cutoff = a2 !== undefined ? a2 + 0.01 : op === '<' ? a1 : op.startsWith('>') ? 18 : a1 + 1;
+          parsedBands.push(
+            unit === 'mg/kg/dia'
+              ? { maxAgeYearsExclusive: cutoff, maxDailyMg: mgVal }
+              : { maxAgeYearsExclusive: cutoff, maxSingleMg: mgVal }
+          );
+        }
+        if (parsedBands.length > 0) {
+          ageCeilings = parsedBands;
+          const topBandVal = Math.max(
+            ...parsedBands.map((b) => b.maxDailyMg ?? b.maxSingleMg ?? 0)
+          );
+          if (topBandVal > 0) {
+            maxAdultValue = topBandVal;
+            maxAdultUnit = unit === 'mg/kg/dia' ? 'mg/dia' : 'mg/dose';
+          }
         }
       }
-    } else if (ceilingHint) {
-      if (unit === 'mg/kg/dia' && ceilingHint.maxAdultDayMg) {
-        maxAdultValue = ceilingHint.maxAdultDayMg;
-        maxAdultUnit = 'mg/dia';
-      } else if (unit === 'mg/kg/dose' && ceilingHint.maxAdultDoseMg) {
-        maxAdultValue = ceilingHint.maxAdultDoseMg;
-        maxAdultUnit = 'mg/dose';
-      } else if (unit === 'mL/kg' && ceilingHint.maxAdultMl) {
-        maxAdultValue = ceilingHint.maxAdultMl;
-        maxAdultUnit = 'mL';
-      } else if (unit === 'gotas/kg' && ceilingHint.maxAdultGotas) {
-        maxAdultValue = ceilingHint.maxAdultGotas;
-        maxAdultUnit = 'gotas';
+    } else {
+      const explicitMax = afterWindow.match(
+        new RegExp(
+          `(?:m[aá]x(?:imo|\\.)?|teto)\\s*(?:de|:)?\\s*(?:${DOSE_NUMBER_TOKEN}\\s*(?:a|[-–])\\s*)?(${DOSE_NUMBER_TOKEN})\\s*(gotas?|mg|ml|g)\\b`,
+          'i'
+        )
+      );
+      if (explicitMax) {
+        const parsedMax = parsePtBrDoseNumber(explicitMax[1]);
+        const mUnit = explicitMax[2].toLowerCase();
+        if (Number.isFinite(parsedMax) && parsedMax > 0) {
+          if (mUnit === 'g') {
+            maxAdultValue = parsedMax * 1000;
+            maxAdultUnit = unit === 'mg/kg/dia' ? 'mg/dia' : 'mg/dose';
+          } else if (mUnit === 'mg') {
+            maxAdultValue = parsedMax;
+            maxAdultUnit = unit === 'mg/kg/dia' ? 'mg/dia' : 'mg/dose';
+          } else if (mUnit === 'ml') {
+            maxAdultValue = parsedMax;
+            maxAdultUnit = 'mL';
+          } else {
+            maxAdultValue = parsedMax;
+            maxAdultUnit = 'gotas';
+          }
+        }
+      }
+    }
+
+    // 2) Fallback para fonte única farmacológica (apenas unidade compatível, nunca volume genérico para taxas)
+    if (maxAdultValue === undefined && clauseSpec) {
+      if (clauseSpec.pediatricAgeCeilings && !ageCeilings) {
+        ageCeilings = clauseSpec.pediatricAgeCeilings;
+      }
+      if (unit === 'mg/kg/dia') {
+        const c = resolveDrugCeilingForContext(clauseSpec, {
+          unitKind: 'dayMg',
+          isPediatric: isPediatricContextLine,
+        });
+        if (c) {
+          maxAdultValue = c;
+          maxAdultUnit = 'mg/dia';
+        }
+      } else if (unit === 'mg/kg/dose') {
+        const c = resolveDrugCeilingForContext(clauseSpec, {
+          unitKind: 'doseMg',
+          isPediatric: isPediatricContextLine,
+        });
+        if (c) {
+          maxAdultValue = c;
+          maxAdultUnit = 'mg/dose';
+        }
+      } else if (unit === 'mL/kg') {
+        const c = resolveDrugCeilingForContext(clauseSpec, { unitKind: 'ml' });
+        if (c) {
+          maxAdultValue = c;
+          maxAdultUnit = 'mL';
+        }
+      } else if (unit === 'gotas/kg') {
+        const c = resolveDrugCeilingForContext(clauseSpec, { unitKind: 'gotas' });
+        if (c) {
+          maxAdultValue = c;
+          maxAdultUnit = 'gotas';
+        }
       }
     }
 
@@ -528,19 +796,21 @@ function splitTextWithDoseFormulas(
         kind: 'dose-formula',
         id: nextId('dose'),
         raw: rawMatch,
-        drugHint: ceilingHint?.drugHint || '',
+        canonicalKey: clauseSpec?.canonicalKey,
+        drugHint: clauseSpec?.drugHint || '',
         dosePerKgMin: nums[0],
         dosePerKgMax: nums.length > 1 ? nums[1] : undefined,
         unit,
         maxAdultValue,
         maxAdultUnit,
+        ageCeilings,
         dosesPerDay,
       });
     } else {
       out.push({ kind: 'text', id: nextId('txt'), value: rawMatch });
     }
 
-    lastIndex = start + rawMatch.length;
+    lastIndex = end;
   }
 
   if (lastIndex < text.length) {
@@ -552,30 +822,66 @@ function splitTextWithDoseFormulas(
 
 /**
  * Calcula em tempo real o valor de um DoseFormulaNode dado o peso do paciente,
- * respeitando o teto adulto quando aplicável.
+ * respeitando restrições ponderais/etárias e tetos da fonte única.
  */
 export function evaluateDoseFormula(
   node: DoseFormulaNode,
-  weightKg: number | null
+  weightKg: number | null,
+  ageYears: number | null = null
 ): EvaluatedDoseFormula | null {
   if (weightKg === null || !Number.isFinite(weightKg) || weightKg <= 0) {
     return null;
   }
 
+  if (node.canonicalKey) {
+    const spec = getUnifiedDrugSpecByKey(node.canonicalKey);
+    const minWeightFail = spec.minWeightKg !== undefined && weightKg < spec.minWeightKg;
+    const minAgeFail =
+      spec.minAgeMonths !== undefined && ageYears !== null && ageYears * 12 < spec.minAgeMonths;
+    if (minWeightFail || minAgeFail) {
+      const reason = spec.restrictionReason || `Evitar em < ${spec.minWeightKg} kg`;
+      return {
+        formattedBadge: reason,
+        plainText: reason.toUpperCase(),
+        minTotal: 0,
+        unitLabel: node.unit,
+        ceilingHit: false,
+        allowed: false,
+        contraindicationReason: reason,
+      };
+    }
+  }
+
   const rawMin = node.dosePerKgMin * weightKg;
   const rawMax = node.dosePerKgMax !== undefined ? node.dosePerKgMax * weightKg : undefined;
+
+  let activeCeiling = node.maxAdultValue;
+  if (ageYears !== null && node.ageCeilings?.length) {
+    for (const band of node.ageCeilings) {
+      if (ageYears < band.maxAgeYearsExclusive) {
+        if (node.unit === 'mg/kg/dia' && band.maxDailyMg !== undefined) {
+          activeCeiling = band.maxDailyMg;
+          break;
+        }
+        if (node.unit === 'mg/kg/dose' && band.maxSingleMg !== undefined) {
+          activeCeiling = band.maxSingleMg;
+          break;
+        }
+      }
+    }
+  }
 
   let ceilingHit = false;
   let effMin = rawMin;
   let effMax = rawMax;
 
-  if (node.maxAdultValue !== undefined && node.maxAdultValue > 0) {
-    if (effMin >= node.maxAdultValue) {
-      effMin = node.maxAdultValue;
+  if (activeCeiling !== undefined && activeCeiling > 0) {
+    if (effMin >= activeCeiling) {
+      effMin = activeCeiling;
       ceilingHit = true;
     }
-    if (effMax !== undefined && effMax >= node.maxAdultValue) {
-      effMax = node.maxAdultValue;
+    if (effMax !== undefined && effMax >= activeCeiling) {
+      effMax = activeCeiling;
       ceilingHit = true;
     }
     if (effMax !== undefined && effMin === effMax) {
@@ -588,27 +894,42 @@ export function evaluateDoseFormula(
     return (Math.round(n * 10) / 10).toString().replace('.', ',');
   };
 
-  const unitLabel =
-    node.unit === 'mg/kg/dia'
-      ? 'mg/dia'
-      : node.unit === 'mg/kg/dose'
-        ? 'mg/dose'
-        : node.unit === 'mL/kg'
-          ? 'mL'
-          : 'gotas';
+  const UNIT_LABELS: Record<DoseFormulaUnit, string> = {
+    'mg/kg/dia': 'mg/dia',
+    'mg/kg/dose': 'mg/dose',
+    'mg/kg/min': 'mg/min',
+    'mL/kg': 'mL',
+    'mL/kg/h': 'mL/h',
+    'mL/kg/dia': 'mL/dia',
+    'gotas/kg': 'gotas',
+    'mcg/kg': 'mcg',
+    'mcg/kg/min': 'mcg/min',
+    'UI/kg/h': 'UI/h',
+    'UI/kg/dia': 'UI/dia',
+    'g/kg': 'g',
+  };
+  const unitLabel = UNIT_LABELS[node.unit];
 
   const valStr = effMax !== undefined ? `${fmt(effMin)}–${fmt(effMax)}` : fmt(effMin);
   let perDoseText: string | undefined;
-  if (node.unit === 'mg/kg/dia' && node.dosesPerDay && node.dosesPerDay > 1) {
+  const perDoseUnit =
+    node.unit === 'mg/kg/dia'
+      ? 'mg/tomada'
+      : node.unit === 'mL/kg/dia'
+        ? 'mL/tomada'
+        : node.unit === 'UI/kg/dia'
+          ? 'UI/tomada'
+          : undefined;
+  if (perDoseUnit && node.dosesPerDay && node.dosesPerDay > 1) {
     const perMin = effMin / node.dosesPerDay;
     const perMax = effMax !== undefined ? effMax / node.dosesPerDay : undefined;
     perDoseText =
       perMax !== undefined
-        ? `${fmt(perMin)}–${fmt(perMax)} mg/tomada`
-        : `${fmt(perMin)} mg/tomada`;
+        ? `${fmt(perMin)}–${fmt(perMax)} ${perDoseUnit}`
+        : `${fmt(perMin)} ${perDoseUnit}`;
   }
 
-  const ceilingTag = ceilingHit ? ' · teto adulto' : '';
+  const ceilingTag = ceilingHit ? ' · teto' : '';
   const perDoseSuffix = perDoseText ? ` (${perDoseText})` : '';
   return {
     formattedBadge: `≈ ${valStr} ${unitLabel}${perDoseSuffix}${ceilingTag}`,
@@ -618,6 +939,7 @@ export function evaluateDoseFormula(
     unitLabel,
     ceilingHit,
     perDoseText,
+    allowed: true,
   };
 }
 
@@ -710,13 +1032,18 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
     return out;
   };
 
-  const parseInlineString = (str: string, lineContext: string, isFirstLineStart: boolean): PepInlineNode[] => {
+  const parseInlineString = (
+    str: string,
+    lineContext: string,
+    isFirstLineStart: boolean,
+    inheritedDrugSpec: UnifiedDrugDoseSpec | null = null
+  ): PepInlineNode[] => {
     const tokens = parseBalancedBrackets(str);
     const nodes: PepInlineNode[] = [];
 
     tokens.forEach((tok, tokIdx) => {
       if (tok.type === 'text') {
-        const textSegments = splitTextWithDoseFormulas(tok.raw, lineContext, nextId);
+        const textSegments = splitTextWithDoseFormulas(tok.raw, lineContext, nextId, inheritedDrugSpec);
         for (const seg of textSegments) {
           if (seg.kind === 'dose-formula') stats.doseFormulas++;
           nodes.push(seg);
@@ -742,7 +1069,7 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
           label: optLabel,
           defaultOpen: false,
           needsLeadingSpace,
-          children: parseInlineString(optContentRaw, lineContext, false),
+          children: parseInlineString(optContentRaw, lineContext, false, inheritedDrugSpec),
         });
         return;
       }
@@ -832,6 +1159,7 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
 
   const lines = normalizedRaw.split('\n');
   const blocks: PepBlockNode[] = [];
+  let activeRxItemSpec: UnifiedDrugDoseSpec | null = null;
 
   lines.forEach((line, lineIndex) => {
     const trimmed = line.trim();
@@ -839,6 +1167,7 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
     const indent = indentMatch ? indentMatch[1] : '';
 
     if (trimmed === '') {
+      activeRxItemSpec = null;
       stats.paragraphs++;
       blocks.push({
         kind: 'paragraph',
@@ -860,6 +1189,7 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
     const subMatch = trimmed.match(/^>>\s*(.+)$/);
 
     if (isDocBanner || hMatch || subMatch) {
+      activeRxItemSpec = null;
       const cleanTitle = isDocBanner
         ? trimmed.replace(/^#{4,6}\s*(.*?)\s*#{4,6}$/, '$1').trim()
         : hMatch
@@ -868,7 +1198,7 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
       const level: 1 | 2 | 3 = isDocBanner ? 1 : hMatch ? (Math.min(3, hMatch[1].length) as 1 | 2 | 3) : 3;
       const isSubheading = Boolean(subMatch);
       const isObjectiveSection = !isDocBanner && /^#{1,3}\s+(?:OBJETIVO|EXAME\s+F[ÍI]SICO)/i.test(trimmed);
-      const children = parseInlineString(cleanTitle, line, true);
+      const children = parseInlineString(cleanTitle, line, true, null);
 
       stats.headings++;
       blocks.push({
@@ -898,14 +1228,29 @@ export function parsePepToAst(rawPepBody: string, protocolId = 'pep'): PepDocume
       workingLine = checkboxMatch[3];
     }
 
-    const children = parseInlineString(workingLine, line, true);
+    if (indent === '' && /^\d+[.)]\s+/.test(trimmed)) {
+      activeRxItemSpec = matchUnifiedDrugInClause(workingLine, '');
+    } else if (indent === '' && !/^(?:Dar|Administrar|Aplicar|Oferecer)\b/i.test(trimmed)) {
+      const ownSpec = matchUnifiedDrugInClause(workingLine, '');
+      if (ownSpec) activeRxItemSpec = ownSpec;
+      else if (/^(?:USO\s+|ORIENTAÇÕES|SINAIS\s+DE\s+ALARME|RETORNO)/i.test(trimmed)) activeRxItemSpec = null;
+    }
+
+    const inheritedForLine =
+      indent.length >= 2 || /^(?:Dar|Administrar|Aplicar)\b/i.test(trimmed) ? activeRxItemSpec : null;
+
+    const children = parseInlineString(workingLine, line, true, inheritedForLine);
     const firstTrava = children.find((c): c is TravaAlertNode => c.kind === 'trava-alert');
-    const isSecondaryBlockStart = Boolean(firstTrava?.isSecondaryOption);
-    const isConditionalBlockHeader = Boolean(
+    const afterBracketRemainder = workingLine.replace(/^\s*(?:\d+[.)]\s+|[-*]\s+)?\[[^\]]+\]\s*:?\s*/, '').trim();
+    const isBlockSectionStart = Boolean(
       firstTrava &&
         !firstTrava.isSafetyWarning &&
-        (trimmed.startsWith('[') || /^>>\s*\[/.test(trimmed) || /^\d+\.\s*\[/.test(trimmed))
+        (trimmed.startsWith('[') || /^>>\s*\[/.test(trimmed)) &&
+        // Só trata como cabeçalho multi-linha se termina em ':' / título sem texto corrido comum
+        (afterBracketRemainder === '' || /^[A-ZÀ-Ý0-9\s()—–/-]+:\s*$/.test(afterBracketRemainder))
     );
+    const isSecondaryBlockStart = Boolean(firstTrava?.isSecondaryOption && isBlockSectionStart);
+    const isConditionalBlockHeader = isBlockSectionStart;
 
     const isMetaLine = /^(?:PACIENTE:|CID-10:|DATA:|ATENDIMENTO:)/i.test(trimmed);
 
@@ -1247,8 +1592,13 @@ function isPureConditionalWrapperBlock(block: ParagraphNode): boolean {
 /**
  * Calcula quais blocos devem ser omitidos por efeito de blocos condicionais/secundários excluídos.
  */
-export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelectionState): Set<number> {
+export function computeExcludedBlockIndices(
+  ast: PepDocumentAst,
+  state: AstSelectionState,
+  options?: { forSerialization?: boolean }
+): Set<number> {
   const excluded = new Set<number>();
+  const forSerialization = Boolean(options?.forSerialization);
   let skipMode: 'none' | 'item' | 'bullet-item' | 'block' = 'none';
   let skipBaseIndent = 0;
 
@@ -1281,7 +1631,9 @@ export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelec
       if (
         block.kind === 'heading' ||
         (block.kind === 'paragraph' && block.isEmptyLine) ||
-        /^(?:>>\s*)?\[(?:OPÇÃO|MODALIDADE|1ª\s*ESCOLHA|2ª\s*ESCOLHA|OU\s+2ª)/i.test(trimmed) ||
+        block.isConditionalBlockHeader ||
+        block.isSecondaryBlockStart ||
+        /^(?:>>\s*)?\[(?:OPÇÃO|MODALIDADE|1ª\s*ESCOLHA|2ª\s*ESCOLHA|OU\s+2ª|SE\b|CEN[AÁ]RIO|PLANO)/i.test(trimmed) ||
         /^(?:USO\s+|ORIENTAÇÕES|SINAIS DE ALARME)/i.test(trimmed)
       ) {
         skipMode = 'none';
@@ -1303,17 +1655,32 @@ export function computeExcludedBlockIndices(ast: PepDocumentAst, state: AstSelec
         }
         continue;
       }
-      if (block.checkbox && state.checkboxStates[block.id] === false) {
+      // Na UI os checkboxes "[ ]" devem permanecer visíveis/clicáveis; omitimos somente ao serializar para o PEP
+      if (forSerialization && block.checkbox && state.checkboxStates[block.id] === false) {
         excluded.add(i);
         continue;
       }
-      const firstTrava = block.children.find((c): c is TravaAlertNode => c.kind === 'trava-alert');
-      if (firstTrava && state.travaExcluded[firstTrava.id]) {
+      const firstTravaIdx = block.children.findIndex((c) => c.kind === 'trava-alert');
+      const firstTrava = firstTravaIdx >= 0 ? (block.children[firstTravaIdx] as TravaAlertNode) : undefined;
+      const isLeadingTrava =
+        firstTravaIdx >= 0 &&
+        block.children
+          .slice(0, firstTravaIdx)
+          .every(
+            (c) =>
+              c.kind === 'text' &&
+              /^[\s\d.)\-*•[\]xX]*$/.test(c.value)
+          );
+      if (
+        firstTrava &&
+        state.travaExcluded[firstTrava.id] &&
+        (isLeadingTrava || block.isConditionalBlockHeader || block.isSecondaryBlockStart)
+      ) {
         excluded.add(i);
         const trimmed = block.rawLine.trim();
         if (/^\d+[.)]\s+/.test(trimmed)) {
           skipMode = 'item';
-        } else if (/^[-*]\s+\[/.test(trimmed)) {
+        } else if (/^[-*]\s+/.test(trimmed)) {
           skipMode = 'bullet-item';
           skipBaseIndent = block.indent.length;
         } else if (block.isConditionalBlockHeader || block.isSecondaryBlockStart) {
@@ -1338,9 +1705,10 @@ const SECTION_RESET_LINE_REGEX =
 export function computeAstDisplayLayout(
   ast: PepDocumentAst,
   state: AstSelectionState,
-  blockSubsetIndices?: Set<number>
+  blockSubsetIndices?: Set<number>,
+  options?: { forSerialization?: boolean }
 ): AstDisplayLayout {
-  const excludedBlocks = computeExcludedBlockIndices(ast, state);
+  const excludedBlocks = computeExcludedBlockIndices(ast, state, options);
   const hiddenWrapperBlocks = new Set<number>();
   const promotedNumberedBlocks = new Set<number>();
   const promotedContinuationBlocks = new Set<number>();
@@ -1460,7 +1828,7 @@ export function serializeAstToClinicalText(
   const stripSafetyWarnings = Boolean(options?.stripSafetyWarnings);
   const subset = options?.blockSubsetIndices;
   const gapMarkers = options?.gapMarkers;
-  const layout = computeAstDisplayLayout(ast, state, subset);
+  const layout = computeAstDisplayLayout(ast, state, subset, { forSerialization: true });
 
   const serializeInput = (node: InlineInputNode): string => {
     const val = (state.inputValues[node.id] || '').trim();
@@ -1518,7 +1886,9 @@ export function serializeAstToClinicalText(
       }
 
       if (node.kind === 'dose-formula') {
-        const evalDose = includeDoseCalc ? evaluateDoseFormula(node, context?.weightKg ?? null) : null;
+        const evalDose = includeDoseCalc
+          ? evaluateDoseFormula(node, context?.weightKg ?? null, context?.ageYears ?? null)
+          : null;
         if (evalDose) {
           out += `${node.raw} (${evalDose.plainText})`;
         } else {

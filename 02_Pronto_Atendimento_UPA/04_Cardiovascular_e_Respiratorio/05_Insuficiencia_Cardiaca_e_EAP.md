@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # CLASSIFICAÇÃO HEMODINÂMICA DE STEVENSON:
 - PERFIL B: "QUENTE E ÚMIDO" (Boa perfusão periférica, porém com congestão pulmonar grave e hipertensão arterial) -> > 80% DOS CASOS DE EAP NA UPA.
 - [Se Perfil C ("Frio e Úmido"): Choque cardiogênico com hipoperfusão -> avaliar Dobutamina + Noradrenalina].

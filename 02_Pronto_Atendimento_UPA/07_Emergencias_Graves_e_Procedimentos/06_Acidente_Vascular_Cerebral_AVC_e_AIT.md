@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg][? Leito :: , Leito: Sala Vermelha [ ]][? Registro :: , Registro: [ ]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 - Data e Hora do Início dos Sintomas / Última vez visto bem (Last Seen Well): [DD/MM/AAAA] às [HH:MM].
 - Tempo de Evolução dos Sintomas: [ ] horas e [ ] minutos.
 - Classificação Temporal: [JANELA DE TROMBÓLISE VÁLIDA (< 4,5 HORAS) / FORA DA JANELA (> 4,5 HORAS) / AVC DO DESPERTAR (WAKE-UP STROKE)].
@@ -29,8 +29,8 @@ Alergias: [*Nega / [ ]].
 - Escala de Coma de Glasgow: [ ]/15 pontos (Ocular: [ ], Verbal: [ ], Motora: [ ]).
 - Pupilas: Isocóricas e fotorreagentes [ou anisocóricas: ( )].
 - Escala de Gravidade do AVC (NIHSS - National Institutes of Health Stroke Scale):
-  * PONTUAÇÃO TOTAL DO NIHSS: [ 0 ] PONTOS (AVC Menor <= 4 | Moderado 5-15 | Grave 16-20 | Muito Grave > 20).
-  * Detalhamento Executivo: [1a-Consciência: 0 | 1b-Perguntas: 0 | 1c-Comandos: 0 | 2-Olhar: 0 | 3-Campo Visual: 0 | 4-Paralisia Facial: 0 | 5a/5b-MMSS: 0/0 | 6a/6b-MMII: 0/0 | 7-Ataxia: 0 | 8-Sensibilidade: 0 | 9-Linguagem: 0 | 10-Disartria: 0 | 11-Negligência: 0].
+  * PONTUAÇÃO TOTAL DO NIHSS: [ ] PONTOS (AVC Menor <= 4 | Moderado 5-15 | Grave 16-20 | Muito Grave > 20).
+  * Detalhamento: 1a-Consciência: [ ] | 1b-Perguntas: [ ] | 1c-Comandos: [ ] | 2-Olhar: [ ] | 3-Campo Visual: [ ] | 4-Paralisia Facial: [ ] | 5-MMSS: [ ] | 6-MMII: [ ] | 7-Ataxia: [ ] | 8-Sensibilidade: [ ] | 9-Linguagem: [ ] | 10-Disartria: [ ] | 11-Negligência: [ ].
 
 # INVESTIGAÇÃO COMPLEMENTAR IMEDIATA:
 - Tomografia Computadorizada de Crânio sem Contraste (Realizada às [HH:MM]):
@@ -48,7 +48,7 @@ Alergias: [*Nega / [ ]].
 1. Verificação Estrita das Contraindicações Absolutas:
    - Afastados: Hemorragia na TC, TCE grave ou AVC isquêmico nos últimos 3 meses, história prévia de hemorragia intracraniana, cirurgia de SNC ou espinhal recente, sangramento ativo, plaquetas < 100.000, INR > 1,7, uso de anticoagulante direto (DOAC) nas últimas 48 horas.
 2. Controle Pressórico Pré-Trombólise (OBRIGATÓRIO PA < 185/110 mmHg ANTES DE INFUNDIR rt-PA):
-   - Se PA >= 185/110 mmHg: Nitroprussiato de Sódio (Nipride 50 mg/2 mL): 1 ampola (2 mL) + 248 mL de SG 5% em frasco/equipo fotossensíveis (concentração: 200 mcg/mL) -> Iniciar em BIC a 3 a 5 mL/h (~0,25 a 0,5 mcg/kg/min para 70 kg) titulado a cada 3 a 5 min [OU Metoprolol 5 mg EV lento a cada 10 min].
+   - Se PA >= 185/110 mmHg: Nitroprussiato de Sódio (Nipride 50 mg/2 mL): 1 ampola (2 mL) + 248 mL de SG 5% em frasco/equipo fotossensíveis (concentração: 200 mcg/mL) -> Iniciar em BIC a 5 a 10 mL/h (~0,25 a 0,5 mcg/kg/min para 70 kg) titulado a cada 3 a 5 min [OU Metoprolol 5 mg EV lento a cada 10 min].
    - PA estabilizada com segurança em [ ]x[ ] mmHg às [HH:MM].
 3. Protocolo de Infusão de Alteplase (rt-PA) - Peso do Paciente: [ ] kg:
    - Dose Total Calculada (0,9 mg/kg - Dose Máxima: 90 mg): [ ] mg de Alteplase.

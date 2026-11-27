@@ -11,10 +11,10 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]], G[ ] P[ ] A[ ] | Parto: [Vaginal / Cesárea] às [HH:MM] | Código Vermelho acionado às: [HH:MM].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega / [ ]].
 - Perda Sanguínea Estimada: [ ] mL ([> 500 mL pós-parto vaginal / > 1.000 mL pós-cesárea / sangramento com instabilidade hemodinâmica]).
-- Sinais Vitais & Perfusão: PA: [85x50] mmHg | FC: [118] bpm | Índice de Choque Obstétrico (FC/PAS): [1,38] (Normal < 0,9 | Alerta >= 0,9 | Transfusão maciça se >= 1,4) | FR: [22] irpm | SpO2: [98]% | TEC: [3]s | Consciência: [Lúcida / Ansiosa / Sonolenta].
+- Sinais Vitais & Perfusão: PA: [ ] mmHg | FC: [ ] bpm | Índice de Choque Obstétrico (FC/PAS): [ ] (Normal < 0,9 | Alerta >= 0,9 | Transfusão maciça se >= 1,4) | FR: [ ] irpm | SpO2: [ ]% | TEC: [ ]s | Consciência: [Lúcida / Ansiosa / Sonolenta].
 
 # REVISÃO ETIOLÓGICA IMEDIATA DOS "4 Ts" (AO EXAME FÍSICO):
 - [x] 1. TÔNUS (70% — Atonia Uterina): [Útero hipotônico, amolecido e acima da cicatriz umbilical -> iniciada Manobra de Compressão Uterina Bimanual de Hamilton + esvaziamento vesical / Tônus firme preservado].
@@ -44,7 +44,7 @@ Alergias: [*Nega / [ ]].
 >> 3. ESCALONAMENTO MECÂNICO, HEMOTERÁPICO E CIRÚRGICO (SE REFRATARIEDADE):
 1. [ ] Balão de Tamponamento Intrauterino (Bakri / Artesanal): Inserido na cavidade uterina e insuflado com [300 a 500] mL de SF 0,9% morno + ocitocina contínua e Cefazolina 2 g EV profilática (Teste do Tamponamento positivo em 15 min).
 2. [ ] Traje Anti-Choque Não-Pneumático (TAN): Posicionado dos tornozelos ao abdome (segmentos 1 a 6).
-3. [ ] Hemotransfusão / Coagulopatia: Transfundidos [ ] CH + [ ] PFC + Crioprecipitado 1 UI/10 kg (ou Concentrado de Fibrinogênio 2–4 g EV se Fibrinogênio < 200 mg/dL) + Gluconato de Cálcio 10% 10 mL EV se Ca++ iônico baixo.
+3. [ ] Hemotransfusão / Coagulopatia: Transfundidos [ ] CH + [ ] PFC + Crioprecipitado 1 unidade/10 kg (ou Concentrado de Fibrinogênio 2–4 g EV se Fibrinogênio < 200 mg/dL) + Gluconato de Cálcio 10% 10 mL EV se Ca++ iônico baixo.
 4. [ ] Abordagem Cirúrgica (Laparotomia): [Sutura compressiva de B-Lynch / Cho / Hayman | Ligadura bilateral das artérias uterinas (O'Leary) ou hipogástricas | Histerectomia subtotal hemostática].
 5. Desfecho pós-estabilização: Útero contraído, sangramento controlado, PA [ ]x[ ] mmHg, FC [ ] bpm -> encaminhada à UTI / Recuperação para vigilância intensiva.
 ```

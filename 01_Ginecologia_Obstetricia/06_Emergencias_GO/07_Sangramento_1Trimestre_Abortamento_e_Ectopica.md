@@ -13,8 +13,8 @@
 ID: [Nome], [Idade] anos, G[ ] P[ ] (PN [ ] / PC [ ]) A[ ].
 DUM: [DD/MM/AAAA] | IG: [ ]s[ ]d (por [DUM / USG 1º Tri]) | DPP (Nägele): [DD/MM/AAAA].
 TS/Rh: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB- / Rh Negativo — checar Coombs Indireto e Anti-D!].
-Comorbidades: [+ *Hígida / HAS / DM2 / DIP prévia / Endometriose / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / HAS / DM2 / DIP prévia / Endometriose / [ ]].
+Alergias: [Nega / [ ]].
 # AP:
 MED: [*Nega / Ácido Fólico / Progesterona]
 HAB: [*Nega tabagismo, etilismo ou drogas ilícitas / Tabagista]
@@ -32,7 +32,7 @@ CHECO EXAMES (USG TRANSVAGINAL + β-hCG QUANTITATIVO):
 
 # EXAME CLÍNICO
 Bom estado geral, corada, hidratada, acianótica, anictérica, afebril [ou hipocorada/taquicárdica se instabilidade hemodinâmica].
-- Sinais Vitais: PA: [110x70] mmHg | FC: [82] bpm | Índice de Choque (FC/PAS): [< 0,7 normal / ≥ 0,9 choque!] | FR: [16] irpm | SpO2: [99]% AA | Tax: [36,6] °C (descartar aborto infectado!).
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | Índice de Choque (FC/PAS): [< 0,7 normal / ≥ 0,9 choque!] | FR: [ ] irpm | SpO2: [ ]% AA | Tax: [ ] °C (descartar aborto infectado!).
 - Abdome: [Plano, flácido, indolor, sem peritonismo / Doloroso à palpação profunda em hipogástrio ou fossa ilíaca com descompressão brusca positiva — Blumberg+].
 - Especular: Sangramento [discreto coletado em fundo de saco / ativo pelo OE / saída de material ovular sem odor fétido / secreção purulenta fétida].
 - Toque Vaginal Bimanual: Colo uterino [grosso, posterior e impérvio (Ameaça de Aborto ou Ectópica) / pérvio para 1 polpa digital (Aborto Inevitável ou Incompleto)]. Útero de volume [compatível com a IG / menor que a IG], mobilização do colo [indolor / intensamente dolorosa — Sinal de Proust / Grito de Douglas positivo!].

@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso: [ ] kg.
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgico a Dipirona / Alérgico a Metoclopramida/Plasil / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgico a Dipirona / Alérgico a Metoclopramida/Plasil / [ ]].
 # QP:
 - Diarreia, vômitos e dor de barriga em cólica há [ ] dias.
 

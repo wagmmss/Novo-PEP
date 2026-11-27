@@ -18,6 +18,7 @@ import {
   parsePepToAst,
   createAstSelectionState,
   applySmartContextPreselection,
+  computeAstDisplayLayout,
   formatConditionalToggleLabel,
   serializeAstToClinicalText,
   type AstSelectionState,
@@ -464,8 +465,35 @@ function parsePediatricAgeParts(rawAge: string): { value: string; unit: 'meses' 
   return { value: clean, unit: null };
 }
 
+function inferSectionIdByBlockIndex(ast: PepDocumentAst): Map<number, PepSectionId> {
+  const map = new Map<number, PepSectionId>();
+  let currentSection: PepSectionId = 'evolucao';
+  for (let i = 0; i < ast.blocks.length; i++) {
+    const trimmed = ast.blocks[i].rawLine.trim();
+    if (trimmed) {
+      if (RECEITA_BOUNDARY_REGEX.test(trimmed)) {
+        currentSection = 'receita';
+      } else if (
+        ORIENTACOES_BOUNDARY_REGEX.test(trimmed) &&
+        (currentSection === 'receita' || currentSection === 'conduta' || currentSection === 'orientacoes')
+      ) {
+        currentSection = 'orientacoes';
+      } else if (
+        currentSection === 'evolucao' &&
+        !RECEITA_BOUNDARY_REGEX.test(trimmed) &&
+        (CONDUTA_BOUNDARY_REGEX.test(trimmed) || CONDUTA_HEADING_REGEX.test(trimmed))
+      ) {
+        currentSection = 'conduta';
+      }
+    }
+    map.set(i, currentSection);
+  }
+  return map;
+}
+
 /**
  * Sincroniza dados do paciente (idade, peso, alergias, gestante/IG) nos nós não editados manualmente da AST.
+ * Nunca pré-seleciona grupos sem opção "*" explícita.
  */
 export function applyPatientContextToAstState(
   ast: PepDocumentAst,
@@ -483,23 +511,22 @@ export function applyPatientContextToAstState(
     userEditedNodes: { ...baseState.userEditedNodes },
   };
 
-  // Passo 1: garantir seleções default em choice-groups, sincronizar Alergias e unidade de idade (meses/anos)
+  const explicitNegaAllergy = /^(?:nega|nenhuma|nenhum|sem alergia|nkda|nao|ndn)\b/i.test(
+    String(clinicalContext.allergiesRaw || '').trim()
+  );
+
+  // Passo 1: sincronizar Alergias apenas quando houver informação real na sessão do paciente
+  // (nunca forçar "[0]" nem "Nega" em grupos sem seleção explícita)
   for (const block of ast.blocks) {
     const topNodes = block.children;
     for (let ni = 0; ni < topNodes.length; ni++) {
       const node = topNodes[ni];
       if (node.kind === 'choice-group') {
-        const currentSel = nextState.choiceSelections[node.id] || [];
-        if (currentSel.length === 0 && node.options.length > 0 && !isBloodTypeChoiceGroup(node.options)) {
-          nextState.choiceSelections[node.id] = [0];
-        }
-
-        // Sincronizar Alergias da barra do paciente com o grupo "Alergias: [*Nega / Alérgico(a) a: [ ]]"
         if (/\balergia/i.test(node.beforeText) && !nextState.userEditedNodes[node.id]) {
           const allergyOption =
             node.options.find((o) => o.children.some((c) => c.kind === 'inline-input') && /al[eé]rg/i.test(o.rawText)) ||
             node.options.find((o) => o.children.some((c) => c.kind === 'inline-input'));
-          const negaOption = node.options.find((o) => /\bnega\b/i.test(o.rawText)) || node.options[0];
+          const negaOption = node.options.find((o) => /\bnega\b/i.test(o.rawText));
 
           if (clinicalContext.allergiesNormalized.length > 0 && allergyOption) {
             nextState.choiceSelections[node.id] = [allergyOption.index];
@@ -507,8 +534,15 @@ export function applyPatientContextToAstState(
             if (subInput && !nextState.userEditedNodes[subInput.id]) {
               nextState.inputValues[subInput.id] = clinicalContext.allergiesRaw;
             }
-          } else if (clinicalContext.allergiesNormalized.length === 0 && negaOption) {
+          } else if (explicitNegaAllergy && negaOption) {
             nextState.choiceSelections[node.id] = [negaOption.index];
+          } else if (!explicitNegaAllergy && clinicalContext.allergiesNormalized.length === 0) {
+            if (!node.hasDefault) {
+              delete nextState.choiceSelections[node.id];
+            } else {
+              const defIdx = node.options.filter((o) => o.isDefault).map((o) => o.index);
+              if (defIdx.length > 0) nextState.choiceSelections[node.id] = defIdx;
+            }
             if (allergyOption) {
               const subInput = allergyOption.children.find((c) => c.kind === 'inline-input');
               if (subInput && !nextState.userEditedNodes[subInput.id]) {
@@ -519,20 +553,12 @@ export function applyPatientContextToAstState(
         }
       }
     }
-
-    // Garantir defaults também em choice-groups aninhados dentro de opcionais
-    walkInlineNodes(block.children, (node) => {
-      if (node.kind === 'choice-group') {
-        const currentSel = nextState.choiceSelections[node.id] || [];
-        if (currentSel.length === 0 && node.options.length > 0 && !isBloodTypeChoiceGroup(node.options)) {
-          nextState.choiceSelections[node.id] = [0];
-        }
-      }
-    });
   }
 
   // Passo 2: pré-seleção clínica inteligente (antes do cálculo de doses, para refletir fármaco escolhido)
   applySmartContextPreselection(ast, nextState, clinicalContext);
+
+  const sectionByBlockIdx = inferSectionIdByBlockIndex(ast);
 
   // Passo 3: espelhar idade (com unidade meses/anos em pediatria), IG, peso e recalcular doses ponderais
   // usando o texto das escolhas efetivamente selecionadas nas linhas anterior/atual/seguinte.
@@ -627,6 +653,8 @@ export function applyPatientContextToAstState(
         return;
       }
 
+      const secId = sectionByBlockIdx.get(bi) || 'evolucao';
+
       if (clinicalContext.weightKg !== null && clinicalContext.weightDoses) {
         const autoDose = resolvePediatricDoseFieldValue({
           isWeightSourceInput: false,
@@ -637,10 +665,30 @@ export function applyPatientContextToAstState(
           afterText: node.afterText,
           placeholder: node.placeholder,
           weightKg: clinicalContext.weightKg,
+          ageYears: clinicalContext.ageYears,
+          sectionId: secId,
           doses: clinicalContext.weightDoses,
         });
         if (autoDose !== null) {
           nextState.inputValues[node.id] = autoDose;
+        } else {
+          // Limpar eventual valor auto-preenchido anterior que se tornou contraindicado (ex.: Dipirona < 5 kg)
+          const probeValid = resolvePediatricDoseFieldValue({
+            isWeightSourceInput: false,
+            lineContext: effectiveLine,
+            prevLineContext: prevEffectiveLine,
+            nextLineContext: nextEffectiveLine,
+            beforeText: node.beforeText,
+            afterText: node.afterText,
+            placeholder: node.placeholder,
+            weightKg: 15,
+            ageYears: 3,
+            sectionId: secId,
+            doses: buildClinicalContext({ pesoKg: '15', idade: '3a' }, { modId: 'ped' }).weightDoses!,
+          });
+          if (probeValid !== null) {
+            delete nextState.inputValues[node.id];
+          }
         }
       } else {
         // Se o peso foi limpo, limpar doses pediátricas auto-preenchidas (preservando defaults fixos)
@@ -653,7 +701,9 @@ export function applyPatientContextToAstState(
           afterText: node.afterText,
           placeholder: node.placeholder,
           weightKg: 15,
-          doses: buildClinicalContext({ pesoKg: '15' }, { modId: 'ped' }).weightDoses!,
+          ageYears: 3,
+          sectionId: secId,
+          doses: buildClinicalContext({ pesoKg: '15', idade: '3a' }, { modId: 'ped' }).weightDoses!,
         });
         if (probe !== null) {
           delete nextState.inputValues[node.id];
@@ -745,8 +795,10 @@ export function analyzeSectionGaps(
   const identificationFields = countOccurrences(audited, GAP_MARK_IDENT);
   const unselectedChoices = countOccurrences(audited, GAP_MARK_CHOICE);
 
+  const serLayout = computeAstDisplayLayout(ast, state, section.blockIndexSet, { forSerialization: true });
   let hasDoseFormula = false;
   for (const idx of section.blockIndices) {
+    if (serLayout.excludedBlocks.has(idx) || serLayout.hiddenWrapperBlocks.has(idx)) continue;
     const block = ast.blocks[idx];
     if (!block) continue;
     walkInlineNodes(block.children, (n) => {

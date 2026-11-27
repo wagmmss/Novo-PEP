@@ -11,19 +11,19 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, G[ ] P[ ] (PN [ ] / PC [ ]) A[ ], no [ ]º dia de puerpério de [Parto Normal / Cesariana].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega alergias medicamentosas / Alérgica a: [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega alergias medicamentosas / Alérgica a: [ ]].
 - Quadro Atual: [MODALIDADE A — MASTITE PUERPERAL AGUDA / MODALIDADE B — ENDOMETRITE PUERPERAL].
 
 # QP:
 - [Queixa principal] há [ ] [hora(s) / dia(s)].
 
 # HMA:
-[SE MASTITE] Puérpera refere dor mamária localizada intensa, hiperemia em cunha em mama [direita / esquerda], calafrios e febre (Tax [38,5] °C) há [ ] dias, precedidos por fissura mamilar e ingurgitamento. Nega dor hipogástrica ou lóquios fétidos.
+[SE MASTITE] Puérpera refere dor mamária localizada intensa, hiperemia em cunha em mama [direita / esquerda], calafrios e febre (Tax [ ] °C) há [ ] dias, precedidos por fissura mamilar e ingurgitamento. Nega dor hipogástrica ou lóquios fétidos.
 [SE ENDOMETRITE] Puérpera evoluindo há [ ] dias com febre alta (Tax >= 38,0 °C), calafrios, mal-estar, dor hipogástrica progressiva e lóquios escuros/purulentos de odor fétido intenso (fatores de risco: [cesariana / bolsa rota prolongada / múltiplos toques / anemia]). Nega queixas mamárias ou respiratórias.
 
 # EXAME FÍSICO:
-- Sinais Vitais: PA: [110x70] mmHg | FC: [98] bpm | FR: [18] irpm | SpO2: [99]% AA | Tax: [38,4] °C.
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% AA | Tax: [ ] °C.
 - Exame das Mamas:
   * [SE MASTITE]: Mama [direita / esquerda] com placa eritematosa em cunha, quente, edemaciada e dolorosa no quadrante [superior externo / inferior], fissura mamilar presente, ausência de ponto de flutuação à palpação (afastado abscesso mamário franco). Linfonodo axilar homolateral palpável.
   * [SE ENDOMETRITE]: Mamas lactantes flácidas/túrgidas fisiológicas, indolores, sem hiperemia ou sinais de mastite.

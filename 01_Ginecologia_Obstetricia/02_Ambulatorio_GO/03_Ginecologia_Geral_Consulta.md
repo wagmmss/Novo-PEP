@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, G[ ] P[ ] (PN [ ] / PC [ ]) A[ ], Status: [Menacme / Climatério / Pós-menopausa há [ ] anos].
-Comorbidades: [+ *Hígida / HAS / DM2 / Dislipidemia / Hipotireoidismo / [ ]].
-Alergias: [*Nega alergias medicamentosas / Alérgica a: [ ]].
+Comorbidades: [+ Hígida / HAS / DM2 / Dislipidemia / Hipotireoidismo / [ ]].
+Alergias: [Nega alergias medicamentosas / Alérgica a: [ ]].
 [? HF & Tabagismo :: HF Câncer (Mama < 50a / Ovário / Endométrio em 1º grau): [*Nega / Positivo em: [ ]] | Tabagismo: [*Nega / Sim].]
 - DUM: [DD/MM/AAAA] | Ciclos: [Regulares 28/28d, fluxo 4–5d normal / Irregulares / Sangramento uterino aumentado com coágulos / Amenorreia].
 - Contracepção / TRH Atual: [Nenhum / ACO: [ ]/ DIU de Cobre / SIU-LNG Mirena / Implanon / Injetável mensal ou trimestral / Preservativo].
@@ -28,7 +28,7 @@ Alergias: [*Nega alergias medicamentosas / Alérgica a: [ ]].
 Comparece para [*rotina ginecológica preventiva anual assintomática / queixa de corrimento vaginal com prurido / queixa de corrimento com odor fétido (peixe) / sangramento uterino anormal / fogachos e ressecamento vaginal]. Nega sinusorragia (sangramento pós-coito), sangramento pós-menopausa, dor pélvica aguda, dispareunia profunda, febre ou perda urinária.
 
 # EXAME FÍSICO:
-- Vitais & Antropometria: PA: [115x75] mmHg | FC: [74] bpm | Peso: [ ] kg | Altura: [ ] m | IMC: [ ] kg/m². BEG, corada, hidratada.
+- Vitais & Antropometria: PA: [ ] mmHg | FC: [ ] bpm | Peso: [ ] kg | Altura: [ ] m | IMC: [ ] kg/m². BEG, corada, hidratada.
 - Exame Clínico das Mamas: Simétricas, sem retrações, abaulamentos ou alterações do complexo aréolo-papilar à inspeção estática e dinâmica. Palpação dos 4 quadrantes e região retroareolar sem nódulos dominantes ou espessamentos. Expressão papilar [negativa / descarga láctea bilateral]. Fossas axilares e supraclaviculares livres.
 - Abdome & Genitália Externa: Abdome flácido, indolor, sem massas. Vulva eutrófica, pilificação habitual, sem úlceras, fissuras ou lesões verrucosas (condilomas); glândulas de Bartholin e Skene livres.
 - Exame Especular: Paredes vaginais [tróficas e rugosas / hipotróficas], conteúdo vaginal [fisiológico hialino sem odor / branco grumoso aderente tipo "leite coalhado" (Candidíase) / acinzentado fluido homogêneo com teste das aminas/Whiff positivo (Vaginose) / amarelo-esverdeado bolhoso com colpite focal]. Colo uterino centrado, epitelizado, sem lesões vegetantes ou friabilidade. Coleta de Citopatológico: [Realizada hoje (Ayre + cytobrush) sem intercorrências / Não realizada por rastreio em dia].

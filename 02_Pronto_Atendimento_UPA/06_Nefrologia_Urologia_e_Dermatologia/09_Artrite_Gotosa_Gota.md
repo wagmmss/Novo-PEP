@@ -10,9 +10,9 @@
 
 ```text
 # IDENTIFICAÇÃO:
-ID: [Nome], [Idade] anos, Sexo: Masculino[? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / DRC / HAS / DM2 / [ ]].
-Alergias: [*Nega / Alérgico a AINEs / [ ]].
+ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
+Comorbidades: [+ Hígido(a) / DRC / HAS / DM2 / [ ]].
+Alergias: [Nega / Alérgico a AINEs / [ ]].
 # QP:
 - Dor insuportável, vermelhidão e inchaço no "dedão do pé" / joelho iniciados de madrugada há [ ] horas.
 

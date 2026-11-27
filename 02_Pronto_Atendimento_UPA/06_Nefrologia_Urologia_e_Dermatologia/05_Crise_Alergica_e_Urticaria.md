@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso estimado: [ ] kg.
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 # QP:
 - Manchas vermelhas pelo corpo que coçam muito / Inchaço nos lábios / Falta de ar há [ ] minutos.
 

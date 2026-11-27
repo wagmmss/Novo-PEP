@@ -11,9 +11,9 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [ ] [meses / anos], Sexo: [Masculino / Feminino], Peso de Entrada: [ ] kg[? Acompanhante :: , Acompanhante: [Mãe / Pai / Responsável: [ ]]].
-Peso Prévio Conhecido: [Não informado / [ ] kg -> Perda de [ ]%].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Peso Prévio Conhecido: [*Não informado / Peso habitual: [ ] kg (Perda estimada: [ ]%)].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 # QP:
 - Diarreia líquida e vômitos há [ ] dias.

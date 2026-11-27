@@ -10,9 +10,9 @@
 
 ```text
 # IDENTIFICAÇÃO:
-ID: [Nome], [Idade] anos, Sexo: Masculino[? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega alergias / Alérgico a Penicilinas / Alérgico a Macrolídeos / [ ]].
+ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega alergias / Alérgico a Penicilinas / Alérgico a Macrolídeos / [ ]].
 # QP:
 - Saída de pus pelo canal da urina e ardência para urinar há [ ] dias.
 

@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 Hábitos: [*Constipação intestinal crônica, baixa ingesta de fibras e água / [ ]].
 # QP:
 - Dor anal intensa / Sangramento ao evacuar há [ ] dias/horas.

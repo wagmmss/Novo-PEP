@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, G[ ] P[ ] A[ ] | DUM: [DD/MM/AAAA] | β-hCG: NEGATIVO (obrigatório).
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega alergias medicamentosas / Alérgica a: [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega alergias medicamentosas / Alérgica a: [ ]].
 - Contexto: [Sem método de barreira / Nova parceria / Uso de DIU / Episódio prévio de IST].
 
 # QP:
@@ -22,7 +22,7 @@ Alergias: [*Nega alergias medicamentosas / Alérgica a: [ ]].
 Paciente refere dor pélvica em baixo ventre, bilateral e progressiva, há [ ] dias, associada a corrimento vaginal purulento, dispareunia de profundidade e [febre aferida de [ ] °C / calafrios / disúria]. Nega atraso menstrual (beta-hCG negativo). No momento, [nega vômitos incoercíveis, peritonismo difuso ou instabilidade hemodinâmica / apresenta febre alta, vômitos e sinais de peritonismo].
 
 # EXAME FÍSICO:
-- Sinais Vitais: PA: [115x70] mmHg | FC: [88] bpm | FR: [16] irpm | SpO2: [99]% AA | Tax: [37,8] °C.
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% AA | Tax: [ ] °C.
 - Exame Abdominal: Abdome plano, RHA+, dor à palpação profunda de hipogástrio e fossas ilíacas bilateralmente, [sem sinais de peritonite difusa (DB negativo) / com descompressão brusca dolorosa localizada em pelve]. Sinal de Murphy/dor em HCD (Síndrome de Fitz-Hugh-Curtis): [*Ausente / Presente].
 - Exame Especular: Paredes vaginais hiperemiadas, secreção mucopurulenta amarelada fluindo pelo orifício cervical externo (cervicite mucopurulenta) e colo friável ao toque do swab.
 - Toque Vaginal Bimanual (3 Critérios Maiores Presentes):

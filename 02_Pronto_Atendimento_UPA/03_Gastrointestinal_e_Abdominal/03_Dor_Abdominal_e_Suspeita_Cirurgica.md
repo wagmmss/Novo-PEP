@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 Antecedentes Cirúrgicos/Pessoais: [*Nega cirurgias prévias / Relata laparotomia/cesárea prévia (risco de bridas) / Hérnia inguinal conhecida / Litíase biliar conhecida / [ ]].
 # QP:
 - Dor de barriga intensa há [ ] horas/dias.

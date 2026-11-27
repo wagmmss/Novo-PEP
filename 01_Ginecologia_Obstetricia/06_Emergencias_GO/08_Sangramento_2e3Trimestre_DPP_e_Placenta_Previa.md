@@ -13,8 +13,8 @@
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]], G[ ] P[ ] (PN [ ] / PC [ ]) A[ ].
 DUM: [DD/MM/AAAA] | IG: [ ]s[ ]d | DPP (Nägele): [DD/MM/AAAA].
 TS/Rh: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB- / Rh Negativo].
-Comorbidades: [+ *Hígida / HAS / Pré-eclâmpsia / DMG / Trombofilia / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / HAS / Pré-eclâmpsia / DMG / Trombofilia / [ ]].
+Alergias: [Nega / [ ]].
 # AP:
 MED: [*Nega / Sulfato Ferroso / Metildopa / AAS]
 HAB: [*Nega tabagismo, etilismo ou uso de cocaína / Tabagista / Uso de cocaína]

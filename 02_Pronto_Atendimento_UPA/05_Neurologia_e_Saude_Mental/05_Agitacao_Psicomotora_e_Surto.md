@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # CONTEXTO DE ENTRADA: [Trazido por familiares / Resgatado pelo SAMU ou Polícia Militar / Descompensação aguda na sala de espera].
 
 # QP:
@@ -76,7 +76,7 @@ Todo quadro de agitação psicomotora aguda com **início abrupto em idoso, flut
 ### 💊 2. A Escada da Tranquilização Rápida: Desescalonamento Verbal → Via Oral → Contenção Química IM
 O objetivo na emergência não é "anestesiar" o paciente, mas atingir **calma cooperativa (RASS 0 a -1)**. Após falha do desescalonamento verbal (*Project BETA*) e recusa da medicação oral:
 - Em **surto psicótico/esquizofrenia/mania**: a combinação clássica **Haloperidol 5 mg IM + Prometazina 50 mg IM** (estudos *TREC*) oferece início rápido e a ação anticolinérgica da prometazina previne a **distonia aguda laríngea/cervical** induzida pelo butirofenônico.
-- Em **intoxicação alcoólica aguda ou idoso com delirium**: **evita-se prometazina e midazolam** (pelo risco de depressão respiratória sinérgica com álcool e piora paradoxal do delirium anticolinérgico), utilizando-se Haloperidol isolado em baixa dose (2,5–5 mg IM, após descartar QTc longo).
+- Em **intoxicação alcoólica aguda ou idoso com delirium**: **evita-se prometazina e midazolam** (pelo risco de depressão respiratória sinérgica com álcool e piora paradoxal do delirium anticolinérgico), utilizando-se Haloperidol isolado em baixa dose (1,0–2,5 mg IM ou VO, após descartar QTc longo).
 - Em **abstinência alcoólica (*Delirium Tremens*) ou intoxicação simpaticomimética (cocaína/crack)**: a base é o **Benzodiazepínico (Diazepam/Midazolam)**, pois o haloperidol isolado reduz o limiar convulsivo e prejudica a dissipação térmica.
 
 ### 🧭 3. Segurança Legal e Clínica na Contenção Mecânica no Leito

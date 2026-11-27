@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega alergias / Alérgico a colírios: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega alergias / Alérgico a colírios: [ ]].
 # QP:
 - Olho vermelho, sensação de areia e secreção há [ ] dias.
 

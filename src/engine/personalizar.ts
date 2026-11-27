@@ -4,6 +4,12 @@
 // Compostos, Cópia Granular por Seção, Cálculo Ponderal Inline, Nägele e IMC)
 // ============================================================================
 
+import {
+  getUnifiedDrugSpecByKey,
+  matchUnifiedDrugInClause,
+  resolveDrugCeilingForContext,
+} from '../data/farmacos.ts';
+
 export interface BracketToken {
   type: 'text' | 'bracket';
   raw: string;
@@ -138,7 +144,11 @@ export function isSecondaryOptionBracket(inner: string): boolean {
 export function isConditionalDefaultOffBracket(inner: string): boolean {
   const trimmed = String(inner || '').trim();
   if (isSecondaryOptionBracket(trimmed)) return true;
-  return /^(?:Opcional\b|Se\s+(?:mãe\s+Rh\s+negativ|alto\s+risco\s+para\s+TEV|constipação\b))/i.test(trimmed);
+  if (isContraindicationWarningBracket(trimmed)) return false;
+  if (/^(?:ATENÇÃO|ALERTA|NOTA|OBS)\b/i.test(trimmed)) return false;
+  // Todo bloco condicional seletivo ([Se ...], [Caso ...], [Quando ...], [Opcional ...]) inicia OFF
+  // para evitar afirmar fatos/condutas condicionais sem confirmação clínica do médico.
+  return /^(?:Opcional\b|Se\s+|Caso\s+|Quando\s+|Em\s+caso\s+|Suspeita\s+)/i.test(trimmed);
 }
 
 export interface ParsedChoiceGroup {
@@ -546,46 +556,84 @@ export function getNormalVitalDefaults(modId?: string): Record<string, string> {
   };
 }
 
-export function computeWeightBasedDoses(weightKg: number): WeightDoseSummary | null {
+export function computeWeightBasedDoses(
+  weightKg: number,
+  ageYears: number | null = null
+): WeightDoseSummary | null {
   if (!Number.isFinite(weightKg) || weightKg < 2 || weightKg > 150) return null;
 
-  const dipironaAllowed = weightKg >= 5;
-  const dipironaMg = dipironaAllowed ? Math.min(1000, Math.round(weightKg * 20)) : 0;
-  const dipironaGotas = dipironaAllowed ? Math.min(40, Math.round(dipironaMg / 25)) : 0;
+  const dip = getUnifiedDrugSpecByKey('dipirona');
+  const pcm = getUnifiedDrugSpecByKey('paracetamol');
+  const ibu = getUnifiedDrugSpecByKey('ibuprofeno');
+  const onda = getUnifiedDrugSpecByKey('ondansetrona');
+  const amox = getUnifiedDrugSpecByKey('amoxicilina');
+  const pred = getUnifiedDrugSpecByKey('prednisolona');
+  const dexa = getUnifiedDrugSpecByKey('dexametasona');
+  const mid = getUnifiedDrugSpecByKey('midazolam');
+
+  const dipironaAllowed =
+    weightKg >= (dip.minWeightKg ?? 5) &&
+    (ageYears === null || ageYears * 12 >= (dip.minAgeMonths ?? 3));
+  const dipMaxMg = dip.maxAdultDoseMg ?? 1000;
+  const dipMaxGotas = dip.maxAdultGotas ?? 40;
+  const dipironaMg = dipironaAllowed ? Math.min(dipMaxMg, Math.round(weightKg * 20)) : 0;
+  const dipironaGotas = dipironaAllowed
+    ? Math.min(dipMaxGotas, Math.round(dipironaMg / (dip.dropsMgPerDrop ?? 25)))
+    : 0;
+  const dipSolConc = dip.oralSolMgPerMl ?? 50;
   const dipironaMlSolucao = dipironaAllowed
-    ? Math.min(20, dipironaMg / 50).toFixed(1).replace('.', ',')
+    ? Math.min(dipMaxMg / dipSolConc, dipironaMg / dipSolConc).toFixed(1).replace('.', ',')
     : '0,0';
 
-  // Paracetamol 200 mg/mL (20 gts/mL = 10 mg/gota): 13 mg/kg/dose, teto adulto 750 mg (75 gts)
-  const paracetamolMg = Math.min(750, Math.round(weightKg * 13));
-  const paracetamolGotas = Math.min(75, Math.round(paracetamolMg / 10));
-  const paracetamolCeilingHit = weightKg * 13 >= 750;
+  // Paracetamol 200 mg/mL (gotejador de referência 15 gts/mL ≈ 13,3 mg/gt => 13 mg/kg/dose ≈ 1 gota/kg, teto 750 mg / 50 gotas)
+  const pcmMaxMg = pcm.maxPediatricDoseMg ?? 750;
+  const pcmMaxGotas = pcm.maxAdultGotas ?? 50;
+  const paracetamolMg = Math.min(pcmMaxMg, Math.round(weightKg * 13));
+  const paracetamolGotas = Math.min(pcmMaxGotas, Math.round(weightKg));
+  const paracetamolCeilingHit = weightKg * 13 >= pcmMaxMg || weightKg >= pcmMaxGotas;
 
-  const ibuprofenoAllowed = weightKg >= 7;
-  const ibuprofenoMg = ibuprofenoAllowed ? Math.min(400, Math.round(weightKg * 10)) : 0;
-  const ibuprofenoGotas100 = ibuprofenoAllowed ? Math.min(40, Math.round(ibuprofenoMg / 10)) : 0;
-  const ibuprofenoGotas50 = ibuprofenoAllowed ? Math.min(80, Math.round(ibuprofenoMg / 5)) : 0;
+  const ibuprofenoAllowed =
+    weightKg >= (ibu.minWeightKg ?? 7) &&
+    (ageYears === null || ageYears * 12 >= (ibu.minAgeMonths ?? 6));
+  const ibuMaxMg = ibu.maxPediatricDoseMg ?? 400;
+  const ibuMaxGotas = ibu.maxAdultGotas ?? 40;
+  const ibuprofenoMg = ibuprofenoAllowed ? Math.min(ibuMaxMg, Math.round(weightKg * 10)) : 0;
+  const ibuprofenoGotas100 = ibuprofenoAllowed
+    ? Math.min(ibuMaxGotas, Math.round(ibuprofenoMg / (ibu.dropsMgPerDrop ?? 10)))
+    : 0;
+  const ibuprofenoGotas50 = ibuprofenoAllowed ? Math.min(ibuMaxGotas * 2, Math.round(ibuprofenoMg / 5)) : 0;
 
-  const ondaMgVal = Math.min(8, weightKg * 0.15);
+  const ondaMaxMg = onda.maxAdultDoseMg ?? 8;
+  const ondaMgVal = Math.min(ondaMaxMg, weightKg * 0.15);
   const ondansetronaMg = ondaMgVal.toFixed(1).replace('.', ',');
-  // Ampola padrão 4 mg/2 mL = 2 mg/mL
-  const ondansetronaMlEv = (ondaMgVal / 2).toFixed(1).replace('.', ',');
+  const ondaInjConc = onda.injMgPerMl ?? 2;
+  const ondansetronaMlEv = (ondaMgVal / ondaInjConc).toFixed(1).replace('.', ',');
 
-  // Amoxicilina 250 mg/5 mL (50 mg/mL): 50 mg/kg/dia 8/8h => (peso * 50 / 3) / 50 = peso / 3 mL (teto 10 mL = 500 mg)
-  const amoxi50Ml8hVal = Math.min(10, weightKg / 3);
+  // Amoxicilina 250 mg/5 mL (50 mg/mL): 50 mg/kg/dia 8/8h => teto 500 mg/dose = 10 mL
+  const amox50MaxDoseMg = 500;
+  const amoxi50Ml8hVal = Math.min(amox50MaxDoseMg / 50, weightKg / 3);
   const amoxi50Ml8h = amoxi50Ml8hVal.toFixed(1).replace('.', ',');
-  const amoxi50CeilingHit = weightKg / 3 >= 10;
+  const amoxi50CeilingHit = weightKg / 3 >= amox50MaxDoseMg / 50;
 
-  // Amoxicilina 400 mg/5 mL (80 mg/mL): 90 mg/kg/dia 12/12h => (peso * 90 / 2) / 80 = (peso * 90) / 160 mL (teto 12,5 mL = 1000 mg)
-  const amoxi90Ml12hVal = Math.min(12.5, (weightKg * 90) / 160);
+  // Amoxicilina 400 mg/5 mL (80 mg/mL): 90 mg/kg/dia 12/12h => teto 1000 mg/dose = 12,5 mL
+  const amox90MaxDoseMg = amox.maxAdultDoseMg ?? 1000;
+  const amoxi90Ml12hVal = Math.min(amox90MaxDoseMg / 80, (weightKg * 90) / 160);
   const amoxi90Ml12h = amoxi90Ml12hVal.toFixed(1).replace('.', ',');
-  const amoxi90CeilingHit = (weightKg * 90) / 160 >= 12.5;
+  const amoxi90CeilingHit = (weightKg * 90) / 160 >= amox90MaxDoseMg / 80;
 
-  const prednisolonaMgDia = Math.min(40, Math.round(weightKg * 1));
-  const prednisolonaMlDia = Math.min(13.3, weightKg / 3).toFixed(1).replace('.', ',');
+  const predMaxMg = resolveDrugCeilingForContext(pred, {
+    unitKind: 'dayMg',
+    ageYears,
+    isPediatric: true,
+  }) ?? 40;
+  const predConc = pred.oralSolMgPerMl ?? 3;
+  const prednisolonaMgDia = Math.min(predMaxMg, Math.round(weightKg * 1));
+  const prednisolonaMlDia = Math.min(predMaxMg / predConc, weightKg / predConc).toFixed(1).replace('.', ',');
 
-  const dexametasonaCrupeMg = Math.min(10, weightKg * 0.6).toFixed(1).replace('.', ',');
-  const midazolamImEvMg = Math.min(10, weightKg * 0.2).toFixed(1).replace('.', ',');
+  const dexaMaxMg = dexa.maxAdultDoseMg ?? 10;
+  const dexametasonaCrupeMg = Math.min(dexaMaxMg, weightKg * 0.6).toFixed(1).replace('.', ',');
+  const midMaxMg = mid.maxAdultDoseMg ?? 10;
+  const midazolamImEvMg = Math.min(midMaxMg, weightKg * 0.2).toFixed(1).replace('.', ',');
 
   const items: PediatricDoseBadgeItem[] = [
     {
@@ -593,49 +641,49 @@ export function computeWeightBasedDoses(weightKg: number): WeightDoseSummary | n
       doseRule: '20 mg/kg/dose (0,8 gt/kg)',
       formattedDose: dipironaAllowed
         ? `${dipironaMg} mg (${dipironaGotas} gts 500mg/mL | ${dipironaMlSolucao} mL sol. oral 50mg/mL)`
-        : 'Contraindicado (< 5 kg)',
-      maxAdultCeiling: '1000 mg (40 gts / 20 mL sol. 50mg/mL)',
-      ceilingHit: dipironaAllowed && weightKg * 20 >= 1000,
+        : (dip.restrictionReason || 'Contraindicado (< 5 kg)'),
+      maxAdultCeiling: `${dipMaxMg} mg (${dipMaxGotas} gts / ${dipMaxMg / dipSolConc} mL sol. ${dipSolConc}mg/mL)`,
+      ceilingHit: dipironaAllowed && weightKg * 20 >= dipMaxMg,
       badge: !dipironaAllowed
-        ? 'Contraindicado (< 5 kg)'
-        : weightKg * 20 >= 1000
-          ? 'Teto adulto (1000 mg)'
+        ? (dip.restrictionReason || 'Contraindicado (< 5 kg)')
+        : weightKg * 20 >= dipMaxMg
+          ? `Teto adulto (${dipMaxMg} mg)`
           : 'Dose ponderal',
       allowed: dipironaAllowed,
-      note: dipironaAllowed ? undefined : 'Contraindicado < 5 kg',
+      note: dipironaAllowed ? undefined : dip.restrictionReason,
     },
     {
-      drug: 'Paracetamol (200 mg/mL = 20 gts/mL)',
-      doseRule: '13 mg/kg/dose (10 mg/gt)',
+      drug: 'Paracetamol (200 mg/mL ≈ 15 gts/mL · 13,3 mg/gt)',
+      doseRule: '13 mg/kg/dose (1 gt/kg)',
       formattedDose: `${paracetamolMg} mg (${paracetamolGotas} gts)`,
-      maxAdultCeiling: '750 mg (75 gts)',
+      maxAdultCeiling: `${pcmMaxMg} mg (${pcmMaxGotas} gts)`,
       ceilingHit: paracetamolCeilingHit,
-      badge: paracetamolCeilingHit ? 'Teto adulto (750 mg)' : 'Dose ponderal',
+      badge: paracetamolCeilingHit ? `Teto (${pcmMaxGotas} gts / ${pcmMaxMg} mg)` : 'Dose ponderal',
       allowed: true,
     },
     {
-      drug: 'Ibuprofeno (100 mg/mL = 20 gts/mL)',
+      drug: 'Ibuprofeno (100 mg/mL = 10 gts/mL)',
       doseRule: '10 mg/kg/dose (1 gt/kg)',
       formattedDose: ibuprofenoAllowed
         ? `${ibuprofenoMg} mg (${ibuprofenoGotas100} gts 100mg/mL)`
-        : 'Evitar (< 6 meses / < 7 kg)',
-      maxAdultCeiling: '400 mg (40 gts)',
-      ceilingHit: ibuprofenoAllowed && weightKg * 10 >= 400,
+        : (ibu.restrictionReason || 'Evitar (< 6 meses / < 7 kg)'),
+      maxAdultCeiling: `${ibuMaxMg} mg (${ibuMaxGotas} gts)`,
+      ceilingHit: ibuprofenoAllowed && weightKg * 10 >= ibuMaxMg,
       badge: !ibuprofenoAllowed
         ? 'Evitar (< 7 kg)'
-        : weightKg * 10 >= 400
-          ? 'Teto adulto (400 mg)'
+        : weightKg * 10 >= ibuMaxMg
+          ? `Teto (${ibuMaxMg} mg)`
           : 'Dose ponderal',
       allowed: ibuprofenoAllowed,
-      note: ibuprofenoAllowed ? undefined : 'Evitar < 6 meses / < 7 kg',
+      note: ibuprofenoAllowed ? undefined : ibu.restrictionReason,
     },
     {
       drug: 'Ondansetrona EV (2 mg/mL) / VO',
       doseRule: '0,15 mg/kg/dose',
       formattedDose: `${ondansetronaMg} mg (${ondansetronaMlEv} mL EV [2 mg/mL])`,
-      maxAdultCeiling: '8 mg (4 mL EV)',
-      ceilingHit: weightKg * 0.15 >= 8,
-      badge: weightKg * 0.15 >= 8 ? 'Teto adulto (8 mg)' : 'Dose ponderal',
+      maxAdultCeiling: `${ondaMaxMg} mg (${ondaMaxMg / ondaInjConc} mL EV)`,
+      ceilingHit: weightKg * 0.15 >= ondaMaxMg,
+      badge: weightKg * 0.15 >= ondaMaxMg ? `Teto adulto (${ondaMaxMg} mg)` : 'Dose ponderal',
       allowed: true,
     },
     {
@@ -651,36 +699,36 @@ export function computeWeightBasedDoses(weightKg: number): WeightDoseSummary | n
       drug: 'Amoxicilina 400 mg/5 mL (90 mg/kg/dia)',
       doseRule: '90 mg/kg/dia divididos 12/12h',
       formattedDose: `${amoxi90Ml12h} mL 12/12h`,
-      maxAdultCeiling: '1000 mg 12/12h (12,5 mL)',
+      maxAdultCeiling: `${amox90MaxDoseMg} mg 12/12h (${amox90MaxDoseMg / 80} mL)`,
       ceilingHit: amoxi90CeilingHit,
-      badge: amoxi90CeilingHit ? 'Teto adulto (1000 mg/dose)' : 'Dose ponderal',
+      badge: amoxi90CeilingHit ? `Teto adulto (${amox90MaxDoseMg} mg/dose)` : 'Dose ponderal',
       allowed: true,
     },
     {
       drug: 'Prednisolona 3 mg/mL',
       doseRule: '1 mg/kg/dia',
       formattedDose: `${prednisolonaMgDia} mg/dia (${prednisolonaMlDia} mL/dia)`,
-      maxAdultCeiling: '40 mg/dia (13,3 mL)',
-      ceilingHit: weightKg >= 40,
-      badge: weightKg >= 40 ? 'Teto adulto (40 mg/dia)' : 'Dose ponderal',
+      maxAdultCeiling: `${predMaxMg} mg/dia (${(predMaxMg / predConc).toFixed(1).replace('.', ',')} mL)`,
+      ceilingHit: weightKg >= predMaxMg,
+      badge: weightKg >= predMaxMg ? `Teto (${predMaxMg} mg/dia)` : 'Dose ponderal',
       allowed: true,
     },
     {
       drug: 'Dexametasona (Crupe)',
       doseRule: '0,6 mg/kg dose única',
       formattedDose: `${dexametasonaCrupeMg} mg`,
-      maxAdultCeiling: '10 mg',
-      ceilingHit: weightKg * 0.6 >= 10,
-      badge: weightKg * 0.6 >= 10 ? 'Teto adulto (10 mg)' : 'Dose ponderal',
+      maxAdultCeiling: `${dexaMaxMg} mg`,
+      ceilingHit: weightKg * 0.6 >= dexaMaxMg,
+      badge: weightKg * 0.6 >= dexaMaxMg ? `Teto adulto (${dexaMaxMg} mg)` : 'Dose ponderal',
       allowed: true,
     },
     {
       drug: 'Midazolam (Crise Convulsiva)',
       doseRule: '0,2 mg/kg IM/IN (EV: 0,1–0,2 mg/kg)',
       formattedDose: `${midazolamImEvMg} mg`,
-      maxAdultCeiling: '10 mg',
-      ceilingHit: weightKg * 0.2 >= 10,
-      badge: weightKg * 0.2 >= 10 ? 'Teto adulto (10 mg)' : 'Dose ponderal',
+      maxAdultCeiling: `${midMaxMg} mg`,
+      ceilingHit: weightKg * 0.2 >= midMaxMg,
+      badge: weightKg * 0.2 >= midMaxMg ? `Teto adulto (${midMaxMg} mg)` : 'Dose ponderal',
       allowed: true,
     },
   ];
@@ -719,6 +767,8 @@ export interface PediatricDoseFieldContext {
   afterText: string;
   placeholder: string;
   weightKg: number;
+  ageYears?: number | null;
+  sectionId?: string;
   doses: WeightDoseSummary;
 }
 
@@ -734,63 +784,145 @@ export function resolvePediatricDoseFieldValue(ctx: PediatricDoseFieldContext): 
   const ph = ctx.placeholder.toLowerCase();
   const beforeTxt = ctx.beforeText.toLowerCase();
   const afterTxt = ctx.afterText.toLowerCase();
-  const { doses, weightKg } = ctx;
+  const { doses, weightKg, ageYears = null } = ctx;
 
+  // Campo de conferência de peso ("pelo peso de [ ] kg"), nunca sobrescrever Peso Prévio/Habitual/Nascimento nem perda ponderal
   if (
     !ctx.isWeightSourceInput &&
     (/^\s*kg\b/i.test(afterTxt) || /^kg$/i.test(ph)) &&
-    (lineCtx.includes('peso') || beforeTxt.includes('peso'))
+    (lineCtx.includes('peso') || beforeTxt.includes('peso')) &&
+    !/\bpeso\s+(?:pr[eé]vio|habitual|anterior|ao\s+nascer|nascimento)\b/i.test(lineCtx) &&
+    !/\bperda\s+de\b/i.test(beforeTxt)
   ) {
     return String(weightKg).replace('.', ',');
   }
-  if (afterTxt.includes('gota') || ph.includes('gota')) {
-    if (combined.includes('dipirona') && doses.dipironaAllowed) {
-      return String(doses.dipironaGotas);
+
+  // Nunca autopreencher doses medicamentosas em HMA / Evolução / Exame Físico (ex.: "em casa recebeu dipirona [ ] gotas")
+  if (ctx.sectionId && ctx.sectionId !== 'receita' && ctx.sectionId !== 'conduta') {
+    return null;
+  }
+
+  // Gotas: identificar fármaco principal da cláusula/linha atual sem cair em alternativa "(ou Paracetamol...)"
+  if (/^\s*gotas?\b/i.test(afterTxt.trimStart()) || ph.includes('gota')) {
+    const stripAltTail = (s: string) =>
+      s
+        .replace(/\(\s*(?:ou|alternativa)\b[^)]*\)/gi, ' ')
+        .split(/\s+ou\s+/i)[0]
+        .trim();
+    const lineSpec = matchUnifiedDrugInClause(beforeTxt, afterTxt);
+    const activeSpec =
+      lineSpec ||
+      matchUnifiedDrugInClause(stripAltTail(lineCtx), '') ||
+      matchUnifiedDrugInClause(stripAltTail(prevCtx), '');
+    if (!activeSpec) return null;
+
+    // Respeitar teto explícito citado na própria linha/título (ex.: "máx 35 gotas" em ped-78/85/86)
+    const expMaxMatch = `${lineCtx} ${prevCtx}`.match(/m[aá]x\.?\s*(?:de\s*)?(?:\d+\s*(?:a|[-–])\s*)?(\d+)\s*gotas?\b/i);
+    const explicitMaxGotas = expMaxMatch ? Number.parseInt(expMaxMatch[1], 10) : Number.POSITIVE_INFINITY;
+
+    if (activeSpec.canonicalKey === 'dipirona') {
+      if (!doses.dipironaAllowed) return null;
+      return String(Math.min(doses.dipironaGotas, explicitMaxGotas));
     }
-    if (combined.includes('paracetamol')) {
-      return String(doses.paracetamolGotas);
+    if (activeSpec.canonicalKey === 'paracetamol') {
+      return String(Math.min(doses.paracetamolGotas, explicitMaxGotas));
     }
-    if (combined.includes('ibuprofeno') && doses.ibuprofenoAllowed) {
-      return String(doses.ibuprofenoGotas100);
+    if (activeSpec.canonicalKey === 'ibuprofeno') {
+      if (!doses.ibuprofenoAllowed) return null;
+      return String(Math.min(doses.ibuprofenoGotas100, explicitMaxGotas));
     }
     return null;
   }
-  if ((afterTxt.includes('ml') || ph === 'ml') && combined.includes('amoxicilina')) {
-    // Determina concentração selecionada (400 mg/5 mL = 80 mg/mL vs 250 mg/5 mL = 50 mg/mL)
+
+  const unitAfter = afterTxt.trimStart();
+  const wantsMl = /^ml\b/i.test(unitAfter) || ph === 'ml';
+  const wantsMg = /^mg\b/i.test(unitAfter) || ph === 'mg';
+
+  // Amoxicilina e Amoxicilina + Clavulanato: suporta 45, 50, 90 mg/kg/dia explícitos sem chutar 90 para 45
+  if (wantsMl && /\bamoxicilina\b/i.test(combined)) {
     const has400 = /\b400\b|80\s*mg\/ml/.test(prevCtx) || /\b400\b|80\s*mg\/ml/.test(lineCtx);
     const has250 = /\b250\b|50\s*mg\/ml/.test(prevCtx) || /\b250\b|50\s*mg\/ml/.test(lineCtx);
     const has12h = /12\s*em\s*12|12\/12/.test(lineCtx) || /12\s*em\s*12|12\/12/.test(prevCtx);
     const has8h = /8\s*em\s*8|8\/8/.test(lineCtx) || /8\s*em\s*8|8\/8/.test(prevCtx);
+    const isClav = /\bclavulanat/i.test(combined);
 
     const mgPerMl = has400 && !has250 ? 80 : has250 && !has400 ? 50 : has12h && !has8h ? 80 : 50;
     const dosesPerDay = has12h && !has8h ? 2 : has8h && !has12h ? 3 : mgPerMl === 80 ? 2 : 3;
 
-    // Determina dose diária selecionada (50 vs 90 mg/kg/dia) olhando também a linha seguinte de conferência
-    const hasExplicit90 = /\b90\s*mg\/kg\/dia\b/.test(combined) && !/\b50\s*\/\s*90\b/.test(combined);
-    const hasExplicit50 = /\b50\s*mg\/kg\/dia\b/.test(combined) && !/\b50\s*\/\s*90\b/.test(combined);
-    const mgPerKgDay = hasExplicit90 ? 90 : hasExplicit50 ? 50 : mgPerMl === 80 ? 90 : 50;
+    // Captura dose diária explícita única (ex.: "45 mg/kg/dia", "50 mg/kg/dia", "90 mg/kg/dia")
+    const rangeExplicit = /\b\d+\s*(?:[-–/]|a|ou)\s*\d+\s*mg\/kg\/dia\b/.test(combined);
+    const singleExplicitMatch = combined.match(/\b(\d+(?:[.,]\d+)?)\s*mg\/kg\/dia\b/);
 
-    // Teto adulto por tomada: 1000 mg para regime 12/12h ou dose dobrada; 500 mg para regime 50 mg/kg/dia 8/8h
+    let mgPerKgDay: number | null = null;
+    if (!rangeExplicit && singleExplicitMatch) {
+      mgPerKgDay = Number.parseFloat(singleExplicitMatch[1].replace(',', '.'));
+    } else if (/\b90\s*mg\/kg\/dia\b/.test(combined) && !/\b50\s*\/\s*90\b/.test(combined)) {
+      mgPerKgDay = 90;
+    } else if (/\b50\s*mg\/kg\/dia\b/.test(combined) && !/\b50\s*\/\s*90\b/.test(combined)) {
+      mgPerKgDay = 50;
+    } else if (!isClav && !rangeExplicit) {
+      mgPerKgDay = mgPerMl === 80 ? 90 : 50;
+    }
+
+    if (mgPerKgDay === null || !Number.isFinite(mgPerKgDay) || mgPerKgDay <= 0) {
+      return null;
+    }
+
+    // Teto adulto por tomada: 1000 mg (12/12h ou >= 80 mg/kg/dia); 500 mg (50 mg/kg/dia 8/8h)
     const maxMgPerDose = dosesPerDay === 2 || mgPerKgDay >= 80 ? 1000 : 500;
     const mgPerDose = Math.min(maxMgPerDose, (weightKg * mgPerKgDay) / dosesPerDay);
     const mlPerDose = mgPerDose / mgPerMl;
     return mlPerDose.toFixed(1).replace('.', ',');
   }
-  if (
-    combined.includes('prednisolona') &&
-    (afterTxt.includes('ml') || ph === 'ml' || afterTxt.includes('mg') || ph === 'mg')
-  ) {
-    return afterTxt.includes('mg') || ph === 'mg' ? String(doses.prednisolonaMgDia) : doses.prednisolonaMlDia;
+
+  // Cefalexina 250 mg/5 mL (50 mg/mL), ex.: ped-88 (60 mg/kg/dia 6/6h)
+  if (wantsMl && /\bcefalexina\b/i.test(combined)) {
+    const has250 = /\b250\b|50\s*mg\/ml/.test(prevCtx) || /\b250\b|50\s*mg\/ml/.test(lineCtx);
+    const has500 = /\b500\b|100\s*mg\/ml/.test(prevCtx) || /\b500\b|100\s*mg\/ml/.test(lineCtx);
+    const doseMatch = `${lineCtx} ${nextCtx}`.match(/\b(\d+(?:[.,]\d+)?)\s*mg\/kg\/dia\b/);
+    if ((has250 || has500) && doseMatch) {
+      const mgPerMl = has500 && !has250 ? 100 : 50;
+      const mgPerKgDay = Number.parseFloat(doseMatch[1].replace(',', '.'));
+      const dosesPerDay = /6\s*em\s*6|6\/6/.test(lineCtx) ? 4 : /8\s*em\s*8|8\/8/.test(lineCtx) ? 3 : 4;
+      const mgPerDose = Math.min(1000, (weightKg * mgPerKgDay) / dosesPerDay);
+      return (mgPerDose / mgPerMl).toFixed(1).replace('.', ',');
+    }
+    return null;
   }
-  if (
-    combined.includes('ondansetrona') &&
-    (afterTxt.includes('mg') || ph === 'mg' || afterTxt.includes('ml') || ph === 'ml')
-  ) {
-    return afterTxt.includes('ml') || ph === 'ml' ? doses.ondansetronaMlEv : doses.ondansetronaMg;
+
+  // Dexclorfeniramina 0,4 mg/mL: 0,25 mL/kg/dia dividido de 8/8h (teto 1,25–2,5 mL/dose conforme idade)
+  if (wantsMl && /\bdexclorfeniramina\b/i.test(combined)) {
+    const mlMatch = lineCtx.match(/(\d+(?:[.,]\d+)?)\s*ml\/kg\/dia\b/);
+    const mlPerKgDay = mlMatch ? Number.parseFloat(mlMatch[1].replace(',', '.')) : 0.25;
+    const dosesPerDay = /8\s*em\s*8|8\/8/.test(lineCtx) ? 3 : 3;
+    const predMaxMlDose = ageYears !== null && ageYears >= 6 ? 5 : 2.5;
+    const mlPerDose = Math.min(predMaxMlDose, (weightKg * mlPerKgDay) / dosesPerDay);
+    return mlPerDose.toFixed(1).replace('.', ',');
   }
-  if (combined.includes('dexametasona') && (afterTxt.includes('mg') || ph === 'mg')) {
+
+  // Prednisolona 3 mg/mL: priorizar estritamente a unidade do próprio campo antes do parêntese explicativo
+  if (/\bprednisolona\b/i.test(combined) && (wantsMl || wantsMg)) {
+    const pred = getUnifiedDrugSpecByKey('prednisolona');
+    const predMaxMg =
+      resolveDrugCeilingForContext(pred, {
+        unitKind: 'dayMg',
+        ageYears,
+        isPediatric: true,
+      }) ?? 40;
+    const mgDia = Math.min(predMaxMg, Math.round(weightKg * 1));
+    const mlDia = Math.min(predMaxMg / 3, weightKg / 3).toFixed(1).replace('.', ',');
+    if (wantsMl) return mlDia;
+    if (wantsMg) return String(mgDia);
+  }
+
+  if (/\bondansetrona\b/i.test(combined) && (wantsMl || wantsMg)) {
+    return wantsMl ? doses.ondansetronaMlEv : doses.ondansetronaMg;
+  }
+
+  if (/\bdexametasona\b/i.test(combined) && wantsMg) {
     return doses.dexametasonaCrupeMg;
   }
+
   return null;
 }
 

@@ -9,6 +9,7 @@
 // ============================================================================
 
 import { getDrugClinicalMeta, type RemumeClinicalMeta } from '../data/remume.ts';
+import { getUnifiedDrugSpecByKey, UNIFIED_DRUG_SPECS } from '../data/farmacos.ts';
 import type { ProtocolPharmaGuardHint } from '../data/clinical_links.ts';
 import type { ClinicalContext } from './clinicalContext.ts';
 
@@ -108,10 +109,11 @@ export function parseEstimatedDailyDoseMg(text: string): {
     }
   }
 
-  // Remove quantidades de embalagem/frasco (ex.: "1 frasco (15 mL)", "2 frascos (100 mL cada)", "1 caixa (20 comprimidos)")
-  // e quantidades de dispensação após travessões (ex.: "--- 10 comprimidos", "— 14 cápsulas")
-  // para nunca confundir total dispensado/volume do frasco com quantidade tomada por dose.
+  // Remove quantidades de embalagem/frasco e declarações de teto máximo ("Dose máxima: 10 mg", "máx 500 mg", "teto 1 g")
+  // para nunca confundir total dispensado nem o próprio limite de segurança com a dose prescrita.
   const doseNorm = norm
+    .replace(/\(\s*(?:dose\s+)?m[aá]x(?:ima|\.)?[^)]*(?:\)|$)/gi, ' ')
+    .replace(/\b(?:dose\s+)?m[aá]x(?:ima|\.)?\s*:?\s*\d+(?:[.,]\d+)?\s*(?:mg|g|ml|gotas?|ui|mcg)\b(?:\s*\/\s*(?:dia|dose))?/gi, ' ')
     .replace(/\b\d+\s*(?:frasco|frascos|fr\.?|caixa|caixas|bisnaga|bisnagas|pote|potes|tubo|tubos|seringa|seringas)\s*(?:\([^)]*(?:\)|$))?/gi, ' ')
     .replace(/(?:-{2,}|[—–])\s*\d+(?:\s*(?:ou|a)\s*\d+)?\s*(?:cp|comp|comprimido|comprimidos|caps|capsula|capsulas|amp|ampola|ampolas|envelope|envelopes|frasco|frascos|caixa|caixas)\b/gi, ' ')
     .replace(/\(\s*\d+(?:[.,]\d+)?\s*(?:ml|g|mg|comprimidos?|capsulas?)(?:\s+cada)?\s*(?:\)|$)/gi, ' ')
@@ -139,8 +141,10 @@ export function parseEstimatedDailyDoseMg(text: string): {
 
   // Padrão em gramas (ex.: "1 g", "1,5 g", "2g") — exclui "gotas"
   const gMatch = doseNorm.match(/\b(\d+(?:[.,]\d+)?)\s*g(?!\s*\/|\s*ot|\s*t|\w)/i);
-  // Padrão em mg (exclui mg/kg, mg/ml e mg/dia)
-  const mgMatches = Array.from(doseNorm.matchAll(/\b(\d+(?:[.,]\d+)?)\s*mg(?![a-z]|\s*\/\s*(?:kg|ml|\d+\s*ml|dia))/gi));
+  // Padrão em mg: suporta combos "2000+125 mg" capturando o componente principal (2000), exclui mg/kg, mg/ml e mg/dia
+  const mgMatches = Array.from(
+    doseNorm.matchAll(/\b(\d+(?:[.,]\d+)?)\s*(?:\+\s*\d+(?:[.,]\d+)?\s*)?mg(?![a-z]|\s*\/\s*(?:kg|ml|\d+\s*ml|dia))/gi)
+  );
 
   if (mgMatches.length > 0) {
     const parsedValues = mgMatches
@@ -171,6 +175,32 @@ export function parseEstimatedDailyDoseMg(text: string): {
           if (volMatch.length === 1 && mlVal === denomMl && doseNorm.includes(`/${denomMl}`)) continue;
           baseMg = (mgNum / denomMl) * mlVal;
           break;
+        }
+      }
+    }
+  }
+
+  // Posologia em gotas (ex.: "Dipirona 500 mg/mL — Dar 12 gotas VO 6/6h" ou "Ibuprofeno 100 mg/mL 10 gotas")
+  if (baseMg === null) {
+    const dropsMatch = doseNorm.match(/\b(\d+(?:[.,]\d+)?)\s*gotas?\b(?!\s*\/)/i);
+    if (dropsMatch) {
+      const nDrops = Number.parseFloat(dropsMatch[1].replace(',', '.'));
+      if (Number.isFinite(nDrops) && nDrops > 0) {
+        let mgPerDrop: number | null = null;
+        const explicitDropMg = doseNorm.match(/1\s*gota\s*(?:≈|=|~|corresponde\s*a)?\s*(\d+(?:[.,]\d+)?)\s*mg/i);
+        if (explicitDropMg) {
+          mgPerDrop = Number.parseFloat(explicitDropMg[1].replace(',', '.'));
+        } else {
+          const spec = UNIFIED_DRUG_SPECS.find((s) => s.patterns.some((pat) => pat.test(doseNorm)));
+          if (spec?.dropsMgPerDrop) {
+            mgPerDrop =
+              spec.canonicalKey === 'ibuprofeno' && /\b50\s*mg\/ml\b/.test(doseNorm)
+                ? 5
+                : spec.dropsMgPerDrop;
+          }
+        }
+        if (mgPerDrop !== null && Number.isFinite(mgPerDrop) && mgPerDrop > 0) {
+          baseMg = Math.round(nDrops * mgPerDrop * 10) / 10;
         }
       }
     }
@@ -252,6 +282,17 @@ const NON_PRESCRIPTION_PROSE_RE =
 
 const SEQUENTIAL_PHASE_RE =
   /\b(?:a\s+partir\s+do\s+\d+[º°o]?\s*dia|fase\s+de\s+manutencao|apos\s+termino|apos\s+\d+\s+dias\s+de\s+ataque)\b/i;
+
+function stripNegativeClinicalClauses(value: string): string {
+  return String(value || '')
+    .replace(
+      /\(\s*(?:sem\b|n[aã]o\s+associad|n[aã]o\s+usar|n[aã]o\s+prescrever|evitar\b|excluir\b|contraindicad[oa])[^)]*(?:\)|$)/gi,
+      ' '
+    )
+    .replace(/\bsem\s+[a-z0-9à-ÿ+-]{3,30}\s+associad[oa]\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 function cleanPrescriptionDisplayName(rawName: string): string {
   return String(rawName || '')
@@ -370,7 +411,7 @@ export function extractPrescriptionItemsFromText(
       continue;
     }
 
-    const meta = getDrugClinicalMeta(trimmed);
+    const meta = getDrugClinicalMeta(stripNegativeClinicalClauses(trimmed));
     if (!meta) continue;
 
     const cleanedRaw = trimmed
@@ -407,7 +448,7 @@ export function extractPrescriptionItemsFromText(
         continue;
       }
       if (
-        !getDrugClinicalMeta(nextTrimmed) &&
+        !getDrugClinicalMeta(stripNegativeClinicalClauses(nextTrimmed)) &&
         /\b(tomar|dar|aplicar|fazer|infundir|vo|ev|im|sc|inalatorio|cp|ml|gotas|\d+\/\d+h|\dx\/dia)\b/i.test(nextNorm)
       ) {
         posologyParts.push(nextTrimmed.replace(/^[-•*]\s*/, '').trim());
@@ -504,8 +545,13 @@ export function auditPrescription(
     // Prioriza sempre o fármaco principal nomeado em item.name (removendo alternativas entre parênteses "(ou ...)")
     // para não misturar a dose de "Cetoprofeno 100 mg" com o teto de "(ou Diclofenaco 50 mg)" nem contaminar
     // com menções na posologia (ex.: Tramadol "se dor que não ceda com a Dipirona").
-    const primaryName = item.name.replace(/\(\s*ou\b[^)]*\)/gi, '').trim();
-    const meta = getDrugClinicalMeta(primaryName) ?? getDrugClinicalMeta(item.name) ?? getDrugClinicalMeta(fullText);
+    const cleanItemName = stripNegativeClinicalClauses(item.name);
+    const cleanFullText = stripNegativeClinicalClauses(fullText);
+    const primaryName = cleanItemName.replace(/\(\s*ou\b[^)]*\)/gi, '').trim();
+    const meta =
+      getDrugClinicalMeta(primaryName) ??
+      getDrugClinicalMeta(cleanItemName) ??
+      getDrugClinicalMeta(cleanFullText);
     if (!meta) continue;
 
     matchedDrugs.push({ itemName: item.name, meta });
@@ -652,6 +698,34 @@ export function auditPrescription(
         drugNames: [item.name],
         ruleCode: 'DOSE_CEILING_SINGLE',
       });
+    }
+
+    // ------------------------------------------------------------------------
+    // 4B. CONTRAINDICAÇÃO PONDERAL / ETÁRIA PEDIÁTRICA (Dipirona < 5 kg / < 3m; Ibuprofeno < 7 kg / < 6m)
+    // ------------------------------------------------------------------------
+    if (
+      effectivePediatric &&
+      !item.isAlternative &&
+      (meta.canonicalKey === 'dipirona' || meta.canonicalKey === 'ibuprofeno')
+    ) {
+      const spec = getUnifiedDrugSpecByKey(meta.canonicalKey);
+      const belowWeight =
+        context.weightKg !== null && spec.minWeightKg !== undefined && context.weightKg < spec.minWeightKg;
+      const belowAge =
+        context.ageYears !== null &&
+        spec.minAgeMonths !== undefined &&
+        context.ageYears * 12 < spec.minAgeMonths;
+      if (belowWeight || belowAge) {
+        alerts.push({
+          id: `ped-min-${meta.canonicalKey}-${alerts.length}`,
+          severity: 'block',
+          category: 'ceiling',
+          title: `Contraindicado para peso/idade pediátrica: ${item.name}`,
+          detail: `${spec.restrictionReason || 'Abaixo do limite ponderal/etário mínimo seguro'}. Substituir por alternativa segura (ex.: Paracetamol quando aplicável).`,
+          drugNames: [item.name],
+          ruleCode: 'PEDIATRIC_AGE_WEIGHT_CONTRAINDICATION',
+        });
+      }
     }
 
     // ------------------------------------------------------------------------

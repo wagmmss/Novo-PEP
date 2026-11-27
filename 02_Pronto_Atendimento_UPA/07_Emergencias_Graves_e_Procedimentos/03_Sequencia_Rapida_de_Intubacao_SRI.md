@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso estimado: [ ] kg.
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 # INDICAÇÃO CLÍNICA DA INTUBAÇÃO OROTRAQUEAL (IOT):
 - [ ] Falência respiratória hipoxêmica ou hipercápnica refratária (SpO2 < 85% a despeito de VNI/máscara).
 - [ ] Rebaixamento do nível de consciência com perda dos reflexos protetores de via aérea (Escala de Coma de Glasgow <= 8).

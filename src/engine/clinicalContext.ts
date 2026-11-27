@@ -201,7 +201,7 @@ export function buildClinicalContext(
           .map((t) => t.trim())
           .filter((t) => t.length >= 2)
       : [];
-  const weightDoses = weightKg !== null ? computeWeightBasedDoses(weightKg) : null;
+  const weightDoses = weightKg !== null ? computeWeightBasedDoses(weightKg, ageYears) : null;
 
   return {
     nome,

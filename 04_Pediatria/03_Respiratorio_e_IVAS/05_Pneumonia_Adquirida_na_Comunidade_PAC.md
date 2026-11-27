@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [ ] [meses / anos], Sexo: [Masculino / Feminino], Peso: [ ] kg[? Acompanhante :: , Acompanhante: [Mãe / Pai / Responsável: [ ]]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgico(a) a Penicilinas / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgico(a) a Penicilinas / [ ]].
 
 # QP:
 - Tosse, febre persistente e respiração rápida/cansada há [ ] dias.

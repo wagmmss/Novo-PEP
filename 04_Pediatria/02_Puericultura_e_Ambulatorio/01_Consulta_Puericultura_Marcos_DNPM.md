@@ -12,8 +12,8 @@
 # IDENTIFICAÇÃO:
 ID: [Nome], [ ] meses e [ ] dias (DN: [DD/MM/AAAA]), Sexo: [Masculino / Feminino], Peso: [ ] kg[? Acompanhante :: , Acompanhante: [Mãe / Pai / Ambos os pais / Cuidador(a): [ ]]].
 Idade Corrigida / Nascimento: [Nascido a termo / Prematuro de [ ] semanas -> Idade Corrigida: [ ] meses].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 # QP:
 - [Queixa principal] há [ ] [hora(s) / dia(s)].

@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgico a Penicilinas / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgico a Penicilinas / [ ]].
 # QP:
 - Dor intensa no ouvido (otalgia) [direito / esquerdo / bilateral] há [ ] dias.
 

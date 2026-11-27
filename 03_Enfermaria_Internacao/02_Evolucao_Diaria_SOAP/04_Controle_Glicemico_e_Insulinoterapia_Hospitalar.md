@@ -13,7 +13,7 @@ EVOLUÇÃO DIÁRIA DIRECIONADA — CONTROLE GLICÊMICO HOSPITALAR (DIRETRIZ SBD 
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]], Peso: [70] kg, TFG estimada (CKD-EPI): [ ] mL/min/1,73m².
 Comorbidades: [DM2 / [ ]].
-Alergias: [*Nega / [ ]].
+Alergias: [Nega / [ ]].
 - Diagnóstico Glicêmico: [DM2 prévio em uso domiciliar de antidiabéticos orais / DM2 insulinodependente prévio / Hiperglicemia de estresse hospitalar / Hiperglicemia induzida por Corticoide (Prednisona/Dexametasona/Metilprednisolona)].
 - Via de Alimentação Atual: [Dieta oral regular para diabetes (3 refeições) / Dieta enteral contínua ou intermitente por SNE / Em jejum ou dieta zero para procedimento].
 - Mapa Glicêmico das Últimas 24 Horas (HGT):

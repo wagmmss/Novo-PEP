@@ -11,14 +11,14 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [ ] [meses / anos] (Faixa típica: 6 meses a 3 anos), Sexo: [Masculino / Feminino], Peso: [ ] kg[? Acompanhante :: , Acompanhante: [Mãe / Pai / Responsável: [ ]]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 # QP:
 - Tosse rouca ("tosse de cachorro/foca") e barulho agudo para puxar o ar iniciados à noite há [ ] horas.
 
 # HMA:
-Criança com pródromo catarral leve há [1 a 3] dias (coriza hialina e febre baixa de [ ] °C), evoluindo na madrugada de hoje com início abrupto de tosse ladrante metálica, rouquidão e estridor inspiratório laríngeo. Segue [deglutindo saliva normalmente, sem sialorreia e sem posição em tripé / com dificuldade de deglutição]. Nega episódio de engasgo durante alimentação ou brincadeira com peças pequenas, febre alta (> 39,5 °C), aparência tóxica ou prostração extrema.
+Criança com pródromo catarral leve há [ ] dias (coriza hialina e febre baixa de [ ] °C), evoluindo na madrugada de hoje com início abrupto de tosse ladrante metálica, rouquidão e estridor inspiratório laríngeo. Segue [deglutindo saliva normalmente, sem sialorreia e sem posição em tripé / com dificuldade de deglutição]. Nega episódio de engasgo durante alimentação ou brincadeira com peças pequenas, febre alta (> 39,5 °C), aparência tóxica ou prostração extrema.
 
 # EXAME FÍSICO:
 - Sinais Vitais: FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% em AA | Tax: [ ] °C | TEC < 2s.
@@ -40,7 +40,7 @@ Criança com pródromo catarral leve há [1 a 3] dias (coriza hialina e febre ba
 
 >> [MODALIDADE A] CONDUTA NO CRUPE LEVE (WESTLEY ≤ 2 — SEM ESTRIDOR EM REPOUSO):
 1. Dexametasona Dose Única na Unidade (Padrão-Ouro para TODOS os casos de Crupe, inclusive leves):
-   - Administrada Dexametasona [0,15 a 0,6 mg/kg = [ ] mg] por via oral (ou IM se vômito) em dose única agora (Dose máxima: 10 mg).
+   - Administrada Dexametasona 0,15 a 0,6 mg/kg ([ ] mg) por via oral (ou IM se vômito) em dose única agora (Dose máxima: 10 mg).
 2. Manter criança tranquila no colo; reavaliar após 1 hora confirmando ausência de estridor em repouso e boa aceitação oral.
 3. Alta segura com receita sintomática e orientação de retorno imediato se surgir estridor com a criança calma/dormindo.
 

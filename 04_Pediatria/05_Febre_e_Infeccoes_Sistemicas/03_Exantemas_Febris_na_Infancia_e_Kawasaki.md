@@ -17,7 +17,7 @@ CRONOLOGIA DA FEBRE VS. EXANTEMA (CHAVE DO DIAGNÓSTICO DIFERENCIAL):
 - Relação Febre x Rash: [O exantema surgiu EXATAMENTE quando a febre alta desapareceu subitamente após 3–4 dias → Exantema Súbito (Roséola / HHV-6)! / Exantema surgiu no pico da febre alta com tosse, coriza e conjuntivite → Sarampo! / Exantema surgiu após 24–48h de odinofagia e febre → Escarlatina! / Criança afebril ou subfebril com "face esbofeteada" → Eritema Infeccioso!].
 
 EXAME FÍSICO DERMATOLÓGICO E DE MUCOSAS (CLASSIFICAÇÃO MORFOLÓGICA):
-- Sinais Vitais: Tax: [37,2]°C | FC: [110] bpm | FR: [26] irpm | SpO2: [98]%. BEG, hidratada, sem sinais meníngeos ou petéquias/púrpura (Sinal da Vitrocompressão: lesões desaparecem à digitopressão — afasta meningococcemia!).
+- Sinais Vitais: Tax: [ ]°C | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]%. BEG, hidratada, sem sinais meníngeos ou petéquias/púrpura (Sinal da Vitrocompressão: lesões desaparecem à digitopressão — afasta meningococcemia!).
 - Padrão Clínico Identificado:
   * [1. Exantema Súbito (Roséola Infantil — HHV-6/7): Lactente 6m–2a em ótimo estado geral, máculas róseas no tronco que surgem após crise da febre].
   * [2. Eritema Infeccioso (5ª Doença — Parvovírus B19): Eritema malar bilateral ("face esbofeteada") com palidez perioral + exantema maculopapular rendilhado/reticulado em membros que recidiva ao sol/calor].
@@ -35,16 +35,16 @@ EXAME FÍSICO DERMATOLÓGICO E DE MUCOSAS (CLASSIFICAÇÃO MORFOLÓGICA):
    - Doença de Kawasaki (Suspeita completa ou incompleta): Internação hospitalar imediata + Ecocardiograma Transtorácico (pesquisa de aneurismas de artérias coronárias) + Imunoglobulina Humana IV (IGIV) 2 g/kg em infusão única de 10–12 horas (idealmente antes do 10º dia de febre!) + AAS em dose moderada/anti-inflamatória seguido de dose antiagregante (3 a 5 mg/kg/dia).
 
 # PRESCRIÇÃO DOMICILIAR / DE ALTA
-USO ORAL (RECEITA DOMICILIAR PEDIÁTRICA — PESO DE REFERÊNCIA: [14] KG):
+USO ORAL (RECEITA DOMICILIAR PEDIÁTRICA — PESO ATUAL: [ ] KG):
 
 1. Paracetamol 200 mg/mL (gotas) [1ª escolha segura em todos os exantemas, inclusive Varicela!] — 1 frasco (15 mL)
-   - Dar [14] gotas (1 gota/kg/dose) por via oral a cada 6 horas se febre (Tax ≥ 37,8°C) ou dor na boca/garganta.
+   - Dar [ ] gotas (1 gota/kg/dose; máx 50 gotas) por via oral a cada 6 horas se febre (Tax ≥ 37,8°C) ou dor na boca/garganta.
 
 2. Maleato de Dexclorfeniramina 0,4 mg/mL (solução oral — se prurido/coceira na Varicela ou exantema alérgico) — 1 frasco (100 mL)
-   - Dar [3,5] mL (0,25 mL/kg/dia dividido de 8/8h; em 2–6 anos: 1,25 mL 8/8h) por via oral a cada 8 horas por 5 dias se coceira intensa.
+   - Dar [ ] mL (0,25 mL/kg/dia dividido de 8/8h; em 2–6 anos: 1,25 mL 8/8h; em 6–12 anos: 2,5 mL 8/8h) por via oral a cada 8 horas por 5 dias se coceira intensa.
 
 3. Amoxicilina 250 mg/5 mL suspensão oral [APENAS SE ESCARLATINA CONFIRMADA!] — 2 frascos
-   - Dar [4,5] mL por via oral a cada 8 horas (50 mg/kg/dia) durante 10 dias completos.
+   - Dar [ ] mL por via oral a cada 8 horas (50 mg/kg/dia) durante 10 dias completos.
 
 4. Orientações de Isolamento e Sinais de Alarme:
    - NUNCA administrar AAS (Aspirina) ou Ibuprofeno em criança com suspeita de Catapora (Varicela).

@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgico a Penicilinas / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgico a Penicilinas / [ ]].
 # QP:
 - Dor e sensação de pressão na face com secreção nasal amarelada há [ ] dias.
 

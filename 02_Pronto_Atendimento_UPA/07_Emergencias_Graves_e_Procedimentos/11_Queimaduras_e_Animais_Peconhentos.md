@@ -12,8 +12,8 @@
 ATENDIMENTO DE EMERGÊNCIA — QUEIMADURAS AGUDAS OU ACIDENTE POR ANIMAL PEÇONHENTO
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso: [ ] kg.
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 CENÁRIO DO ATENDIMENTO: [1. Queimadura Térmica/Química/Elétrica Aguda / 2. Acidente por Animal Peçonhento (Escorpião, Serpente ou Aranha)].
 

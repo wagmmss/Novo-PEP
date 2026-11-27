@@ -12,8 +12,8 @@
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]].
 TS Materna: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB-][? TS RN :: | TS RN: [ ] (Coombs Direto: [*Negativo / Positivo])].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega / [ ]].
 Sorologias: [Não reagentes (HIV, VDRL, HBsAg, Toxo) / [ ]].
 Em [1º / 2º / 3º] dia de puerpério de [Parto Normal sem laceração / Parto Normal com rafia de laceração de 2º grau / Parto Normal com episiotomia / Cesárea por indicação de [ ]] realizado em [DD/MM às HH:MM] com IG de [ ]s[ ]d[? G/P/A :: , G[ ] P[ ] A[ ]].
 
@@ -26,7 +26,7 @@ Encontro puérpera no leito com RN em alojamento conjunto. Passou bem nas últim
 RN em aleitamento materno exclusivo sob livre demanda, com [boa pega e posicionamento observados (boca bem aberta, lábio inferior evertido, queixo tocando a mama e deglutição audível), sem dor mamilar / dificuldade de pega orientada à beira-leito]. Nega cefaleia occipital/frontal, escotomas, epigastralgia em barra, febre/calafrios, dispneia, lipotímia ou dor/empastamento em panturrilhas.
 
 # EXAME FÍSICO:
-- Sinais Vitais: PA: [110x70] mmHg | FC: [78] bpm | FR: [16] irpm | SpO2: [99]% AA | Tax: [36,5] °C.
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% AA | Tax: [ ] °C.
 - Ectoscopia: BEG, lúcida, corada, hidratada, anictérica, acianótica, afebril e eupneica.
 - Mamas: [Flácidas / Túrgidas fisiológicas], indolores, sem áreas de hiperemia, calor ou ingurgitamento patológico. Papilas [íntegras sem fissuras / com fissura superficial em mama]. Colostro presente à expressão bilateral.
 - Abdome & Útero: Abdome flácido, RHA+, indolor, sem bexigoma palpável. Útero globoso, firme e bem contraído (Globo de Pinard presente), centrado, involuindo a [1 a 2] cm abaixo da cicatriz umbilical, indolor à mobilização.

@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Profissão :: , Profissão: [ ]], G[ ] P[ ] (PN [ ] / PC [ ]) A[ ], TS/Rh: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB- / Aguarda].
-Comorbidades: [+ *Hígida (nega HAS, DM, tireoidopatia ou trombofilia) / [ ]].
-Alergias: [*Nega alergias conhecidas / Alérgica a: [ ]].
+Comorbidades: [+ Hígida (nega HAS, DM, tireoidopatia ou trombofilia) / [ ]].
+Alergias: [Nega alergias conhecidas / Alérgica a: [ ]].
 Antecedentes Obstétricos: [*Nulípara / Gestações prévias sem intercorrências / Pré-eclâmpsia prévia / DMG prévio / Parto prematuro prévio / Cesárea prévia há [ ] anos]. Último Citopatológico: [*Em dia e normal / Colhido há > 1–3 anos].
 [? Medicações & Hábitos :: Medicações em uso: [*Nega uso contínuo / [ ]] | Hábitos: [+ *Nega tabagismo, etilismo ou drogas ilícitas / Tabagista / Etilismo / [ ]].]
 - DUM: [DD/MM/AAAA] ([Certa e confiável / Incerta]) -> IG DUM: [ ]s[ ]d | DPP (Nägele): [DD/MM/AAAA].
@@ -26,7 +26,7 @@ Antecedentes Obstétricos: [*Nulípara / Gestações prévias sem intercorrênci
 Comparece para abertura de pré-natal, referindo [*ausência de queixas / náuseas matinais leves sem perda ponderal / mastalgia e sonolência fisiológicas / [ ]]. Nega sangramento vaginal, perda de líquido, cólicas pélvicas intensas, disúria, febre ou contato com exantemas.
 
 # EXAME FÍSICO:
-- Antropometria & Vitais: Peso Pré-Gestacional: [ ] kg | Peso Atual: [ ] kg | Altura: [ ] m | IMC: [ ] kg/m² ([Eutrófica / Sobrepeso / Obesidade / Baixo peso]). PA (sentada): [110x70] mmHg | FC: [78] bpm | Tax: [36,4] °C.
+- Antropometria & Vitais: Peso Pré-Gestacional: [ ] kg | Peso Atual: [ ] kg | Altura: [ ] m | IMC: [ ] kg/m² ([Eutrófica / Sobrepeso / Obesidade / Baixo peso]). PA (sentada): [ ] mmHg | FC: [ ] bpm | Tax: [ ] °C.
 - Ectoscopia, Tireoide & Cardiopulmonar: BEG, corada, hidratada, anictérica. Tireoide fibroelástica sem nódulos. RCR 2T BNF sem sopros; MV+ bilateral sem ruídos adventícios.
 - Mamas: Simétricas, papilas [protrusas / semi-protrusas / planas], parênquima sem nódulos palpáveis, axilas livres.
 - Abdome & Exame Obstétrico: Normotenso, indolor, sem visceromegalias. Altura Uterina (AU): [Útero intrapélvico (< 12s) / cm]. BCF (Sonar): [Inaudível ao sonar pela IG precoce (< 10–12s) / (145) bpm, rítmico].

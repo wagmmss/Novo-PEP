@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg][? Leito :: , Leito: Sala Vermelha [ ]][? Registro :: , Registro: [ ]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 - Queixa Principal: Palpitações taquicárdicas súbitas no peito há cerca de [ ] horas.
 - Antecedentes Cardiovasculares: [Hipertensão / Insuficiência Cardíaca / DAC prévia / FA paroxística / Uso prévio de antiarrítmicos / Nega cardiopatia].
 

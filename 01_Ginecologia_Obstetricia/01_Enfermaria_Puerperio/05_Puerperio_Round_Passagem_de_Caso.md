@@ -11,7 +11,7 @@
 ```text
 # 1. MANCHETE OBSTÉTRICA (IDENTIFICAÇÃO + PARTO + RISCO):
 "Preceptor(a), [? Leito :: Leito [ ], ][Nome], [Idade] anos[? G/P/A :: , G[ ] P[ ] A[ ]], no [1º / 2º / 3º] DPO de [Parto Normal sem intercorrências / Parto Normal com laceração de [2º] grau / Cesariana por [indicação]] com IG de [ ]s[ ]d.
-- Antecedentes: [Hígida / HAG / Pré-eclâmpsia / DMG em dieta / Anemia / [ ]] | Alergias: [*Nega alergias / Alérgica a: [ ]].
+- Antecedentes: [Hígida / HAG / Pré-eclâmpsia / DMG em dieta / Anemia / [ ]] | Alergias: [Nega alergias / Alérgica a: [ ]].
 - Intraparto: [Sem intercorrências / Apresentou HPP por atonia revertida com ocitocina + ácido tranexâmico]."
 
 # 2. EVOLUÇÃO (24H) & AMAMENTAÇÃO:
@@ -19,7 +19,7 @@
 
 # 3. EXAME FÍSICO DIRIGIDO:
 "Ao exame físico hoje:
-- Vitais: PA [110x70] mmHg | FC [76] bpm | FR [16] irpm | Tax [36,5] °C | Corada e hidratada.
+- Vitais: PA [ ] mmHg | FC [ ] bpm | FR [ ] irpm | Tax [ ] °C | Corada e hidratada.
 - Mamas: [Túrgidas fisiológicas / Flácidas], sem mastite ou fissuras, colostro presente bilateralmente.
 - Abdome & Útero: Flácido, sem bexigoma, útero contraído (Globo de Pinard presente) a [2] cm abaixo da cicatriz umbilical, indolor.
 - Períneo / FO: [Períneo íntegro / Rafia perineal coaptada e limpa / FO de Pfannenstiel limpa, seca e sem flogose], lóquios rubros fisiológicos.

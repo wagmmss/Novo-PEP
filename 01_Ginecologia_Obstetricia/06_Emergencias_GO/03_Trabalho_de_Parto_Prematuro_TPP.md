@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]], G[ ] P[ ] (PN [ ] / PC [ ]) A[ ] | TS/Rh: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB- / Aguarda].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega / [ ]].
 - IG Confirmada: [ ] semanas e [ ] dias (por USG de 1º trimestre) | Fatores de Risco: [Prematuridade prévia / Colo curto < 25 mm / Gemelaridade / ITU ativa / Nega fatores prévios].
 
 # QP:
@@ -22,11 +22,11 @@ Alergias: [*Nega / [ ]].
 Gestante refere contrações uterinas dolorosas e rítmicas associadas a pressão pélvica e dor lombar há [ ] horas, com movimentação fetal presente. Nega perda de líquido amniótico, sangramento vaginal vivo ou escuro, febre, calafrios, corrimento fétido, cefaleia ou escotomas. Quanto ao trato urinário, [nega disúria ou dor lombar unilateral / refere disúria e polaciúria].
 
 # EXAME FÍSICO:
-- Sinais Vitais: PA: [110x70] mmHg | FC: [84] bpm | FR: [16] irpm | SpO2: [99]% AA | Tax: [36,5] °C (afebril).
-- Abdome & Dinâmica Uterina (DU): AU: [ ] cm | Leopold: Feto único, longitudinal, apresentação [cefálica / pélvica]. DU: [3 a 4] contrações regulares e dolorosas de [45] segundos em 10 minutos, com relaxamento completo do tônus uterino no intervalo.
-- Vitalidade Fetal: BCF: [142] bpm, rítmico, sem desacelerações | CTG: Categoria I (reativa).
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% AA | Tax: [ ] °C (afebril).
+- Abdome & Dinâmica Uterina (DU): AU: [ ] cm | Leopold: Feto único, longitudinal, apresentação [cefálica / pélvica]. DU: [ ] contrações regulares e dolorosas de [ ] segundos em 10 minutos, com relaxamento completo do tônus uterino no intervalo.
+- Vitalidade Fetal: BCF: [ ] bpm, rítmico, sem desacelerações | CTG: Categoria I (reativa).
 - Exame Especular Estéril (Realizado antes do toque): Paredes íntegras, sem sangramento ou perda de líquido pelo OE (Manobra de Tarnier negativa). Coletado Swab Vaginal e Retal para EGB.
-- Toque Vaginal: Colo [centralizado / intermediário], amolecido, apagado [80]%, dilatado para [3] cm, bolsa íntegra, polo cefálico em plano [-2] de De Lee.
+- Toque Vaginal: Colo [centralizado / intermediário], amolecido, apagado [ ]%, dilatado para [ ] cm, bolsa íntegra, polo cefálico em plano [ ] de De Lee.
 
 # HIPÓTESES DIAGNÓSTICAS:
 1. Trabalho de Parto Prematuro ativo com membranas íntegras em gestação de [ ]s[ ]d (CID-10: O60.0), sem sinais de corioamnionite ou sofrimento fetal — Elegível para Tocólise e Maturação Pulmonar.

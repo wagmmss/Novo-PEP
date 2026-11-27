@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # SINAIS VITAIS NA TRIAGEM: PA: [ ]x[ ] mmHg (Aferida em repouso de 15 minutos em ambos os braços) | FC: [ ] bpm.
 
 # QP:

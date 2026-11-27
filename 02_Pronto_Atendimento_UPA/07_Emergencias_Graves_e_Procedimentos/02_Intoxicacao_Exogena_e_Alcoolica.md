@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # CONTEXTO: [Ingesta alcoólica pesada aguda / Suspeita de tentativa de autoextermínio / Acidente ocupacional com agrotóxico / Intoxicação medicamentosa acidental].
 
 # QP:

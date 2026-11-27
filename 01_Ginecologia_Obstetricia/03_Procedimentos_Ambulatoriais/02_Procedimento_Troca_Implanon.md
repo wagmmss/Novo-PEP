@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, G[ ] P[ ] A[ ].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega / [ ]].
 - Indicação: [Troca por término da validade de 3 anos / Retirada eletiva por desejo reprodutivo / Retirada por sangramento desfavorável].
 - Consentimento: TCLE lido e assinado. [Novo lote inserido: [ ] — Validade até: [DD/MM/AAAA] / Apenas retirada eletiva].
 

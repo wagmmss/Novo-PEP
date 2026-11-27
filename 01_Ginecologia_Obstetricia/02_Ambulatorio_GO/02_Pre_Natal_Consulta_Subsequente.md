@@ -12,8 +12,8 @@
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, G[ ] P[ ] A[ ], TS/Rh: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB- / Aguarda] | Risco: [Risco Habitual / Alto Risco por: [ ]].
 - IG Atual: [ ] semanas e [ ] dias (por [USG de 1º tri / DUM confiável]) | DPP: [DD/MM/AAAA].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega / [ ]].
 
 # QP:
 - [Queixa principal] há [ ] [hora(s) / dia(s)].
@@ -22,13 +22,13 @@ Alergias: [*Nega / [ ]].
 Comparece para retorno de pré-natal com exames, referindo movimentação fetal [presente e ativa / ainda não percebida (< 18–20s)] e quadro clínico [assintomático no período / com pirose leve / com lombalgia mecânica leve / com edema maleolar vespertino leve]. Mantém uso regular de [Sulfato Ferroso / Ácido Fólico / AAS 100 mg + Carbonato de Cálcio / Metildopa]. Nega sangramento vaginal, perda de líquido amniótico, contrações rítmicas dolorosas, cefaleia, escotomas, epigastralgia em barra, disúria ou febre.
 
 # EXAME FÍSICO:
-- Vitais & Antropometria: PA (sentada): [110x70] mmHg | FC: [80] bpm | Peso Atual: [ ] kg (Variação no período: [+/- ] kg | Ganho total: [ ] kg).
+- Vitais & Antropometria: PA (sentada): [ ] mmHg | FC: [ ] bpm | Peso Atual: [ ] kg (Variação no período: [+/- ] kg | Ganho total: [ ] kg).
 - Exame Geral & Cardiopulmonar: BEG, corada, hidratada, eupneica, RCR 2T BNF, MV+ bilateral limpo.
 - Abdome Gravídico (Leopold & Vitalidade):
   * Altura Uterina (AU): [ ] cm (compatível com a curva AU/IG entre P10–P90).
   * Manobras de Leopold: Feto único, situação [longitudinal], apresentação [cefálica / pélvica], dorso à [esquerda / direita].
   * Dinâmica Uterina (DU): [*Ausente / Contrações de Braxton-Hicks isoladas e indolores]. Tônus uterino fisiológico.
-  * Ausculta Fetal (BCF): [142] bpm, rítmico, sem desacelerações audíveis (pulso materno aferido simultaneamente).
+  * Ausculta Fetal (BCF): [ ] bpm, rítmico, sem desacelerações audíveis (pulso materno aferido simultaneamente).
 - Extremidades: [Sem edemas / Edema maleolar fisiológico +/4+ bilateral e simétrico], panturrilhas livres.
 - Revisão de Exames & Controles Trazidos:
   * Laboratório / TOTG-75g (24–28s): [Hemograma Hb [ ] g/dL, Urocultura negativa, Sorologias NR / TOTG-75g: Jejum [ ], 1h [ ], 2h [ ] mg/dL -> Normal].

@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos[? Leito :: , Leito [ ]], G[ ] P[ ] (PN [ ] / PC [ ]) A[ ] | TS/Rh: [O+ / A+ / B+ / AB+ / O- / A- / B- / AB- / Aguarda].
-Comorbidades: [+ *Hígida / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígida / [ ]].
+Alergias: [Nega / [ ]].
 - IG Confirmada: [ ] semanas e [ ] dias (por USG de 1º tri) | Tempo de Bolsa Rota: [ ] horas (início às [HH:MM] de [DD/MM]).
 
 # QP:
@@ -22,8 +22,8 @@ Alergias: [*Nega / [ ]].
 Gestante relata perda súbita e contínua de líquido claro em grande volume pela vagina há [ ] horas, escorrendo pelas pernas, com odor característico de água sanitária, mantendo movimentação fetal [presente e ativa / reduzida]. [Nega febre, calafrios, dor uterina contínua ou corrimento fétido / Refere febre e dor uterina contínua, suspeita de corioamnionite], nega sangramento vaginal vivo ou escuro e [nega contrações rítmicas / refere cólicas regulares].
 
 # EXAME FÍSICO:
-- Sinais Vitais Maternos: PA: [110x70] mmHg | FC: [82] bpm (< 100 bpm) | FR: [16] irpm | Tax: [36,5] °C (< 37,8 °C — afebril).
-- Abdome Obstétrico: AU: [ ] cm | Tônus uterino fisiológico, útero indolor à palpação fora de contração | DU: [*Ausente / [ ] contrações em 10 min] | BCF: [140] bpm (basal 110–160 bpm, sem taquicardia fetal).
+- Sinais Vitais Maternos: PA: [ ] mmHg | FC: [ ] bpm (< 100 bpm) | FR: [ ] irpm | Tax: [ ] °C (< 37,8 °C — afebril).
+- Abdome Obstétrico: AU: [ ] cm | Tônus uterino fisiológico, útero indolor à palpação fora de contração | DU: [*Ausente / [ ] contrações em 10 min] | BCF: [ ] bpm (basal 110–160 bpm, sem taquicardia fetal).
 - Exame Especular Estéril (MANDATÓRIO — Sem lubrificante):
   * Visualização direta de líquido amniótico [claro com grumos / meconial fluido / purulento fétido] exteriorizando-se pelo orifício cervical externo e acumulando em fundo de saco posterior (Manobra de Tarnier / Valsalva positiva).
   * Colo visualmente [fechado e posterior / entreaberto para [ ] cm], sem prolapso de cordão umbilical.

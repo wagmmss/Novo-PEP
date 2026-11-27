@@ -12,8 +12,8 @@
 ATENDIMENTO DE EMERGÊNCIA — BRADIARRITMIA SINTOMÁTICA & BLOQUEIO ATRIOVENTRICULAR (ACLS)
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg][? Leito :: , Leito: Sala Vermelha [ ]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 APRESENTAÇÃO CLÍNICA & SINAIS DE INSTABILIDADE (5 CRITÉRIOS DO ACLS):
 - Queixa Principal: Paciente admitido na Sala Vermelha por [síncope / pré-síncope e tontura intensa / dispneia aguda / dor torácica isquêmica / rebaixamento do nível de consciência] associado a FC < 50 bpm.
@@ -21,7 +21,7 @@ APRESENTAÇÃO CLÍNICA & SINAIS DE INSTABILIDADE (5 CRITÉRIOS DO ACLS):
 - Causas Reversíveis Investigadas (Hs e Ts / Drogas): Uso de [Betabloqueador / Bloqueador de Canal de Cálcio (Verapamil/Diltiazem) / Digoxina / Amiodarona] | [Hipercalemia / Hipotireoidismo grave / IAM de Parede Inferior (CD) / Hipóxia].
 
 EXAME FÍSICO & MONITORIZAÇÃO MULTIPARAMÉTRICA:
-- Sinais Vitais: PA: [80x50] mmHg | FC: [34] bpm | FR: [22] irpm | SpO2: [93]% | Glicemia Capilar: [110] mg/dL.
+- Sinais Vitais: PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% | Glicemia Capilar: [ ] mg/dL.
 - Exame Cardiovascular: Pulso arterial lento, presença de [ondas "a" em canhão no pulso venoso jugular — dissociação atrioventricular do BAVT!], ausculta com B1 de intensidade variável e pulmões [limpos / com estertores crepitantes bibasais].
 
 LAUDO DO ECG DE 12 DERIVAÇÕES:
@@ -32,7 +32,7 @@ LAUDO DO ECG DE 12 DERIVAÇÕES:
 2. Manejo Farmacológico Imediato (se bradicardia com sinais de instabilidade):
    - 1ª Linha (ACLS): Atropina 1 mg IV em bolus rápido, podendo repetir a cada 3 a 5 minutos até dose máxima total de 3 mg (Atenção: em BAV de 2º grau Mobitz II e BAVT com QRS largo infranodal, a Atropina costuma ser ineficaz — não atrasar o Marcapasso Transcutâneo ou aminas!).
    - Infusão Contínua de Cronotrópicos (se Atropina ineficaz ou enquanto prepara Marcapasso):
-     * Dopamina: 5 a 20 mcg/kg/min IV em bomba de infusão (diluir 5 ampolas = 250 mg em 200 mL SF 0,9% → 1.000 mcg/mL); OU
+     * Dopamina: 5 a 20 mcg/kg/min IV em bomba de infusão (diluir 5 ampolas = 250 mg/50 mL + 200 mL SF 0,9% → volume final 250 mL = 1.000 mcg/mL → correr 21 a 84 mL/h em paciente de 70 kg); OU
      * Adrenalina: 2 a 10 mcg/min IV em bomba de infusão (diluir 2 ampolas = 2 mg em 250 mL SF 0,9% → 8 mcg/mL → correr 15 a 75 mL/h).
 3. Instalação do Marcapasso Transcutâneo (MPTC — Passo a Passo):
    - Analgesia e Sedação prévia se paciente consciente: Fentanil 50 a 100 mcg IV lento + Midazolam 2 a 5 mg IV (ou Etomidato/Cetamina em baixas doses).

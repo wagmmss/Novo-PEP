@@ -12,7 +12,7 @@
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
 Comorbidades: [Hígido / Asma / HAS / DM2 / [ ]].
-Alergias: [*Nega alergias conhecidas / Alérgico a: [ ]].
+Alergias: [Nega alergias conhecidas / Alérgico a: [ ]].
 # QP:
 - Coriza, congestão nasal e dor de garganta há [ ] dias.
 

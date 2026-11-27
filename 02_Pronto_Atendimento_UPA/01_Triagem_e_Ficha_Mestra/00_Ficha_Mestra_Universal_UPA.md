@@ -12,8 +12,8 @@
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
 Acolhimento / Classificação de Risco: [Azul / *Verde / Amarelo / Vermelho] às [HH:MM].
-Comorbidades: [+ *Nega / HAS / DM2 / Asma / DPOC / DAC prévia / DRC / Neoplasia / [ ]].
-Alergias: [*NEGA ALERGIAS CONHECIDAS / ALÉRGICO(A) A: Dipirona / ALÉRGICO(A) A: Penicilina / ALÉRGICO(A) A: AINEs / [ ]].
+Comorbidades: [+ Nega / HAS / DM2 / Asma / DPOC / DAC prévia / DRC / Neoplasia / [ ]].
+Alergias: [NEGA ALERGIAS CONHECIDAS / ALÉRGICO(A) A: Dipirona / ALÉRGICO(A) A: Penicilina / ALÉRGICO(A) A: AINEs / [ ]].
 [? Uso contínuo & Hábitos :: Medicações em uso contínuo: [*Nega / [ ]]. | Hábitos: [+ *Nega tabagismo e etilismo / Tabagismo / Etilismo / [ ]].]
 
 # QP:

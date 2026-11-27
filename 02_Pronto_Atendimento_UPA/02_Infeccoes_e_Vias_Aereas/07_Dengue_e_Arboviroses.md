@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso: [ ] kg.
-Comorbidades: [+ *Nega / Idade >= 65 anos / Gestante / HAS / DM2 / Cardiopata / DRC / Hepatopata / Asma / [ ]].
-Alergias: [*Nega / Alérgico a Dipirona / [ ]].
+Comorbidades: [+ Nega / Idade >= 65 anos / Gestante / HAS / DM2 / Cardiopata / DRC / Hepatopata / Asma / [ ]].
+Alergias: [Nega / Alérgico a Dipirona / [ ]].
 # QP:
 - Febre alta, dor no corpo e dor atrás dos olhos há [ ] dias.
 
@@ -45,7 +45,7 @@ Pesquisa ativa de sinais de alarme: [nega dor abdominal intensa e contínua, vô
 
 >> [SE GRUPO A]: CONDUTA DOMICILIAR:
 1. HIDRATAÇÃO ORAL INTENSA E OBRIGATÓRIA:
-   - Volume Diário: [Peso x 60 mL] = [ ] mL por dia (Cálculo: 60 mL/kg/dia).
+   - Volume Diário calculado pelo peso: 60 mL/kg/dia.
    - Composição: 1/3 do volume com Soro de Reidratação Oral (SRO) e 2/3 com líquidos caseiros (água, água de coco, sucos naturais e chás).
 2. Sintomáticos:
    - Dipirona 500 mg a 1 g VO de 6/6 horas se dor ou febre (ou Paracetamol 750 mg VO de 6/6h).

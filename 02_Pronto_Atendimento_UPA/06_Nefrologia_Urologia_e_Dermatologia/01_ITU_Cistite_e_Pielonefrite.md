@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Feminino / Masculino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgica a Quinolonas / Alérgica a Sulfas / Alérgica a Penicilinas / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgica a Quinolonas / Alérgica a Sulfas / Alérgica a Penicilinas / [ ]].
 # QP:
 - Ardor para urinar (disúria), aumento da frequência e dor no baixo ventre há [ ] dias.
 

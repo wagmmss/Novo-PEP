@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega alergias conhecidas / Alérgico a Penicilina / Alérgico a Dipirona / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega alergias conhecidas / Alérgico a Penicilina / Alérgico a Dipirona / [ ]].
 # QP:
 - Dor de garganta intensa (odinofagia) e febre há [ ] dias.
 

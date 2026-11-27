@@ -51,9 +51,9 @@ const GROUPS: Array<{ title: string; items: Array<{ keys: string[]; label: strin
     title: 'Copiar para o PEP — Protocolos (fora de campos de texto)',
     items: [
       { keys: ['1'], label: 'Copiar tudo' },
-      { keys: ['2'], label: 'Copiar Conduta' },
-      { keys: ['3'], label: 'Copiar Prescrição' },
-      { keys: ['4'], label: 'Copiar Evolução' },
+      { keys: ['2'], label: 'Copiar Evolução' },
+      { keys: ['3'], label: 'Copiar Conduta' },
+      { keys: ['4'], label: 'Copiar Prescrição' },
       { keys: ['5'], label: 'Copiar Orientações' },
       { keys: ['Alt', 'C'], label: 'Copiar tudo (funciona até dentro de um campo)' },
     ],

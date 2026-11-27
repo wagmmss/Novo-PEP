@@ -29,6 +29,7 @@ import {
   evaluateDoseFormula,
   serializeAstToClinicalText,
   type DoseFormulaNode,
+  type InlineInputNode,
 } from '../src/engine/pepAst.ts';
 import {
   buildClinicalContext,
@@ -653,15 +654,24 @@ test('AST Editorial & Condicionais: zero órfãos "2.:" nos 88 PEPs, renumeraç�
   assert.ok(textOn.includes('3. Carbonato de Cálcio'), `Cálcio deve ser promovido ao item 3:\n${textOn}`);
 
   // Switch DESLIGADO (travaExcluded = true): AAS e Cálcio omitidos e lista renumerada 1, 2, 3...
+  const aziaToggle = receitaSec.toggles.find(
+    (t) => t.kind === 'trava' && /azia|pirose/i.test(t.fullLabel)
+  );
+  assert.ok(aziaToggle, 'go-4 receita deve expor condicional [Se Azia/Pirose] iniciando desligado');
   const stateOff = {
     ...compiledGo4.initialAstState,
-    travaExcluded: { ...compiledGo4.initialAstState.travaExcluded, [peToggle.id]: true },
+    travaExcluded: {
+      ...compiledGo4.initialAstState.travaExcluded,
+      [peToggle.id]: true,
+      [aziaToggle.id]: false,
+    },
   };
   const textOff = serializeProtocolSection(compiledGo4.ast, stateOff, compiledGo4.clinicalContext, receitaSec);
   assert.ok(!textOff.includes('Ácido Acetilsalicílico'), 'AAS deve ser omitido com switch desligado');
   assert.ok(!textOff.includes('Carbonato de Cálcio'), 'Cálcio deve ser omitido com switch desligado');
+  assert.ok(textOff.includes('2. Hidróxido de Alumínio'), `Hidróxido deve ser promovido a 2. com PE desligada e Azia ligada:\n${textOff}`);
 
-  const layoutOff = computeAstDisplayLayout(compiledGo4.ast, stateOff, receitaSec.blockIndexSet);
+  const layoutOff = computeAstDisplayLayout(compiledGo4.ast, stateOff, receitaSec.blockIndexSet, { forSerialization: true });
   const numbersOff = Array.from(layoutOff.renumberedByBlockIndex.values());
   assert.ok(numbersOff.length >= 2);
   numbersOff.forEach((n, idx) => {
@@ -1777,6 +1787,283 @@ test('Logbook 3x & Pontos Cegos: busca sem acento, D2 inteligente, links clínic
     query: 'intubacao',
   });
   assert.equal(foundSpots.length, 1);
+});
+
+test('Regressões Protocolos (Motores de Dose, AST, Guard, Defaults, Conteúdo & Busca — REG-01..REG-12)', async () => {
+  clearPepAstCache();
+  const { auditProtocolPrescription, ALL_PROTOCOLS: REPO_ALL } = await import('../src/data/protocolsRepo.ts');
+  const { evaluateDoseFormula, isIdentificationInput, isSuggestedValueInput } = await import('../src/engine/pepAst.ts');
+  const { auditPrescription, parseEstimatedDailyDoseMg } = await import('../src/engine/prescriptionGuard.ts');
+  const { searchClinicalProtocols, createClinicalSearchIndex } = await import('../src/engine/search.ts');
+
+  const getProto = (id: string) => {
+    const p = PEP_PROTOCOLS.find((x) => x.id === id);
+    assert.ok(p, `Protocolo ${id} deve existir`);
+    return p;
+  };
+
+  // REG-01: ped-83 Prednisolona 3 mg/mL preenche mL/dia em todos os pesos (nunca 3/14/40 mL!)
+  const ped83 = getProto('ped-83');
+  for (const [peso, idade, espMl] of [
+    ['3', '2m', '1,0'],
+    ['14', '3a', '4,7'],
+    ['30', '8a', '10,0'],
+    ['50', '14a', '13,3'],
+    ['70', '17a', '13,3'],
+  ] as const) {
+    const comp = compileProtocolForDisplay(ped83, { ...EMPTY_PATIENT_CONTEXT, pesoKg: peso, idade });
+    const rec = comp.sections.find((s) => s.id === 'receita')!;
+    const txt = serializeProtocolSection(comp.ast, comp.initialAstState, comp.clinicalContext, rec);
+    assert.ok(
+      txt.includes(`Dar ${espMl} mL`),
+      `REG-01 (${peso} kg / ${idade}): esperado "Dar ${espMl} mL" na Prednisolona:\n${txt}`
+    );
+  }
+
+  // REG-02: "máx 35 gotas" e "máx 40 gotas" lê gotas (nunca 35000 mg/dose) e respeita teto no autofill
+  for (const [id, maxGts] of [
+    ['ped-76', 40],
+    ['ped-78', 35],
+    ['ped-85', 35],
+    ['ped-86', 35],
+  ] as const) {
+    const p = getProto(id);
+    const comp = compileProtocolForDisplay(p, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '70', idade: '14a' });
+    const rec = comp.sections.find((s) => s.id === 'receita')!;
+    const dipNode = rec.blockIndices
+      .flatMap((bi) => comp.ast.blocks[bi].children)
+      .find((n): n is DoseFormulaNode => n.kind === 'dose-formula' && n.unit === 'gotas/kg' && /dipiron/i.test(n.drugHint));
+    assert.ok(dipNode, `${id} deve ter DoseFormulaNode gotas/kg para Dipirona`);
+    assert.equal(dipNode.maxAdultUnit, 'gotas', `${id}: maxAdultUnit deve ser "gotas"`);
+    assert.equal(dipNode.maxAdultValue, maxGts, `${id}: maxAdultValue deve ser ${maxGts}`);
+    const ev = evaluateDoseFormula(dipNode, 70, 14);
+    assert.ok(ev && ev.minTotal === maxGts && ev.ceilingHit, `${id} 70 kg deve capar em ${maxGts} gotas`);
+    const recTxt = serializeProtocolSection(comp.ast, comp.initialAstState, comp.clinicalContext, rec);
+    assert.ok(recTxt.includes(`Dar ${maxGts} gotas`), `${id} 70 kg deve preencher "Dar ${maxGts} gotas":\n${recTxt}`);
+  }
+
+  // REG-03: ped-88 Amox+Clav 45 mg/kg/dia (400+57/5 mL), Cefalexina 60 mg/kg/dia ([Opção Alternativa] OFF por padrão) e ped-87 Dexclorfeniramina
+  const ped88 = getProto('ped-88');
+  for (const [peso, idade, amoxMl, cefMl] of [
+    ['3', '2m', '0,8', '0,9'],
+    ['14', '3a', '3,9', '4,2'],
+    ['30', '8a', '8,4', '9,0'],
+    ['70', '16a', '12,5', '20,0'],
+  ] as const) {
+    const comp = compileProtocolForDisplay(ped88, { ...EMPTY_PATIENT_CONTEXT, pesoKg: peso, idade });
+    const rec = comp.sections.find((s) => s.id === 'receita')!;
+    const txtDefault = serializeProtocolSection(comp.ast, comp.initialAstState, comp.clinicalContext, rec);
+    assert.ok(txtDefault.includes(`Dar ${amoxMl} mL (45 mg/kg/dia`), `REG-03 Amox+Clav (${peso} kg): esperado ${amoxMl} mL:\n${txtDefault}`);
+    assert.ok(!txtDefault.includes('Cefalexina'), `REG-03 (${peso} kg): [Opção Alternativa] Cefalexina deve iniciar OFF por padrão`);
+
+    const exclWithCef = { ...comp.initialAstState.excludedBlocks };
+    const travaWithCef = { ...comp.initialAstState.travaExcluded };
+    for (const bi of rec.blockIndices) {
+      const blk = comp.ast.blocks[bi];
+      delete exclWithCef[blk.id];
+      for (const ch of blk.children) {
+        if (ch.kind === 'trava-alert') travaWithCef[ch.id] = false;
+      }
+    }
+    const txtWithCef = serializeProtocolSection(
+      comp.ast,
+      { ...comp.initialAstState, excludedBlocks: exclWithCef, travaExcluded: travaWithCef },
+      comp.clinicalContext,
+      rec
+    );
+    assert.ok(txtWithCef.includes(`Dar ${cefMl} mL (60 mg/kg/dia`), `REG-03 Cefalexina (${peso} kg): esperado ${cefMl} mL:\n${txtWithCef}`);
+  }
+  const ped87 = getProto('ped-87');
+  const comp87_14 = compileProtocolForDisplay(ped87, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '14', idade: '3a' });
+  const rec87_14 = comp87_14.sections.find((s) => s.id === 'receita')!;
+  const txt87_14 = serializeProtocolSection(comp87_14.ast, comp87_14.initialAstState, comp87_14.clinicalContext, rec87_14);
+  assert.ok(txt87_14.includes('Dar 1,2 mL (0,25 mL/kg/dia'), `REG-03 Dexclorfeniramina 14 kg deve dar 1,2 mL:\n${txt87_14}`);
+  assert.ok(txt87_14.includes('Dar 14 gotas'), `Paracetamol 14 kg deve dar 14 gotas alinhado a 1 gt/kg:\n${txt87_14}`);
+  assert.ok(txt87_14.includes('Dar 4,7 mL'), `Amoxicilina 250/5 mL 14 kg deve dar 4,7 mL:\n${txt87_14}`);
+
+  // REG-04: Dipirona contraindicada < 5 kg / < 3m em autopreenchimento, fórmula e Auditor
+  const comp83_3 = compileProtocolForDisplay(ped83, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '3', idade: '2m' });
+  const txt83_3 = serializeProtocolSection(
+    comp83_3.ast,
+    comp83_3.initialAstState,
+    comp83_3.clinicalContext,
+    comp83_3.sections.find((s) => s.id === 'receita')!
+  );
+  assert.ok(!txt83_3.includes('Dar 12 gotas'), 'ped-83 3 kg não pode manter "Dar 12 gotas" fixo');
+  assert.ok(!txt83_3.includes('Dar 2 gotas'), 'ped-83 3 kg não pode calcular gotas de Dipirona');
+  for (const dipAltId of ['ped-79', 'ped-80', 'ped-82'] as const) {
+    const compAlt3 = compileProtocolForDisplay(getProto(dipAltId), { ...EMPTY_PATIENT_CONTEXT, pesoKg: '3', idade: '2m' });
+    const txtAlt3 = serializeProtocolSection(
+      compAlt3.ast,
+      compAlt3.initialAstState,
+      compAlt3.clinicalContext,
+      compAlt3.sections.find((s) => s.id === 'receita')!
+    );
+    assert.ok(!txtAlt3.includes('Dar 3 gotas'), `${dipAltId} 3 kg não pode preencher 3 gotas (Paracetamol) sob título principal Dipirona`);
+  }
+  const auditDip3 = auditPrescription(
+    [{ name: 'Dipirona Monoidratada 500 mg/mL', posology: 'Dar 12 gotas VO 6/6h' }],
+    buildClinicalContext({ pesoKg: '3', idade: '2m' }, { modId: 'ped' })
+  );
+  assert.ok(auditDip3.alerts.some((a) => a.severity === 'block' && a.ruleCode === 'PEDIATRIC_AGE_WEIGHT_CONTRAINDICATION'));
+  assert.ok(auditDip3.alerts.some((a) => a.severity === 'block' && a.ruleCode === 'DOSE_CEILING_PEDIATRIC'));
+
+  // REG-05: Segmentação por cláusula sem contaminação cruzada entre fármacos na mesma linha
+  const findFormulaInProto = (id: string, rx: RegExp) => {
+    const p = getProto(id);
+    const comp = compileProtocolForDisplay(p, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '70', idade: '14a' });
+    const f = comp.ast.blocks
+      .flatMap((b) => b.children)
+      .find((n): n is DoseFormulaNode => n.kind === 'dose-formula' && rx.test(n.drugHint));
+    assert.ok(f, `Esperada fórmula de ${rx} em ${id}`);
+    return f;
+  };
+  const acic87 = findFormulaInProto('ped-87', /aciclovir/i);
+  assert.equal(acic87.maxAdultValue, 800, 'Aciclovir não deve herdar teto de Ibuprofeno 600 mg');
+  const clar82 = findFormulaInProto('ped-82', /claritromicina/i);
+  assert.equal(clar82.maxAdultValue, 1000, 'Claritromicina não deve herdar 500 mg/dia de Azitromicina');
+  assert.equal(clar82.dosesPerDay, 2);
+  const azit82 = findFormulaInProto('ped-82', /azitromicina/i);
+  assert.equal(azit82.dosesPerDay, undefined, 'Azitromicina não deve herdar 12/12h de Claritromicina');
+  const oxa82 = findFormulaInProto('ped-82', /oxacilina/i);
+  assert.equal(oxa82.maxAdultValue, 12000, 'Oxacilina não deve herdar teto 4000 mg/dia da Ceftriaxona');
+  const genta85 = findFormulaInProto('ped-85', /gentamicina/i);
+  assert.notEqual(genta85.dosesPerDay, 4, 'Gentamicina 1x/dia não deve herdar 6/6h da Ampicilina');
+  const mgso4_83 = findFormulaInProto('ped-83', /magn[eé]sio/i);
+  assert.equal(mgso4_83.maxAdultValue, 2000, 'MgSO4 50 mg/kg máx 2000 mg não deve herdar SF 0,9%');
+
+  // REG-06: Taxas /kg/h e /kg/dia sem truncamento e Sepse 30 mL/kg = 2100 mL em 70 kg
+  const upa60 = getProto('upa-60');
+  const comp60_70 = compileProtocolForDisplay(upa60, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '70', idade: '55a' });
+  const cond60 = serializeProtocolSection(
+    comp60_70.ast,
+    comp60_70.initialAstState,
+    comp60_70.clinicalContext,
+    comp60_70.sections.find((s) => s.id === 'conduta')!
+  );
+  assert.ok(cond60.includes('30 mL/kg (2100 mL)'), `Sepse 70 kg deve calcular 2100 mL sem teto 1000 mL:\n${cond60}`);
+  const meta60 = serializeProtocolSection(
+    comp60_70.ast,
+    comp60_70.initialAstState,
+    comp60_70.clinicalContext,
+    comp60_70.sections.find((s) => s.id === 'orientacoes' || s.id === 'evolucao' || s.id === 'conduta')!
+  );
+  assert.ok(!cond60.includes('1000 mL [teto]') && !meta60.includes('1000 mL [teto]'));
+  const upa27 = getProto('upa-27');
+  const comp27_70 = compileProtocolForDisplay(upa27, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '70' });
+  const full27 = serializeProtocolSection(comp27_70.ast, comp27_70.initialAstState, comp27_70.clinicalContext, comp27_70.sections.find((s) => s.id === 'receita')!);
+  assert.ok(full27.includes('4200 mL/dia'), `Dengue 60 mL/kg/dia em 70 kg deve dar 4200 mL/dia:\n${full27}`);
+
+  // REG-07: HMA de ped-76 e Peso Prévio de ped-84 não auto-preenchem; ped-80 L43 preserva "mg" sem falso guard
+  const comp76_14 = compileProtocolForDisplay(getProto('ped-76'), { ...EMPTY_PATIENT_CONTEXT, pesoKg: '14', idade: '3a' });
+  const evol76 = serializeProtocolSection(comp76_14.ast, comp76_14.initialAstState, comp76_14.clinicalContext, comp76_14.sections.find((s) => s.id === 'evolucao')!);
+  assert.ok(!/dipirona\s+11\s+gotas/i.test(evol76), 'HMA de ped-76 não pode preencher gotas');
+  const comp84_14 = compileProtocolForDisplay(getProto('ped-84'), { ...EMPTY_PATIENT_CONTEXT, pesoKg: '14', idade: '3a' });
+  const evol84 = serializeProtocolSection(comp84_14.ast, comp84_14.initialAstState, comp84_14.clinicalContext, comp84_14.sections.find((s) => s.id === 'evolucao')!);
+  assert.ok(!/Peso Prévio:[^.\n]*\b14\s*kg/i.test(evol84), 'Peso Prévio de ped-84 deve permanecer intacto');
+  const comp80_3 = compileProtocolForDisplay(getProto('ped-80'), { ...EMPTY_PATIENT_CONTEXT, pesoKg: '3', idade: '2m' });
+  const cond80_3 = serializeProtocolSection(comp80_3.ast, comp80_3.initialAstState, comp80_3.clinicalContext, comp80_3.sections.find((s) => s.id === 'conduta')!);
+  assert.ok(cond80_3.includes('(1,8 mg)'), `ped-80 3 kg deve preservar unidade mg -> (1,8 mg):\n${cond80_3}`);
+  const audit80_3 = auditProtocolPrescription(getProto('ped-80'), { conduta: cond80_3 }, comp80_3.clinicalContext);
+  assert.equal(audit80_3.conduta?.blockCount ?? 0, 0, `ped-80 3 kg não pode disparar falso DOSE_CEILING_PEDIATRIC: ${JSON.stringify(audit80_3.conduta?.alerts)}`);
+
+  // REG-08: Sublinhas ped-87 e ped-88 em 70 kg herdam teto adulto de Amoxicilina (3000 mg/dia)
+  const comp87_70 = compileProtocolForDisplay(ped87, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '70', idade: '16a' });
+  const rec87_70 = serializeProtocolSection(comp87_70.ast, comp87_70.initialAstState, comp87_70.clinicalContext, comp87_70.sections.find((s) => s.id === 'receita')!);
+  assert.ok(!rec87_70.includes('3500 mg/dia'), `Amoxicilina 50 mg/kg/dia em 70 kg deve capar em 3000 mg/dia:\n${rec87_70}`);
+  const audit87_70 = auditProtocolPrescription(ped87, { receita: rec87_70 }, comp87_70.clinicalContext);
+  assert.equal(audit87_70.receita?.blockCount ?? 0, 0, 'ped-87 70 kg não deve gerar falso bloqueio após teto');
+
+  // REG-09: X+Y mg no Guard captura componente ativo principal (2000+125 mg => 4000 mg/dia)
+  const comboEst = parseEstimatedDailyDoseMg('Amoxicilina + Clavulanato 2000+125 mg VO 12/12h');
+  assert.equal(comboEst.dailyDoseMg, 4000);
+  const comboAudit = auditPrescription(
+    [{ name: 'Amoxicilina + Clavulanato 2000+125 mg', posology: '1 cp VO 12/12h' }],
+    buildClinicalContext({ idade: '35a', pesoKg: '70', sexo: 'M' })
+  );
+  assert.ok(comboAudit.alerts.some((a) => a.ruleCode === 'DOSE_CEILING_ADULT' && a.severity === 'block'));
+
+  // REG-10: analyzeSectionGaps respeita excludedBlocks / toggles excluídos
+  const comp58 = compileProtocolForDisplay(getProto('upa-58'), EMPTY_PATIENT_CONTEXT);
+  const cond58 = comp58.sections.find((s) => s.id === 'conduta')!;
+  const excl58: Record<string, boolean> = {};
+  for (const bi of cond58.blockIndices) excl58[comp58.ast.blocks[bi].id] = true;
+  const gap58Excl = analyzeSectionGaps(comp58.ast, { ...comp58.initialAstState, excludedBlocks: excl58 }, comp58.clinicalContext, cond58);
+  assert.equal(gap58Excl.openFields, 0);
+  assert.equal(gap58Excl.missingWeightForDoses, false);
+
+  // REG-11: Zero defaults fabricados (Sexo/Alergias/Comorbidades), checkboxes visíveis na UI, [Se ...] OFF e [DD/MM/AAAA] como identificação
+  const comp30 = compileProtocolForDisplay(getProto('upa-30'), EMPTY_PATIENT_CONTEXT);
+  const evol30 = serializeProtocolSection(comp30.ast, comp30.initialAstState, comp30.clinicalContext, comp30.sections.find((s) => s.id === 'evolucao')!);
+  assert.ok(!evol30.includes('Masculino'), 'upa-30 não deve afirmar Sexo: Masculino sem escolha');
+  assert.ok(!evol30.includes('Alergias: Nega'), 'upa-30 não deve afirmar Alergias: Nega sem escolha');
+  assert.ok(!evol30.includes('Comorbidades: Hígido'), 'upa-30 não deve afirmar Hígido sem escolha');
+  for (const cleanId of ['go-2', 'upa-49', 'upa-55'] as const) {
+    const compClean = compileProtocolForDisplay(getProto(cleanId), EMPTY_PATIENT_CONTEXT);
+    const fullClean = compClean.sections
+      .map((s) => serializeProtocolSection(compClean.ast, compClean.initialAstState, compClean.clinicalContext, s))
+      .join('\n');
+    assert.ok(!/Alergias:\s*Nega\b/i.test(fullClean), `${cleanId} não deve afirmar Alergias: Nega sem escolha`);
+    assert.ok(!/Sexo:\s*Masculino\b/i.test(fullClean), `${cleanId} não deve afirmar Sexo: Masculino sem escolha`);
+  }
+  const comp64 = compileProtocolForDisplay(getProto('upa-64'), EMPTY_PATIENT_CONTEXT);
+  const layout64Ui = computeAstDisplayLayout(comp64.ast, comp64.initialAstState);
+  comp64.ast.blocks.forEach((b, idx) => {
+    if ('checkbox' in b && b.checkbox && !b.checkbox.checked) {
+      assert.equal(layout64Ui.excludedBlocks.has(idx), false, `upa-64 bloco #${idx} com checkbox deve ficar visível na UI`);
+    }
+  });
+  const comp27Dengue = compileProtocolForDisplay(upa27, { ...EMPTY_PATIENT_CONTEXT, pesoKg: '70', idade: '35a' });
+  const cond27Sec = comp27Dengue.sections.find((s) => s.id === 'conduta')!;
+  const trava27All = { ...comp27Dengue.initialAstState.travaExcluded };
+  for (const bi of cond27Sec.blockIndices) {
+    for (const ch of comp27Dengue.ast.blocks[bi].children) {
+      if (ch.kind === 'trava-alert') trava27All[ch.id] = false;
+    }
+  }
+  const cond27Dengue = serializeProtocolSection(
+    comp27Dengue.ast,
+    { ...comp27Dengue.initialAstState, travaExcluded: trava27All },
+    comp27Dengue.clinicalContext,
+    cond27Sec
+  );
+  assert.ok(!cond27Dengue.includes('70 = [ ]'), 'upa-27 não deve transformar [Peso x 60 mL] em "70 = [ ]"');
+  assert.ok(cond27Dengue.includes('60 mL/kg/dia (4200 mL/dia)'), 'upa-27 70 kg deve calcular 4200 mL/dia sem teto de 1000 mL');
+  const layout58Ui = computeAstDisplayLayout(comp58.ast, comp58.initialAstState);
+  const layout58Copy = computeAstDisplayLayout(comp58.ast, comp58.initialAstState, undefined, { forSerialization: true });
+  const chkIdx = comp58.ast.blocks.findIndex((b) => 'checkbox' in b && Boolean(b.checkbox && !b.checkbox.checked));
+  assert.ok(chkIdx >= 0, 'upa-58 deve conter checkbox desmarcado');
+  assert.equal(layout58Ui.excludedBlocks.has(chkIdx), false, 'Checkbox desmarcado deve permanecer visível na UI');
+  assert.equal(layout58Copy.excludedBlocks.has(chkIdx), true, 'Checkbox desmarcado deve ser omitido apenas ao serializar');
+
+  const comp16 = compileProtocolForDisplay(getProto('go-16'), EMPTY_PATIENT_CONTEXT);
+  const evol16 = serializeProtocolSection(comp16.ast, comp16.initialAstState, comp16.clinicalContext, comp16.sections.find((s) => s.id === 'evolucao')!);
+  assert.ok(!(evol16.includes('Nega dor hipogástrica') && evol16.includes('lóquios escuros/purulentos')), 'go-16 não deve afirmar Mastite e Endometrite simultaneamente');
+  const comp12 = compileProtocolForDisplay(getProto('go-12'), EMPTY_PATIENT_CONTEXT);
+  const cond12 = serializeProtocolSection(comp12.ast, comp12.initialAstState, comp12.clinicalContext, comp12.sections.find((s) => s.id === 'conduta')!);
+  assert.ok(!cond12.includes('Betametasona 12 mg'), 'go-12 [Se IG < 34 semanas] não deve afirmar Betametasona sem ativar condicional');
+
+  const dateNode = comp87_14.ast.blocks.flatMap((b) => b.children).find((n): n is InlineInputNode => n.kind === 'inline-input' && n.maskType === 'date-full');
+  if (dateNode) {
+    assert.equal(isIdentificationInput(dateNode), true);
+    assert.equal(isSuggestedValueInput(dateNode), false);
+  }
+
+  // Conteúdo Área C: go-11 Crioprecipitado, upa-60 Dobutamina e Foco Urinário sem Metronidazol, ped-79 isotônica, upa-61 Nitroprussiato
+  assert.ok((getProto('go-11').pep_body || '').includes('1 unidade/10 kg'));
+  assert.ok((getProto('upa-60').pep_body || '').includes('≈ 2,4 a 3,6 mcg/kg/min em 70 kg'));
+  assert.ok(!(getProto('upa-60').pep_body || '').includes('[Foco Urinário / Abdominal]'));
+  assert.ok((getProto('upa-61').pep_body || '').includes('5 a 10 mL/h (~0,25 a 0,5 mcg/kg/min para 70 kg)'));
+  assert.ok((getProto('ped-79').pep_body || '').includes('NaCl 20% 20 mL'));
+
+  // REG-12 + Busca clínica: 9 itens no painel de doses + top hits de busca
+  const doses14 = computeWeightBasedDoses(14);
+  assert.ok(doses14 && doses14.items.length === 9, 'Painel Doses · X kg deve expor todos os 9 itens');
+  const sIdx = createClinicalSearchIndex(REPO_ALL);
+  assert.equal(searchClinicalProtocols(sIdx, REPO_ALL, 'ic descompensada', 5)[0]?.item.trigger, ';eap');
+  assert.equal(searchClinicalProtocols(sIdx, REPO_ALL, 'tep', 5)[0]?.item.trigger, ';tvp-tep');
+  const sangGest = searchClinicalProtocols(sIdx, REPO_ALL, 'sangramento gestante', 5).map((r) => r.item.id);
+  assert.ok(sangGest.includes('go-17') || sangGest.includes('go-18'), `Busca "sangramento gestante" deve priorizar go-17/go-18: ${sangGest}`);
 });
 
 

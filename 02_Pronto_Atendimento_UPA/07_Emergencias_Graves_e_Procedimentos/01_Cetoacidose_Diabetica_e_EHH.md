@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino], Peso: [ ] kg.
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Sim: [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Sim: [ ]].
 # HISTÓRICO: [Diabetes Mellitus tipo 1 / Diabetes Mellitus tipo 2 sob insulinoterapia / Primeiro diagnóstico de diabetes].
 
 # QP:
@@ -27,7 +27,7 @@ Nega cirurgia abdominal recente, hematêmese ou uso de drogas simpatomiméticas 
 - GLICEMIA CAPILAR (HGT) NA ADMISSÃO: [ > 300 / > 500 / "HI" ] mg/dL.
 - Ectoscopia Geral: Estado geral regular a grave, [lúcido / sonolento / torporoso], mucosas orais intensamente secas, saliva espessa, olhos encovados, turgor cutâneo muito diminuído (> 2s), hálito cetônico característico ("aroma adocicado de maçã passada").
 - Aparelho Respiratório: Padrão respiratório de Kussmaul evidente (inspirações e expirações rápidas, profundas e ruidosas para expirar CO2 e compensar a acidose metabólica). Ausculta pulmonar limpa sem estertores.
-- Aparelho Cardiovascular: Taquicardia regular em 2 tempos, bulhas normofonéticas, pulsos periféricos finos/filiformes, tempo de enchimento capilar [3] segundos (sinais de choque hipovolêmico por diurese osmótica).
+- Aparelho Cardiovascular: Taquicardia regular em 2 tempos, bulhas normofonéticas, pulsos periféricos finos/filiformes, tempo de enchimento capilar [ ] segundos (sinais de choque hipovolêmico por diurese osmótica).
 - Exame Abdominal: Abdome flácido, difusamente doloroso à palpação profunda ("pseudoperitonite diabética"), sem massas e sem descompressão dolorosa (Blumberg negativo).
 
 # CRITÉRIOS DIAGNÓSTICOS LABORATORIAIS DA CAD / EHH:
@@ -54,7 +54,7 @@ Nega cirurgia abdominal recente, hematêmese ou uso de drogas simpatomiméticas 
 
 >> PILAR 2: A REGRA DE OURO DO POTÁSSIO SÉRICO (CHECAR ANTES DA INSULINA!):
 - [ ] SE K+ < 3,3 mEq/L: PARAR / NÃO INICIAR INSULINA!
-  * Repor imediatamente Cloreto de Potássio (KCl 10% ou 19,1%) 20 a 30 mEq/hora EV em solução até o potássio subir acima de 3,3 mEq/L (risco de parada cardíaca por hipocalemia!).
+  * Repor imediatamente Cloreto de Potássio (KCl 10% ou 19,1%) 20 a 40 mEq/hora EV em solução até o potássio subir acima de 3,3 mEq/L (risco de parada cardíaca por hipocalemia!).
 - [ ] SE K+ ENTRE 3,3 E 5,2 mEq/L (FAIXA HABITUAL):
   * Adicionar 20 a 30 mEq de KCl a cada litro de soro de hidratação e INICIAR a Insulina simultaneamente.
 - [ ] SE K+ > 5,2 mEq/L:
@@ -63,7 +63,7 @@ Nega cirurgia abdominal recente, hematêmese ou uso de drogas simpatomiméticas 
 >> PILAR 3: INSULINOTERAPIA EM INFUSÃO CONTÍNUA:
 1. Preparo da Solução: Diluir 100 UI de Insulina Regular em 100 mL de Soro Fisiológico 0,9% (Concentração: 1 UI/mL).
 2. Infusão em Bomba (BIC):
-   - Iniciar infusão contínua na dose de 0,1 UI/kg/hora (ex: paciente de 70 kg = 7 mL/hora = 7 UI/h) [com ou sem bólus inicial de 0,1 UI/kg].
+   - Iniciar infusão contínua na dose de 0,1 UI/kg/hora (ex: paciente de 70 kg = 7 mL/hora = 7 UI/h) [com ou sem bólus inicial de 0,1 UI/kg]; quando a glicemia atingir <= 200 mg/dL, reduzir para 0,02 a 0,05 UI/kg/hora e associar SG 5%.
 3. Meta Terapêutica: Queda da glicemia capilar em velocidade de 50 a 70 mg/dL por hora.
    - Se queda < 50 mg/dL/h: Dobrar a taxa de infusão da insulina.
    - Se queda > 70 mg/dL/h: Reduzir a taxa pela metade.
@@ -71,7 +71,7 @@ Nega cirurgia abdominal recente, hematêmese ou uso de drogas simpatomiméticas 
 >> PILAR 4: MONITORIZAÇÃO & CRITÉRIOS DE RESOLUÇÃO:
 1. HGT de horário; Gasometria venosa e eletrólitos a cada 2 a 4 horas.
 2. Sonda Vesical de Demora para controle estrito de diurese horária (> 0,5 mL/kg/h).
-3. CRITÉRIOS DE RESOLUÇÃO DA CAD: Glicemia < 200 mg/dL associada a Bicarbonato >= 18 mEq/L, pH > 7,30 e Ânion Gap normalizado (<= 12 mEq/L).
+3. CRITÉRIOS DE RESOLUÇÃO DA CAD: Glicemia < 200 mg/dL associada a Bicarbonato >= 15 mEq/L (ou >= 18 mEq/L), pH > 7,30 e Ânion Gap normalizado (<= 12 mEq/L).
 4. Paciente regulado para leito de Unidade de Terapia Intensiva (UTI) via Central de Regulação.
 ```
 

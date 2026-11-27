@@ -12,8 +12,8 @@
 ATENDIMENTO DE EMERGÊNCIA — SÍNCOPE (PERDA TRANSITÓRIA DA CONSCIÊNCIA)
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 
 CARACTERIZAÇÃO DO EVENTO E PRÓDROMOS:
 - Circunstância do Evento: Episódio ocorrido [em ortostase prolongada em ambiente quente / após dor ou estresse emocional / ao levantar-se rapidamente / DURANTE o esforço físico ou em decúbito dorsal — ALERTA CARDIOGÊNICO!].
@@ -22,8 +22,8 @@ CARACTERIZAÇÃO DO EVENTO E PRÓDROMOS:
 - Antecedentes & Medicações: [*Nega cardiopatia / Portador de IC, DAC ou sopro / História familiar de morte súbita < 40 anos / Uso de anti-hipertensivos, diuréticos, vasodilatadores, alfa-bloqueadores ou drogas que prolongam o QT].
 
 EXAME FÍSICO & TESTE DE HIPOTENSÃO ORTOSTÁTICA:
-- Sinais Vitais em Decúbito: PA: [120x75] mmHg | FC: [68] bpm | SpO2: [98]% | Glicemia Capilar: [96] mg/dL.
-- Manobra Ortostática (PA após 1 e 3 min em pé): PA em pé: [115x72] mmHg ([*Negativa / Positiva: queda da PAS ≥ 20 mmHg ou PAD ≥ 10 mmHg ou PAS < 90 mmHg reproduzindo sintomas]).
+- Sinais Vitais em Decúbito: PA: [ ] mmHg | FC: [ ] bpm | SpO2: [ ]% | Glicemia Capilar: [ ] mg/dL.
+- Manobra Ortostática (PA após 1 e 3 min em pé): PA em pé: [ ] mmHg ([*Negativa / Positiva: queda da PAS ≥ 20 mmHg ou PAD ≥ 10 mmHg ou PAS < 90 mmHg reproduzindo sintomas]).
 - Ausculta Cardíaca & Exame Neurológico: [*RCR em 2T, BNF, sem sopros / Sopro sistólico ejetivo em foco aórtico ou que aumenta à manobra de Valsalva — descartar Estenose Aórtica grave ou CMHO!]. Exame neurológico sem déficits focais.
 
 ECG DE 12 DERIVAÇÕES OBRIGATÓRIO (CAÇA AOS 7 SINAIS DE MORTE SÚBITA):

@@ -41,8 +41,21 @@ const PROTOCOL_SYMPTOM_MAP: Record<string, { priority: number; tags: string[] }>
     tags: ['falta de ar', 'dispneia', 'chiado', 'cansaço', 'tosse', 'catarro', 'escarro', 'dpoc', 'enfisema', 'bronquite', 'dessaturação'],
   },
   ';eap': {
-    priority: 98,
-    tags: ['falta de ar', 'dispneia', 'chiado', 'cansaço', 'ortopneia', 'edema agudo de pulmão', 'afogamento', 'inchaço nas pernas', 'insuficiência cardíaca'],
+    priority: 99,
+    tags: [
+      'falta de ar',
+      'dispneia',
+      'chiado',
+      'cansaço',
+      'ortopneia',
+      'edema agudo de pulmão',
+      'afogamento',
+      'inchaço nas pernas',
+      'insuficiência cardíaca',
+      'ic descompensada',
+      'icad',
+      'congestão pulmonar',
+    ],
   },
   ';sca': {
     priority: 100,
@@ -69,8 +82,8 @@ const PROTOCOL_SYMPTOM_MAP: Record<string, { priority: number; tags: string[] }>
     tags: ['insuficiência respiratória', 'falta de ar grave', 'intubação', 'sri', 'iot', 'hipoxemia', 'rebaixamento'],
   },
   ';tvp-tep': {
-    priority: 97,
-    tags: ['falta de ar', 'dispneia súbita', 'dor torácica pleurítica', 'perna inchada', 'edema assimétrico', 'tep', 'tvp', 'embolia pulmonar'],
+    priority: 99,
+    tags: ['falta de ar', 'dispneia súbita', 'dor torácica pleurítica', 'perna inchada', 'edema assimétrico', 'tep', 'tvp', 'embolia pulmonar', 'tromboembolismo pulmonar'],
   },
   ';sincope': {
     priority: 93,
@@ -230,7 +243,7 @@ const PROTOCOL_SYMPTOM_MAP: Record<string, { priority: number; tags: string[] }>
   },
   ';hpp': {
     priority: 99,
-    tags: ['sangramento', 'hemorragia pós-parto', 'hpp', 'sangramento vaginal intenso', 'atonia uterina', 'sangue'],
+    tags: ['sangramento', 'hemorragia pós-parto', 'hpp', 'sangramento vaginal intenso', 'atonia uterina', 'sangue', 'sangramento pós-parto'],
   },
   ';pre-eclampsia': {
     priority: 98,
@@ -253,12 +266,12 @@ const PROTOCOL_SYMPTOM_MAP: Record<string, { priority: number; tags: string[] }>
     tags: ['febre', 'febre no pós-parto', 'dor na mama', 'mama empedrada', 'mastite', 'endometrite', 'sangramento fétido'],
   },
   ';abortamento': {
-    priority: 94,
-    tags: ['sangramento vaginal na gravidez', 'aborto', 'abortamento', 'gravidez ectópica', 'cólica no 1º trimestre'],
+    priority: 95,
+    tags: ['sangramento gestante', 'sangramento na gestante', 'sangramento vaginal na gravidez', 'gestante sangrando', 'aborto', 'abortamento', 'gravidez ectópica', 'cólica no 1º trimestre'],
   },
   ';dpp-pp': {
     priority: 97,
-    tags: ['sangramento 3º trimestre', 'descolamento prematuro de placenta', 'dpp', 'placenta prévia', 'vasa prévia'],
+    tags: ['sangramento gestante', 'sangramento na gestante', 'sangramento 3º trimestre', 'gestante sangrando', 'descolamento prematuro de placenta', 'dpp', 'placenta prévia', 'vasa prévia'],
   },
   ';violencia-sexual': {
     priority: 95,

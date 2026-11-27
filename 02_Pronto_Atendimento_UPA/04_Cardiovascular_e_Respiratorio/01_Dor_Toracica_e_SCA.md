@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega alergias / Alérgico a AAS / Alérgico a Dipirona / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega alergias / Alérgico a AAS / Alérgico a Dipirona / [ ]].
 # HORÁRIO DE CHEGADA: [HH:MM] | HORÁRIO DO ECG: [HH:MM] (Porta-ECG <= 10 minutos: atendido).
 
 # QP:

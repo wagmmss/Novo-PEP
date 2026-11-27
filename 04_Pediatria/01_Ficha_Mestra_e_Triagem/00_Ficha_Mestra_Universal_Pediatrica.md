@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [ ] anos e [ ] meses[? DN :: (DN: [DD/MM/AAAA])], Sexo: [Masculino / Feminino], Peso: [ ] kg[? Acompanhante :: , Acompanhante: [Mãe / Pai / Avó / Responsável: [ ]]].
-Comorbidades: [+ *Hígido(a) / Asma / Sibilância recorrente / APLV / Prematuridade / [ ]].
-Alergias: [*Nega alergias conhecidas / Alérgico(a) a: [ ]].
+Comorbidades: [+ Hígido(a) / Asma / Sibilância recorrente / APLV / Prematuridade / [ ]].
+Alergias: [Nega alergias conhecidas / Alérgico(a) a: [ ]].
 [? Antropometria & Vacinas :: Estatura: [ ] cm | PC (< 2 anos): [ ] cm | Vacinação (PNI): [*Em dia / Atraso: [ ]].]
 
 # QP:
@@ -57,7 +57,7 @@ USO ORAL E NASAL:
    Dar [ ] gotas (Dose: 15 a 25 mg/kg/dose = 0,6 a 1 gota/kg; máx 40 gotas/dose; contraindicada em < 3 meses ou < 5 kg) por via oral até de 6 em 6 horas se houver febre (temperatura axilar ≥ 37,8 °C) ou dor.
 
 2. [OU Alternativa — 1ª escolha se < 3 meses ou < 5 kg] Paracetamol Solução Oral Gotas (200 mg/mL — 1 gota ≈ 13 a 15 mg) --- 1 frasco
-   Dar [ ] gotas (Dose: 10 a 15 mg/kg/dose = 1 gota/kg; máx 35 a 50 gotas/dose) por via oral até de 6 em 6 horas se houver febre ou dor (Não alternar dois antitérmicos de rotina).
+   Dar [ ] gotas (Dose: 10 a 15 mg/kg/dose = 1 gota/kg; máx 50 gotas/dose) por via oral até de 6 em 6 horas se houver febre ou dor (Não alternar dois antitérmicos de rotina).
 
 3. Soro Fisiológico 0,9% (0,9% sem conservantes) ------------------------------- 1 frasco (250 mL ou 500 mL)
    Realizar lavagem nasal com seringa de [3 mL / 5 mL / 10 mL] em cada narina, com a criança sentada, de 4 a 6 vezes ao dia (especialmente antes de mamar/comer e antes de dormir).
@@ -86,7 +86,7 @@ USO ORAL E NASAL:
    Dar [ ] gotas (Dose: 15 a 25 mg/kg/dose = 0,6 a 1 gota/kg; máx 40 gotas/dose; contraindicada em < 3 meses ou < 5 kg) por via oral até de 6 em 6 horas se houver febre (temperatura axilar ≥ 37,8 °C) ou dor.
 
 2. [OU Alternativa — 1ª escolha se < 3 meses ou < 5 kg] Paracetamol Solução Oral Gotas (200 mg/mL — 1 gota ≈ 13 a 15 mg) --- 1 frasco
-   Dar [ ] gotas (Dose: 10 a 15 mg/kg/dose = 1 gota/kg; máx 35 a 50 gotas/dose) por via oral até de 6 em 6 horas se houver febre ou dor (Não alternar dois antitérmicos de rotina).
+   Dar [ ] gotas (Dose: 10 a 15 mg/kg/dose = 1 gota/kg; máx 50 gotas/dose) por via oral até de 6 em 6 horas se houver febre ou dor (Não alternar dois antitérmicos de rotina).
 
 3. Soro Fisiológico 0,9% (0,9% sem conservantes) ------------------------------- 1 frasco (250 mL ou 500 mL)
    Realizar lavagem nasal com seringa de [3 mL / 5 mL / 10 mL] em cada narina, com a criança sentada, de 4 a 6 vezes ao dia (especialmente antes de mamar/comer e antes de dormir).

@@ -18,7 +18,7 @@ ANAMNESE DIRIGIDA:
 - Histórico de Asma e Fatores de Risco para Asma Quase-Fatal: [Primeira crise sibilante / Asmático sem tratamento preventivo regular / Internação prévia em UTI ou IOT por asma / > 1 ida ao PS no último ano].
 
 EXAME FÍSICO & CLASSIFICAÇÃO DE GRAVIDADE DA CRISE (GINA):
-- Sinais Vitais: FC: [125] bpm | FR: [38] irpm (Cortes de Taquipneia: < 2m ≥ 60; 2–11m ≥ 50; 1–5a ≥ 40; > 5a ≥ 30) | SpO2: [93]% em ar ambiente | Tax: [36,8]°C.
+- Sinais Vitais: FC: [ ] bpm | FR: [ ] irpm (Cortes de Taquipneia: < 2m ≥ 60; 2–11m ≥ 50; 1–5a ≥ 40; > 5a ≥ 30) | SpO2: [ ]% em ar ambiente | Tax: [ ]°C.
 - Esforço Respiratório e Fala: Criança [alerta, falando frases completas, tiragem subcostal leve a moderada / agitada, falando apenas palavras isoladas, com tiragem intercostal, subcostal, de fúrcula e batimento de asa de nariz / sonolenta, exausta, cianótica].
 - Ausculta Pulmonar: Murmúrio vesicular [presente bilateralmente com sibilos expiratórios difusos / globalmente reduzido com sibilos inspiratórios e expiratórios / Tórax silencioso — iminência de parada respiratória!].
 - Classificação da Exacerbação: [Crise Leve a Moderada (SpO2 90–95%, fala frases, sem agitação) / Crise Grave (SpO2 < 90%, fala palavras, FC > 140 em > 5a ou > 180 em 0–5a, retração acentuada) / Asma Ameaçadora à Vida (sonolência, confusão ou tórax silencioso)].
@@ -36,16 +36,16 @@ EXAME FÍSICO & CLASSIFICAÇÃO DE GRAVIDADE DA CRISE (GINA):
    - Se boa resposta sustentada (SpO2 ≥ 94% em ar ambiente por > 1–2 horas após o último broncodilatador, sem esforço respiratório): Alta hospitalar com plano de ação escrito e revisão da técnica do espaçador.
 
 # PRESCRIÇÃO DOMICILIAR / DE ALTA
-USO INALATÓRIO E ORAL (RECEITA DE ALTA PEDIÁTRICA — PESO DE REFERÊNCIA: [15] KG):
+USO INALATÓRIO E ORAL (RECEITA DE ALTA PEDIÁTRICA — PESO ATUAL: [ ] KG):
 
 1. Sulfato de Salbutamol 100 mcg/dose (Aerolin spray oral) — 1 frasco + Espaçador infantil com máscara/bocal
-   - Aplicar [4] jatos (1 jato por vez no espaçador, aguardando 5 respirações ou 15 segundos entre cada jato) a cada 4 ou 6 horas nos primeiros 2 dias, espaçando para cada 6 ou 8 horas por mais 3 dias conforme melhora do cansaço e da tosse.
+   - Aplicar [ ] jatos (4 a 6 jatos se < 20 kg; 6 a 10 jatos se >= 20 kg — 1 jato por vez no espaçador, aguardando 5 respirações ou 15 segundos entre cada jato) a cada 4 ou 6 horas nos primeiros 2 dias, espaçando para cada 6 ou 8 horas por mais 3 dias conforme melhora do cansaço e da tosse.
 
 2. Fosfato Sódico de Prednisolona 3 mg/mL (solução oral) — 1 frasco (60 mL)
-   - Dar [5 a 10] mL (1 a 2 mg/kg/dia — máx 40 mg/dia) por via oral, 1 vez ao dia pela manhã após o café, por 3 a 5 dias (não precisa de desmame se usado por ≤ 5 dias).
+   - Dar [ ] mL (1 a 2 mg/kg/dia — máx 20 mg em < 2 anos; máx 30 mg em 2–5 anos; máx 40 mg em > 5 anos) por via oral, 1 vez ao dia pela manhã após o café, por 3 a 5 dias (não precisa de desmame se usado por ≤ 5 dias).
 
 3. Dipirona Monoidratada 500 mg/mL (gotas) — 1 frasco
-   - Dar [12] gotas por via oral a cada 6 horas somente se febre (Tax ≥ 37,8°C) ou dor.
+   - Dar [ ] gotas por via oral a cada 6 horas somente se febre (Tax ≥ 37,8°C) ou dor.
 
 4. Soro Fisiológico 0,9% para lavagem nasal — 1 frasco (250 mL)
    - Realizar lavagem nasal com seringa antes das inalações e antes de dormir.

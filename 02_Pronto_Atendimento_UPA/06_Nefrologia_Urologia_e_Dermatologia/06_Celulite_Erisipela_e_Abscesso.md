@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / Alérgico a Cefalosporinas / Alérgico a Penicilinas / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / Alérgico a Cefalosporinas / Alérgico a Penicilinas / [ ]].
 # QP:
 - Vermelhidão, dor, inchaço e calor na pele [em perna / pé / braço / face] há [ ] dias.
 

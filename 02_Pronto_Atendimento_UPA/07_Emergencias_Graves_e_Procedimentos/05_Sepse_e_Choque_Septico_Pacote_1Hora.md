@@ -11,8 +11,8 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [Idade] anos, Sexo: [Masculino / Feminino][? Peso :: , Peso: [ ] kg][? Leito :: , Leito: Sala Vermelha [ ]][? Registro :: , Registro: [ ]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 - Horário de Abertura do Protocolo de Sepse: [HH:MM] do dia [DD/MM/AAAA].
 - Foco Infeccioso Suspeito: [Pulmonar (PAC grave / Broncoaspiração) / Urinário (Pielonefrite) / Abdominal (Peritonite / Colangite) / Pele e Partes Moles (Erisipela / Fasciíte) / Foco Indeterminado].
 
@@ -44,19 +44,19 @@ Alergias: [*Nega / [ ]].
 1. Lactato Sérico Inicial: Coletado às [HH:MM] -> Resultado: [ ] mmol/L (Alerta se > 2 mmol/L | Hipoperfusão tecidual grave se >= 4 mmol/L). Programada redosagem em 2 a 4 horas para avaliar clareamento do lactato.
 2. Hemoculturas Prévias ao Antibiótico: Coletados 2 pares de hemoculturas (frascos aeróbio e anaeróbio) de sítios de punção periférica distintos às [HH:MM] (sem atrasar a infusão do antimicrobiano).
 3. Coleta de Culturas do Foco Provável: [Urocultura com antibiograma / Cultura de escarro / Swab ou aspirado de secreção].
-4. Antibioticoterapia Endovenosa de Amplo Espectro na 1ª Hora:
-   - Esquema Administrado às [HH:MM]:
-     * [Foco Pulmonar / Comunitário]: Ceftriaxona 2 g EV 1x/dia + Azitromicina 500 mg EV ou VO 1x/dia.
-     * [Foco Urinário / Abdominal]: Ceftriaxona 2 g EV 1x/dia + Metronidazol 500 mg EV de 8/8h.
-     * [Hospitalar / Sepse Grave / Pseudomonal]: Piperacilina + Tazobactam 4,5 g EV de 6/6h (ou Meropenem 1 g EV de 8/8h).
-     * [Suspeita de MRSA]: Associar Vancomicina 25-30 mg/kg ataque EV (ou 15-20 mg/kg de 12/12h).
+4. Antibioticoterapia Endovenosa de Amplo Espectro na 1ª Hora (início às [HH:MM]):
+   - [Se Foco Pulmonar / Comunitário]: Ceftriaxona 2 g EV 1x/dia + Azitromicina 500 mg EV ou VO 1x/dia.
+   - [Se Foco Urinário (Pielonefrite)]: Ceftriaxona 2 g EV 1x/dia.
+   - [Se Foco Abdominal (Peritonite / Colangite)]: Ceftriaxona 2 g EV 1x/dia + Metronidazol 500 mg EV de 8/8h.
+   - [Se Foco Hospitalar / Sepse Grave / Pseudomonal]: Piperacilina + Tazobactam 4,5 g EV de 6/6h (ou Meropenem 1 g EV de 8/8h).
+   - [Suspeita de MRSA]: Associar Vancomicina 25-30 mg/kg ataque EV (ou 15-20 mg/kg de 12/12h).
 5. Ressuscitação Volêmica com Cristaloide (se Hipotensão com PAM < 65 ou Lactato >= 4 mmol/L):
    - Alíquota calculada de 30 mL/kg de peso: Administrados [ ] mL de Ringer Lactato aquecido em infusão rápida por acesso periférico calibroso nas primeiras 3 horas (início às [HH:MM]).
    - Reavaliação dinâmica da resposta volêmica a cada 500 mL (avaliação de estertores pulmonares, pressão venosa e tempo de enchimento capilar).
 6. Vasopressor Precoce (se PAM mantida < 65 mmHg durante ou logo após início da ressuscitação volêmica):
    - Iniciada Noradrenalina por acesso periférico provisório / cateter venoso central: Solução padrão (4 ampolas de 4 mg/4 mL = 16 mL em 234 mL de SG 5% = 250 mL a 64 mcg/mL), titulada em BIC a [ ] mL/h para meta de PAM >= 65 mmHg.
    - [Se dose de Noradrenalina elevada > 0,25 mcg/kg/min]: Associada Vasopressina em dose fixa (1 ampola 20 UI/1 mL + 99 mL SF 0,9% = 0,2 UI/mL -> Iniciar a 9 mL/h em BIC = 0,03 UI/min).
-   - [Se disfunção miocárdica associada / baixo débito cardíaco]: Associada Dobutamina (1 ampola 250 mg/20 mL + 230 mL SF 0,9%/SG 5% = 1.000 mcg/mL -> Iniciar a 10 a 15 mL/h em BIC = 2,5 a 20 mcg/kg/min).
+   - [Se disfunção miocárdica associada / baixo débito cardíaco]: Associada Dobutamina (1 ampola 250 mg/20 mL + 230 mL SF 0,9%/SG 5% = 1.000 mcg/mL -> Iniciar a 10 a 15 mL/h em BIC ≈ 2,4 a 3,6 mcg/kg/min em 70 kg; titular de 2,5 a 20 mcg/kg/min ≈ 10 a 84 mL/h).
 7. Cateterismo Vesical de Demora com coletor graduado para mensuração do débito urinário horário (meta: >= 0,5 mL/kg/h).
 
 # HIPÓTESES DIAGNÓSTICAS:

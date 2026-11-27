@@ -11,15 +11,15 @@
 ```text
 # IDENTIFICAÇÃO:
 ID: [Nome], [ ] meses (Faixa clássica < 24 meses), Sexo: [Masculino / Feminino], Peso: [ ] kg[? Acompanhante :: , Acompanhante: [Mãe / Pai / Responsável: [ ]]].
-Comorbidades: [+ *Hígido(a) / [ ]].
-Alergias: [*Nega / [ ]].
+Comorbidades: [+ Hígido(a) / [ ]].
+Alergias: [Nega / [ ]].
 - Fatores de Risco para BVA Grave: [Nenhum — lactente a termo hígido > 3 meses / Idade < 12 semanas (< 3 meses) / Prematuridade (< 37 semanas) / Cardiopatia congênita hemodinamicamente significativa / Broncodisplasia pulmonar / Imunodeficiência].
 
 # QP:
 - Tosse, chiado no peito e cansaço para respirar há [ ] dias.
 
 # HMA:
-Lactente com pródromo catarral de vias aéreas superiores há [2 a 4] dias (obstrução nasal, coriza hialina e febre baixa de [ ] °C), evoluindo nas últimas [24 a 48] horas com tosse mais intensa, taquipneia e sibilância ([ ]º dia de doença), tratando-se do [1º episódio de sibilância na vida / 2º episódio viral em lactente].
+Lactente com pródromo catarral de vias aéreas superiores há [ ] dias (obstrução nasal, coriza hialina e febre baixa de [ ] °C), evoluindo nas últimas [ ] horas com tosse mais intensa, taquipneia e sibilância ([ ]º dia de doença), tratando-se do [1º episódio de sibilância na vida / 2º episódio viral em lactente].
 Encontra-se [mamando bem com pausas curtas para respirar (> 75% do habitual) / com redução moderada das mamadas (50 a 75% do habitual) / com recusa alimentar grave (< 50% do habitual) por fadiga respiratória], com diurese [presente nas últimas 6h / reduzida]. Nega pausas respiratórias ou apneias, cianose central, gemência contínua ou letargia.
 
 # EXAME FÍSICO:
@@ -54,7 +54,7 @@ Encontra-se [mamando bem com pausas curtas para respirar (> 75% do habitual) / c
 2. Suporte Hídrico e Nutricional Seguro (Prevenção de Broncoaspiração):
    - Se FR < 60 irpm: Manter via oral fracionada após lavagem nasal.
    - Se FR entre 60 e 70 irpm: Passar Sonda Nasogástrica (SNG) para dieta enteral fracionada (leite materno ordenhado/fórmula).
-   - Se FR > 70 irpm, desconforto grave ou vômitos: Dieta zero (Jejum) + Hidratação Venosa de Manutenção Isotônica (SG 5% 500 mL + NaCl 20% 10 a 11 mL + KCl 19,1% 4 a 5 mL = [Na+] ~140 mEq/L, restrita a 70–80% da cota de Holliday-Segar pelo risco de SIADH e hiponatremia).
+   - Se FR > 70 irpm, desconforto grave ou vômitos: Dieta zero (Jejum) + Hidratação Venosa de Manutenção Isotônica (SG 5% 500 mL + NaCl 20% 20 mL + KCl 19,1% 5 mL = [Na+] ~140 mEq/L, restrita a 70–80% da cota de Holliday-Segar pelo risco de SIADH e hiponatremia).
 3. Higiene de Vias Aéreas: Lavagem nasal com SF 0,9% e aspiração nasal superficial suave antes das dietas e se desconforto (Evitar fisioterapia respiratória convencional de tapotagem).
 4. Nebulização com Salina Hipertônica 3% (apenas para pacientes internados): 4 mL de NaCl 3% por nebulização de 8/8h se hipersecreção importante.
 5. Monitorização contínua (oximetria, FC, FR) e precaução de contato e gotículas no leito.
